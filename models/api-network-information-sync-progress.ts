@@ -11,6 +11,9 @@
  * https://github.com/swagger-api/swagger-codegen.git
  * Do not edit the class manually.
  */
+
+import { WalletsStateProgress } from ".";
+
 /**
  * Estimated synchronization progress of the node with the underlying network. Note that this may change quite arbitrarily as the node may switch to shorter or longer chain forks. 
  * @export
@@ -28,7 +31,7 @@ export interface ApiNetworkInformationSyncProgress {
      * @type {WalletsStateProgress}
      * @memberof ApiNetworkInformationSyncProgress
      */
-    progress?: any;
+    progress?: WalletsStateProgress;
 }
 
 /**

@@ -11,6 +11,9 @@
  * https://github.com/swagger-api/swagger-codegen.git
  * Do not edit the class manually.
  */
+
+import { WalletsTipHeight } from ".";
+
 /**
  * Underlying node's tip
  * @export
@@ -46,5 +49,5 @@ export interface ApiNetworkInformationNodeTip {
      * @type {WalletsTipHeight}
      * @memberof ApiNetworkInformationNodeTip
      */
-    height: any;
+    height: WalletsTipHeight;
 }

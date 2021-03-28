@@ -11,6 +11,9 @@
  * https://github.com/swagger-api/swagger-codegen.git
  * Do not edit the class manually.
  */
+
+import { ApiNetworkInformationNetworkTip, ApiNetworkInformationNodeTip, ApiNetworkInformationSyncProgress, WalletsDelegationChangesAt } from ".";
+
 /**
  * 
  * @export
@@ -22,25 +25,25 @@ export interface ApiNetworkInformation {
      * @type {ApiNetworkInformationSyncProgress}
      * @memberof ApiNetworkInformation
      */
-    sync_progress: any;
+    sync_progress: ApiNetworkInformationSyncProgress;
     /**
      * 
      * @type {ApiNetworkInformationNodeTip}
      * @memberof ApiNetworkInformation
      */
-    node_tip: any;
+    node_tip: ApiNetworkInformationNodeTip;
     /**
      * 
      * @type {ApiNetworkInformationNetworkTip}
      * @memberof ApiNetworkInformation
      */
-    network_tip?: any;
+    network_tip?: ApiNetworkInformationNetworkTip;
     /**
      * 
      * @type {WalletsDelegationChangesAt}
      * @memberof ApiNetworkInformation
      */
-    next_epoch?: any;
+    next_epoch?: WalletsDelegationChangesAt;
     /**
      * 
      * @type {string}
