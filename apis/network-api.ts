@@ -17,7 +17,7 @@ import { Configuration } from '../configuration';
 // @ts-ignore
 import { BASE_PATH, COLLECTION_FORMATS, RequestArgs, BaseAPI, RequiredError } from '../base';
 import { ApiNetworkInformation } from '../models';
-import { InlineResponse20012 } from '../models';
+import { ApiNetworkClock } from '../models';
 import { InlineResponse20013 } from '../models';
 import { NotAcceptable } from '../models';
 /**
@@ -149,7 +149,7 @@ export const NetworkApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getNetworkClock(forceNtpCheck?: boolean, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<InlineResponse20012>> {
+        async getNetworkClock(forceNtpCheck?: boolean, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ApiNetworkClock>> {
             const localVarAxiosArgs = await NetworkApiAxiosParamCreator(configuration).getNetworkClock(forceNtpCheck, options);
             return (axios: AxiosInstance = globalAxios, basePath: string = BASE_PATH) => {
                 const axiosRequestArgs = {...localVarAxiosArgs.options, url: basePath + localVarAxiosArgs.url};
@@ -198,7 +198,7 @@ export const NetworkApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getNetworkClock(forceNtpCheck?: boolean, options?: any): AxiosPromise<InlineResponse20012> {
+        getNetworkClock(forceNtpCheck?: boolean, options?: any): AxiosPromise<ApiNetworkClock> {
             return NetworkApiFp(configuration).getNetworkClock(forceNtpCheck, options).then((request) => request(axios, basePath));
         },
         /**

@@ -19,4 +19,9 @@ export class WalletServer {
 		const res = await this.networkApi.getNetworkInformation();
 		return res.data;
 	}
+
+	async getNetworkClock(){
+		const res = await this.networkApi.getNetworkClock();
+		return res.data;
+	}
 }

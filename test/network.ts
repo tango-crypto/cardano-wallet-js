@@ -1,5 +1,6 @@
 import { expect } from 'chai';
 import 'mocha';
+import { ApiNetworkClockStatusEnum } from '../models';
 import { ApiNetworkInformationNodeEraEnum } from '../models/api-network-information';
 
 import { WalletServer } from '../wallet-server';
@@ -33,4 +34,14 @@ describe('Cardano wallet network', function() {
 		}
 		expect(eras).include(information.node_era);
 	});
+
+	it('should get network clock', async function() {
+		let status = [ApiNetworkClockStatusEnum.Available, ApiNetworkClockStatusEnum.Unavailable, ApiNetworkClockStatusEnum.Pending];
+		let clock = await walletServer.getNetworkClock();
+
+		expect(status).include(clock.status);
+		expect(clock).have.property('offset').with.property('quantity').be.a('number');
+		expect(clock).have.property('offset').with.property('unit').equal('microsecond');
+	});
+
 });

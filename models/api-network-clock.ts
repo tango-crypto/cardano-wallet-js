@@ -11,6 +11,9 @@
  * https://github.com/swagger-api/swagger-codegen.git
  * Do not edit the class manually.
  */
+
+import { ApiNetworkClockOffset } from ".";
+
 /**
  * [Network Time Protocol](https://en.wikipedia.org/wiki/Network_Time_Protocol) information of the server.  **Important:** This piece of information only makes sense when the server runs on the same host machine as the node. 
  * @export
@@ -28,7 +31,7 @@ export interface ApiNetworkClock {
      * @type {ApiNetworkClockOffset}
      * @memberof ApiNetworkClock
      */
-    offset?: any;
+    offset?: ApiNetworkClockOffset;
 }
 
 /**
