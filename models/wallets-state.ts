@@ -11,6 +11,9 @@
  * https://github.com/swagger-api/swagger-codegen.git
  * Do not edit the class manually.
  */
+
+import { WalletsStateProgress } from ".";
+
 /**
  * Whether a wallet is ready to use or still syncing
  * @export
@@ -28,7 +31,7 @@ export interface WalletsState {
      * @type {WalletsStateProgress}
      * @memberof WalletsState
      */
-    progress?: any;
+    progress?: WalletsStateProgress;
 }
 
 /**

@@ -11,6 +11,9 @@
  * https://github.com/swagger-api/swagger-codegen.git
  * Do not edit the class manually.
  */
+
+import { WalletsTipHeight } from ".";
+
 /**
  * A reference to a particular time slot, and the block height at that point.
  * @export
@@ -46,5 +49,5 @@ export interface WalletsTip {
      * @type {WalletsTipHeight}
      * @memberof WalletsTip
      */
-    height: any;
+    height: WalletsTipHeight;
 }

@@ -11,6 +11,9 @@
  * https://github.com/swagger-api/swagger-codegen.git
  * Do not edit the class manually.
  */
+
+import { WalletsBalanceAvailable, WalletsBalanceReward, WalletsBalanceTotal } from ".";
+
 /**
  * Wallet current Ada balance(s).
  * @export
@@ -22,17 +25,17 @@ export interface WalletsBalance {
      * @type {WalletsBalanceAvailable}
      * @memberof WalletsBalance
      */
-    available: any;
+    available: WalletsBalanceAvailable;
     /**
      * 
      * @type {WalletsBalanceReward}
      * @memberof WalletsBalance
      */
-    reward: any;
+    reward: WalletsBalanceReward;
     /**
      * 
      * @type {WalletsBalanceTotal}
      * @memberof WalletsBalance
      */
-    total: any;
+    total: WalletsBalanceTotal;
 }

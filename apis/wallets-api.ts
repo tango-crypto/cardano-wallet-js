@@ -17,7 +17,7 @@ import { Configuration } from '../configuration';
 // @ts-ignore
 import { BASE_PATH, COLLECTION_FORMATS, RequestArgs, BaseAPI, RequiredError } from '../base';
 import { BadRequest } from '../models';
-import { Body1 } from '../models';
+import { ApiWalletPostData } from '../models';
 import { Body2 } from '../models';
 import { Body3 } from '../models';
 import { ApiWallet } from '../models';
@@ -190,11 +190,11 @@ export const WalletsApiAxiosParamCreator = function (configuration?: Configurati
         /**
          * <p align=\"right\">status: <strong>stable</strong></p>  Create and restore a wallet from a mnemonic sentence or account public key. 
          * @summary Create / Restore
-         * @param {Body1} body 
+         * @param {ApiWalletPostData} body 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        postWallet: async (body: Body1, options: any = {}): Promise<RequestArgs> => {
+        postWallet: async (body: ApiWalletPostData, options: any = {}): Promise<RequestArgs> => {
             // verify required parameter 'body' is not null or undefined
             if (body === null || body === undefined) {
                 throw new RequiredError('body','Required parameter body was null or undefined when calling postWallet.');
@@ -395,11 +395,11 @@ export const WalletsApiFp = function(configuration?: Configuration) {
         /**
          * <p align=\"right\">status: <strong>stable</strong></p>  Create and restore a wallet from a mnemonic sentence or account public key. 
          * @summary Create / Restore
-         * @param {Body1} body 
+         * @param {ApiWalletPostData} body 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async postWallet(body: Body1, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ApiWallet>> {
+        async postWallet(body: ApiWalletPostData, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ApiWallet>> {
             const localVarAxiosArgs = await WalletsApiAxiosParamCreator(configuration).postWallet(body, options);
             return (axios: AxiosInstance = globalAxios, basePath: string = BASE_PATH) => {
                 const axiosRequestArgs = {...localVarAxiosArgs.options, url: basePath + localVarAxiosArgs.url};
@@ -487,11 +487,11 @@ export const WalletsApiFactory = function (configuration?: Configuration, basePa
         /**
          * <p align=\"right\">status: <strong>stable</strong></p>  Create and restore a wallet from a mnemonic sentence or account public key. 
          * @summary Create / Restore
-         * @param {Body1} body 
+         * @param {ApiWalletPostData} body 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        postWallet(body: Body1, options?: any): AxiosPromise<ApiWallet> {
+        postWallet(body: ApiWalletPostData, options?: any): AxiosPromise<ApiWallet> {
             return WalletsApiFp(configuration).postWallet(body, options).then((request) => request(axios, basePath));
         },
         /**
@@ -572,12 +572,12 @@ export class WalletsApi extends BaseAPI {
     /**
      * <p align=\"right\">status: <strong>stable</strong></p>  Create and restore a wallet from a mnemonic sentence or account public key. 
      * @summary Create / Restore
-     * @param {Body1} body 
+     * @param {ApiWalletPostData} body 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof WalletsApi
      */
-    public postWallet(body: Body1, options?: any) {
+    public postWallet(body: ApiWalletPostData, options?: any) {
         return WalletsApiFp(this.configuration).postWallet(body, options).then((request) => request(this.axios, this.basePath));
     }
     /**

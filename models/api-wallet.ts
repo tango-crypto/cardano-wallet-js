@@ -11,6 +11,9 @@
  * https://github.com/swagger-api/swagger-codegen.git
  * Do not edit the class manually.
  */
+
+import { WalletsAssets, WalletsBalance, WalletsDelegation, WalletsPassphrase, WalletsState, WalletsTip } from ".";
+
 /**
  * 
  * @export
@@ -34,19 +37,19 @@ export interface ApiWallet {
      * @type {WalletsBalance}
      * @memberof ApiWallet
      */
-    balance: any;
+    balance: WalletsBalance;
     /**
      * 
      * @type {WalletsAssets}
      * @memberof ApiWallet
      */
-    assets: any;
+    assets: WalletsAssets;
     /**
      * 
      * @type {WalletsDelegation}
      * @memberof ApiWallet
      */
-    delegation: any;
+    delegation: WalletsDelegation;
     /**
      * 
      * @type {string}
@@ -58,17 +61,17 @@ export interface ApiWallet {
      * @type {WalletsPassphrase}
      * @memberof ApiWallet
      */
-    passphrase?: any;
+    passphrase?: WalletsPassphrase;
     /**
      * 
      * @type {WalletsState}
      * @memberof ApiWallet
      */
-    state: any;
+    state: WalletsState;
     /**
      * 
      * @type {WalletsTip}
      * @memberof ApiWallet
      */
-    tip: any;
+    tip: WalletsTip;
 }

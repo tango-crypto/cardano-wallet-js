@@ -28,13 +28,13 @@ export interface ApiWalletPostData {
      * @type {Array&lt;string&gt;}
      * @memberof ApiWalletPostData
      */
-    mnemonic_sentence: any;
+    mnemonic_sentence: Array<string>;
     /**
      * An optional passphrase used to encrypt the mnemonic sentence.
      * @type {Array&lt;string&gt;}
      * @memberof ApiWalletPostData
      */
-    mnemonic_second_factor?: any;
+    mnemonic_second_factor?: Array<string>;
     /**
      * A master passphrase to lock and protect the wallet for sensitive operation (e.g. sending funds)
      * @type {string}

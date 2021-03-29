@@ -11,6 +11,9 @@
  * https://github.com/swagger-api/swagger-codegen.git
  * Do not edit the class manually.
  */
+
+import { WalletsDelegationActive, WalletsDelegationNext } from ".";
+
 /**
  * Delegation settings
  * @export
@@ -22,11 +25,11 @@ export interface WalletsDelegation {
      * @type {WalletsDelegationActive}
      * @memberof WalletsDelegation
      */
-    active: any;
+    active: WalletsDelegationActive;
     /**
      * 
      * @type {Array&lt;WalletsDelegationNext&gt;}
      * @memberof WalletsDelegation
      */
-    next: any;
+    next: Array<WalletsDelegationNext>;
 }

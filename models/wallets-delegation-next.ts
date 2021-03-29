@@ -11,6 +11,9 @@
  * https://github.com/swagger-api/swagger-codegen.git
  * Do not edit the class manually.
  */
+
+import { WalletsDelegationChangesAt } from ".";
+
 /**
  * Next delegation status becomes active at the start of the second epoch after the corresponding delegation certificate was discovered. The exact moment is specified by changes_at
  * @export
@@ -34,7 +37,7 @@ export interface WalletsDelegationNext {
      * @type {WalletsDelegationChangesAt}
      * @memberof WalletsDelegationNext
      */
-    changes_at: any;
+    changes_at: WalletsDelegationChangesAt;
 }
 
 /**

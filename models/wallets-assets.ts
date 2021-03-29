@@ -11,6 +11,9 @@
  * https://github.com/swagger-api/swagger-codegen.git
  * Do not edit the class manually.
  */
+
+import { WalletsAssetsAvailable } from ".";
+
 /**
  * Current non-Ada asset holdings of the wallet.  The amount of assets available to spend may be less than the total unspent assets due to transaction change amounts which are yet to be fully confirmed (pending). 
  * @export
@@ -22,11 +25,11 @@ export interface WalletsAssets {
      * @type {Array&lt;WalletsAssetsAvailable&gt;}
      * @memberof WalletsAssets
      */
-    available: any;
+    available: Array<WalletsAssetsAvailable>;
     /**
      * Total asset balances (available balances plus pending change balances). 
      * @type {Array&lt;WalletsAssetsAvailable&gt;}
      * @memberof WalletsAssets
      */
-    total: any;
+    total: Array<WalletsAssetsAvailable>;
 }
