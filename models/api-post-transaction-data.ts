@@ -11,6 +11,9 @@
  * https://github.com/swagger-api/swagger-codegen.git
  * Do not edit the class manually.
  */
+
+import { WalletswalletIdpaymentfeesPayments, WalletswalletIdpaymentfeesTimeToLive } from ".";
+
 /**
  * 
  * @export
@@ -28,7 +31,7 @@ export interface ApiPostTransactionData {
      * @type {Array&lt;WalletswalletIdpaymentfeesPayments&gt;}
      * @memberof ApiPostTransactionData
      */
-    payments: any;
+    payments: Array<WalletswalletIdpaymentfeesPayments>;
     /**
      * When provided, instruments the server to automatically withdraw rewards from the source wallet when they are deemed sufficient (i.e. they contribute to the balance for at least as much as they cost).  As a consequence, the resulting transaction may or may not have a withdrawal object. Summarizing:  withdrawal field | reward balance | result ---              | ---            | --- `null`           | too small      | ✓ no withdrawals generated `null`           | big enough     | ✓ no withdrawals generated `\"self\"`         | too small      | ✓ no withdrawals generated `\"self\"`         | big enough     | ✓ withdrawal generated 
      * @type {string}
@@ -46,7 +49,7 @@ export interface ApiPostTransactionData {
      * @type {WalletswalletIdpaymentfeesTimeToLive}
      * @memberof ApiPostTransactionData
      */
-    time_to_live?: any;
+    time_to_live?: WalletswalletIdpaymentfeesTimeToLive;
 }
 
 /**

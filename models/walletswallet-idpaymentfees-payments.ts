@@ -11,6 +11,9 @@
  * https://github.com/swagger-api/swagger-codegen.git
  * Do not edit the class manually.
  */
+
+import { WalletsAssetsAvailable, WalletswalletIdpaymentfeesAmount } from ".";
+
 /**
  * 
  * @export
@@ -28,11 +31,11 @@ export interface WalletswalletIdpaymentfeesPayments {
      * @type {WalletswalletIdpaymentfeesAmount}
      * @memberof WalletswalletIdpaymentfeesPayments
      */
-    amount: any;
+    amount: WalletswalletIdpaymentfeesAmount;
     /**
      * A flat list of assets.
      * @type {Array&lt;WalletsAssetsAvailable&gt;}
      * @memberof WalletswalletIdpaymentfeesPayments
      */
-    assets?: any;
+    assets?: Array<WalletsAssetsAvailable>;
 }

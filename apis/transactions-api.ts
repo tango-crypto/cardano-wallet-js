@@ -16,10 +16,10 @@ import { Configuration } from '../configuration';
 // Some imports not used depending on template conditions
 // @ts-ignore
 import { BASE_PATH, COLLECTION_FORMATS, RequestArgs, BaseAPI, RequiredError } from '../base';
-import { Body4 } from '../models';
+import { ApiPostTransactionFeeData } from '../models';
 import { Body5 } from '../models';
 import { InlineResponse2004 } from '../models';
-import { InlineResponse202 } from '../models';
+import { ApiFee } from '../models';
 import { ApiTransaction } from '../models';
 import { InlineResponse400 } from '../models';
 import { InlineResponse4001 } from '../models';
@@ -240,12 +240,12 @@ export const TransactionsApiAxiosParamCreator = function (configuration?: Config
         /**
          * <p align=\"right\">status: <strong>stable</strong></p>  Estimate fee for the transaction. The estimate is made by assembling multiple transactions and analyzing the distribution of their fees. The estimated_max is the highest fee observed, and the estimated_min is the fee which is lower than at least 90% of the fees observed. 
          * @summary Estimate Fee
-         * @param {Body4} body 
+         * @param {ApiPostTransactionFeeData} body 
          * @param {string} walletId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        postTransactionFee: async (body: Body4, walletId: string, options: any = {}): Promise<RequestArgs> => {
+        postTransactionFee: async (body: ApiPostTransactionFeeData, walletId: string, options: any = {}): Promise<RequestArgs> => {
             // verify required parameter 'body' is not null or undefined
             if (body === null || body === undefined) {
                 throw new RequiredError('body','Required parameter body was null or undefined when calling postTransactionFee.');
@@ -361,12 +361,12 @@ export const TransactionsApiFp = function(configuration?: Configuration) {
         /**
          * <p align=\"right\">status: <strong>stable</strong></p>  Estimate fee for the transaction. The estimate is made by assembling multiple transactions and analyzing the distribution of their fees. The estimated_max is the highest fee observed, and the estimated_min is the fee which is lower than at least 90% of the fees observed. 
          * @summary Estimate Fee
-         * @param {Body4} body 
+         * @param {ApiPostTransactionFeeData} body 
          * @param {string} walletId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async postTransactionFee(body: Body4, walletId: string, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<InlineResponse202>> {
+        async postTransactionFee(body: ApiPostTransactionFeeData, walletId: string, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ApiFee>> {
             const localVarAxiosArgs = await TransactionsApiAxiosParamCreator(configuration).postTransactionFee(body, walletId, options);
             return (axios: AxiosInstance = globalAxios, basePath: string = BASE_PATH) => {
                 const axiosRequestArgs = {...localVarAxiosArgs.options, url: basePath + localVarAxiosArgs.url};
@@ -432,12 +432,12 @@ export const TransactionsApiFactory = function (configuration?: Configuration, b
         /**
          * <p align=\"right\">status: <strong>stable</strong></p>  Estimate fee for the transaction. The estimate is made by assembling multiple transactions and analyzing the distribution of their fees. The estimated_max is the highest fee observed, and the estimated_min is the fee which is lower than at least 90% of the fees observed. 
          * @summary Estimate Fee
-         * @param {Body4} body 
+         * @param {ApiPostTransactionFeeData} body 
          * @param {string} walletId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        postTransactionFee(body: Body4, walletId: string, options?: any): AxiosPromise<InlineResponse202> {
+        postTransactionFee(body: ApiPostTransactionFeeData, walletId: string, options?: any): AxiosPromise<ApiFee> {
             return TransactionsApiFp(configuration).postTransactionFee(body, walletId, options).then((request) => request(axios, basePath));
         },
     };
@@ -504,13 +504,13 @@ export class TransactionsApi extends BaseAPI {
     /**
      * <p align=\"right\">status: <strong>stable</strong></p>  Estimate fee for the transaction. The estimate is made by assembling multiple transactions and analyzing the distribution of their fees. The estimated_max is the highest fee observed, and the estimated_min is the fee which is lower than at least 90% of the fees observed. 
      * @summary Estimate Fee
-     * @param {Body4} body 
+     * @param {ApiPostTransactionFeeData} body 
      * @param {string} walletId 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof TransactionsApi
      */
-    public postTransactionFee(body: Body4, walletId: string, options?: any) {
+    public postTransactionFee(body: ApiPostTransactionFeeData, walletId: string, options?: any) {
         return TransactionsApiFp(this.configuration).postTransactionFee(body, walletId, options).then((request) => request(this.axios, this.basePath));
     }
 }

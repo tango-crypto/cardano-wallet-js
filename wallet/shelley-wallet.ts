@@ -1,8 +1,9 @@
 
 import { AddressesApi, KeysApi, TransactionsApi } from '../api';
 import { Configuration } from '../configuration';
-import { ApiAddressData, ApiAddressStateEnum, ApiWallet, WalletsAssets, WalletsBalance, WalletsDelegation, WalletsPassphrase, WalletsState, WalletsTip } from '../models';
+import { ApiAddressData, ApiAddressStateEnum, ApiPostTransactionData, ApiPostTransactionFeeData, ApiWallet, WalletsAssets, WalletsBalance, WalletsDelegation, WalletsPassphrase, WalletsState, WalletsTip, WalletswalletIdpaymentfeesAmount, WalletswalletIdpaymentfeesAmountUnitEnum, WalletswalletIdpaymentfeesPayments } from '../models';
 import { AddressWallet } from './address-wallet';
+import { FeeWallet } from './fee-wallet';
 import { KeyRoleEnum, KeyWallet } from './key-wallet';
 import { TransactionWallet } from './transaction-wallet';
 export class ShelleyWallet implements ApiWallet {
@@ -89,5 +90,20 @@ export class ShelleyWallet implements ApiWallet {
 		async getTransaction(txId: string): Promise<TransactionWallet> {
 			let res = await this.transactionsApi.getTransaction(this.id, txId);
 			return TransactionWallet.from(res.data);
+		}
+
+		async estimateFee(addresses: AddressWallet[], amounts: number[]): Promise<FeeWallet> { 
+			let payload: ApiPostTransactionFeeData = {
+				payments: addresses.map((addr, i) =>  {
+					let amount: WalletswalletIdpaymentfeesAmount = { unit: WalletswalletIdpaymentfeesAmountUnitEnum.Lovelace, quantity: amounts[i] };
+					let payment: WalletswalletIdpaymentfeesPayments = { 
+						address: addr.address, 
+						amount: amount
+					};
+					return payment;
+				})
+			};
+			let res = await this.transactionsApi.postTransactionFee(payload, this.id);
+			return FeeWallet.from(res.data);
 		}
 }

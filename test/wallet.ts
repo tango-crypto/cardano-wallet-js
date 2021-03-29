@@ -142,5 +142,30 @@ describe('Cardano wallet API', function() {
 
 			expect(transaction).have.property('mint').be.a('array');
 		});
+
+		it('should get payment fee', async function(){
+			let receiver = '16f129e025b97f907a760a4cf7b0740d7b4e7993';
+			let payeer = '4157603597d008fd8fe88b84f72696809e9a6a06';
+			let amountUnits = [WalletswalletIdtransactionsAmountUnitEnum.Lovelace];
+
+
+			let rWallet = await walletServer.getShelleyWallet(receiver);
+			let addresses = (await rWallet.getUnusedAddresses()).slice(0,1);
+			let amounts = [1500000];
+
+			let wallet = await walletServer.getShelleyWallet(payeer);
+			let estimatedFees = await wallet.estimateFee(addresses, amounts);
+			
+			expect(estimatedFees).have.property('deposit').with.property('quantity').be.a('number');
+			expect(amountUnits).include(estimatedFees.deposit.unit);
+
+			expect(estimatedFees).have.property('estimated_max').with.property('quantity').be.a('number');
+			expect(amountUnits).include(estimatedFees.estimated_max.unit);
+
+			expect(estimatedFees).have.property('estimated_min').with.property('quantity').be.a('number');
+			expect(amountUnits).include(estimatedFees.estimated_min.unit);
+
+			expect(estimatedFees).have.property('minimum_coins').be.a('array');
+		});
 	})
 });
