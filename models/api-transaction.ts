@@ -11,6 +11,9 @@
  * https://github.com/swagger-api/swagger-codegen.git
  * Do not edit the class manually.
  */
+
+import { WalletswalletIdpaymentfeesAmount, WalletswalletIdpaymentfeesPayments, WalletswalletIdtransactionsAmount, WalletswalletIdtransactionsDepth, WalletswalletIdtransactionsExpiresAt, WalletswalletIdtransactionsInputs, WalletswalletIdtransactionsInsertedAt, WalletswalletIdtransactionsMint, WalletswalletIdtransactionsPendingSince, WalletswalletIdtransactionsWithdrawals } from ".";
+
 /**
  * 
  * @export
@@ -28,43 +31,43 @@ export interface ApiTransaction {
      * @type {WalletswalletIdtransactionsAmount}
      * @memberof ApiTransaction
      */
-    amount: any;
+    amount: WalletswalletIdtransactionsAmount;
     /**
      * 
      * @type {WalletswalletIdpaymentfeesAmount}
      * @memberof ApiTransaction
      */
-    fee: any;
+    fee: WalletswalletIdpaymentfeesAmount;
     /**
      * 
      * @type {WalletswalletIdpaymentfeesAmount}
      * @memberof ApiTransaction
      */
-    deposit: any;
+    deposit: WalletswalletIdpaymentfeesAmount;
     /**
      * 
      * @type {WalletswalletIdtransactionsInsertedAt}
      * @memberof ApiTransaction
      */
-    inserted_at?: any;
+    inserted_at?: WalletswalletIdtransactionsInsertedAt;
     /**
      * 
      * @type {WalletswalletIdtransactionsExpiresAt}
      * @memberof ApiTransaction
      */
-    expires_at?: any;
+    expires_at?: WalletswalletIdtransactionsExpiresAt;
     /**
      * 
      * @type {WalletswalletIdtransactionsPendingSince}
      * @memberof ApiTransaction
      */
-    pending_since?: any;
+    pending_since?: WalletswalletIdtransactionsPendingSince;
     /**
      * 
      * @type {WalletswalletIdtransactionsDepth}
      * @memberof ApiTransaction
      */
-    depth?: any;
+    depth?: WalletswalletIdtransactionsDepth;
     /**
      * 
      * @type {string}
@@ -76,25 +79,25 @@ export interface ApiTransaction {
      * @type {Array&lt;WalletswalletIdtransactionsInputs&gt;}
      * @memberof ApiTransaction
      */
-    inputs: any;
+    inputs: Array<WalletswalletIdtransactionsInputs>;
     /**
      * A list of target outputs
      * @type {Array&lt;WalletswalletIdpaymentfeesPayments&gt;}
      * @memberof ApiTransaction
      */
-    outputs: any;
+    outputs: Array<WalletswalletIdpaymentfeesPayments>;
     /**
      * A list of withdrawals from stake addresses.
      * @type {Array&lt;WalletswalletIdtransactionsWithdrawals&gt;}
      * @memberof ApiTransaction
      */
-    withdrawals: any;
+    withdrawals: Array<WalletswalletIdtransactionsWithdrawals>;
     /**
      * <p>status: <strong>⚠ under development</strong></p>  _This field is not implemented yet, and will always be empty._  Assets minted (created) or unminted (destroyed)  This amount contributes to the total transaction value.  Positive values denote creation of assets and negative values denote the reverse. 
      * @type {Array&lt;WalletswalletIdtransactionsMint&gt;}
      * @memberof ApiTransaction
      */
-    mint: any;
+    mint: Array<WalletswalletIdtransactionsMint>;
     /**
      * Current transaction status.    ```          *---------*          *-----------*          |         |---------->  EXPIRED  |          |         |  (ttl)   *-----------*   -------> PENDING |          |         <----------------*          |         |                |          *---------*            (rollback)               |                     |          (in ledger)          *-----------*               |               |           |               *---------------> IN_LEDGER |                               |           |                               *-----------*   ``` 
      * @type {string}

@@ -20,7 +20,7 @@ import { Body4 } from '../models';
 import { Body5 } from '../models';
 import { InlineResponse2004 } from '../models';
 import { InlineResponse202 } from '../models';
-import { InlineResponse2021 } from '../models';
+import { ApiTransaction } from '../models';
 import { InlineResponse400 } from '../models';
 import { InlineResponse4001 } from '../models';
 import { InlineResponse4031 } from '../models';
@@ -318,7 +318,7 @@ export const TransactionsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getTransaction(walletId: string, transactionId: string, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<InlineResponse2021>> {
+        async getTransaction(walletId: string, transactionId: string, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ApiTransaction>> {
             const localVarAxiosArgs = await TransactionsApiAxiosParamCreator(configuration).getTransaction(walletId, transactionId, options);
             return (axios: AxiosInstance = globalAxios, basePath: string = BASE_PATH) => {
                 const axiosRequestArgs = {...localVarAxiosArgs.options, url: basePath + localVarAxiosArgs.url};
@@ -351,7 +351,7 @@ export const TransactionsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async postTransaction(body: Body5, walletId: string, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<InlineResponse2021>> {
+        async postTransaction(body: Body5, walletId: string, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ApiTransaction>> {
             const localVarAxiosArgs = await TransactionsApiAxiosParamCreator(configuration).postTransaction(body, walletId, options);
             return (axios: AxiosInstance = globalAxios, basePath: string = BASE_PATH) => {
                 const axiosRequestArgs = {...localVarAxiosArgs.options, url: basePath + localVarAxiosArgs.url};
@@ -401,7 +401,7 @@ export const TransactionsApiFactory = function (configuration?: Configuration, b
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getTransaction(walletId: string, transactionId: string, options?: any): AxiosPromise<InlineResponse2021> {
+        getTransaction(walletId: string, transactionId: string, options?: any): AxiosPromise<ApiTransaction> {
             return TransactionsApiFp(configuration).getTransaction(walletId, transactionId, options).then((request) => request(axios, basePath));
         },
         /**
@@ -426,7 +426,7 @@ export const TransactionsApiFactory = function (configuration?: Configuration, b
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        postTransaction(body: Body5, walletId: string, options?: any): AxiosPromise<InlineResponse2021> {
+        postTransaction(body: Body5, walletId: string, options?: any): AxiosPromise<ApiTransaction> {
             return TransactionsApiFp(configuration).postTransaction(body, walletId, options).then((request) => request(axios, basePath));
         },
         /**

@@ -1,9 +1,10 @@
 
-import { AddressesApi, KeysApi } from '../api';
+import { AddressesApi, KeysApi, TransactionsApi } from '../api';
 import { Configuration } from '../configuration';
 import { ApiAddressData, ApiAddressStateEnum, ApiWallet, WalletsAssets, WalletsBalance, WalletsDelegation, WalletsPassphrase, WalletsState, WalletsTip } from '../models';
 import { AddressWallet } from './address-wallet';
 import { KeyRoleEnum, KeyWallet } from './key-wallet';
+import { TransactionWallet } from './transaction-wallet';
 export class ShelleyWallet implements ApiWallet {
 	id: any;
 	address_pool_gap: any;
@@ -16,6 +17,7 @@ export class ShelleyWallet implements ApiWallet {
 	tip: WalletsTip;
 	addressesApi: AddressesApi;
 	keysApi: KeysApi;
+	transactionsApi: TransactionsApi;
 
 	constructor(
 		id: any, 
@@ -39,6 +41,7 @@ export class ShelleyWallet implements ApiWallet {
 			this.tip = tip;
 			this.addressesApi = new AddressesApi(config);
 			this.keysApi = new KeysApi(config);
+			this.transactionsApi = new TransactionsApi(config);
 		}
 
 		static from(wallet: ApiWallet, config: Configuration): ShelleyWallet {
@@ -81,5 +84,10 @@ export class ShelleyWallet implements ApiWallet {
 		async getStakeVerificationKey(index: number): Promise<KeyWallet> {
 			let account = await this.keysApi.getWalletKey(this.id, KeyRoleEnum.Stake, index.toString());
 			return new KeyWallet(account.data, KeyRoleEnum.Stake);
+		}
+
+		async getTransaction(txId: string): Promise<TransactionWallet> {
+			let res = await this.transactionsApi.getTransaction(this.id, txId);
+			return TransactionWallet.from(res.data);
 		}
 }

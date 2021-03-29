@@ -11,6 +11,9 @@
  * https://github.com/swagger-api/swagger-codegen.git
  * Do not edit the class manually.
  */
+
+import { WalletsTipHeight } from ".";
+
 /**
  * <span style=\"position: relative; left: 35px; top: -21px; vertical-align: middle; background-color: rgba(142, 142, 220, 0.05); color: rgba(50, 50, 159, 0.9); margin: 0 5px; padding: 0 5px; border: 1px solid rgba(50, 50, 159, 0.1); line-height: 20px; font-size: 13px; border-radius: 2px;\"> <strong>if:</strong> status == in_ledger </span><br/> Absolute time at which the transaction was inserted in a block. 
  * @export
@@ -46,5 +49,5 @@ export interface WalletswalletIdtransactionsInsertedAt {
      * @type {WalletsTipHeight}
      * @memberof WalletswalletIdtransactionsInsertedAt
      */
-    height: any;
+    height: WalletsTipHeight;
 }

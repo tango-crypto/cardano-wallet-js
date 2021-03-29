@@ -1,14 +1,14 @@
    // "axios": "^0.19.2",
 import { expect } from 'chai';
 import 'mocha';
-import { ApiAddressStateEnum } from '../models';
+import { ApiAddressStateEnum, ApiTransactionDirectionEnum, ApiTransactionStatusEnum, WalletsTipHeightUnitEnum, WalletswalletIdpaymentfeesAmountUnitEnum, WalletswalletIdtransactionsAmountUnitEnum, WalletswalletIdtransactionsDepthUnitEnum } from '../models';
 
 import { WalletServer } from '../wallet-server';
 import { KeyRoleEnum } from '../wallet/key-wallet';
 
 describe('Cardano wallet API', function() {
+	let walletServer = WalletServer.init('http://localhost:8090/v2');
 	describe('wallet', function() {
-		let walletServer = WalletServer.init('http://localhost:8090/v2');
 		it("should create/resotre a wallet", async function() {
 			let name = "empty-balance";
 			let passphrase = '1234567890';
@@ -96,4 +96,51 @@ describe('Cardano wallet API', function() {
 
 	
 	});
+
+	describe('transaction', function(){
+		it('should get tx details', async function() {
+			let id = '16f129e025b97f907a760a4cf7b0740d7b4e7993';
+			let tx = '2d7928a59fcba5bf71c40fe6428a301ffda4d2fa681e5357051970436462b894';
+			let heightUnits = [WalletsTipHeightUnitEnum.Block];
+			let txStatus = [ApiTransactionStatusEnum.Expired, ApiTransactionStatusEnum.InLedger, ApiTransactionStatusEnum.Pending];
+			let amountUnits = [WalletswalletIdtransactionsAmountUnitEnum.Lovelace];
+			let txDirections = [ApiTransactionDirectionEnum.Incoming, ApiTransactionDirectionEnum.Outgoing];
+			let depthUnits = [WalletswalletIdtransactionsDepthUnitEnum.Block];
+			
+			let wallet = await walletServer.getShelleyWallet(id);
+			let transaction = await wallet.getTransaction(tx);
+
+			expect(transaction).have.property('id').equal(tx);
+
+			expect(transaction.inserted_at).have.property('height').with.property('quantity').be.a('number');
+			expect(transaction.inserted_at).have.property('time').be.a('string');
+			expect(transaction.inserted_at).have.property('epoch_number').be.a('number');
+			expect(transaction.inserted_at).have.property('absolute_slot_number').be.a('number');
+			expect(transaction.inserted_at).have.property('slot_number').be.a('number');
+			expect(heightUnits).include(transaction.inserted_at.height.unit);
+
+			expect(txStatus).include(transaction.status);
+
+			expect(transaction).have.property('withdrawals').be.a('array');
+			expect(transaction).have.property('amount').with.property('quantity').be.a('number');
+			expect(amountUnits).include(transaction.amount.unit);
+
+			expect(transaction).have.property('inputs').be.a('array');
+
+			expect(txDirections).include(transaction.direction);
+
+			expect(transaction).have.property('fee').with.property('quantity').be.a('number');
+			expect(amountUnits).include(transaction.fee.unit);
+
+			expect(transaction).have.property('outputs').be.a('array');
+			
+			expect(transaction).have.property('depth').with.property('quantity').be.a('number');
+			expect(depthUnits).include(transaction.depth.unit);
+
+			expect(transaction).have.property('deposit').with.property('quantity').be.a('number');
+			expect(amountUnits).include(transaction.deposit.unit);
+
+			expect(transaction).have.property('mint').be.a('array');
+		});
+	})
 });
