@@ -17,7 +17,7 @@ import { Configuration } from '../configuration';
 // @ts-ignore
 import { BASE_PATH, COLLECTION_FORMATS, RequestArgs, BaseAPI, RequiredError } from '../base';
 import { ApiPostTransactionFeeData } from '../models';
-import { Body5 } from '../models';
+import { ApiPostTransactionData } from '../models';
 import { InlineResponse2004 } from '../models';
 import { ApiFee } from '../models';
 import { ApiTransaction } from '../models';
@@ -191,12 +191,12 @@ export const TransactionsApiAxiosParamCreator = function (configuration?: Config
         /**
          * <p align=\"right\">status: <strong>stable</strong></p>  Create and send transaction from the wallet. 
          * @summary Create
-         * @param {Body5} body 
+         * @param {ApiPostTransactionData} body 
          * @param {string} walletId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        postTransaction: async (body: Body5, walletId: string, options: any = {}): Promise<RequestArgs> => {
+        postTransaction: async (body: ApiPostTransactionData, walletId: string, options: any = {}): Promise<RequestArgs> => {
             // verify required parameter 'body' is not null or undefined
             if (body === null || body === undefined) {
                 throw new RequiredError('body','Required parameter body was null or undefined when calling postTransaction.');
@@ -346,12 +346,12 @@ export const TransactionsApiFp = function(configuration?: Configuration) {
         /**
          * <p align=\"right\">status: <strong>stable</strong></p>  Create and send transaction from the wallet. 
          * @summary Create
-         * @param {Body5} body 
+         * @param {ApiPostTransactionData} body 
          * @param {string} walletId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async postTransaction(body: Body5, walletId: string, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ApiTransaction>> {
+        async postTransaction(body: ApiPostTransactionData, walletId: string, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ApiTransaction>> {
             const localVarAxiosArgs = await TransactionsApiAxiosParamCreator(configuration).postTransaction(body, walletId, options);
             return (axios: AxiosInstance = globalAxios, basePath: string = BASE_PATH) => {
                 const axiosRequestArgs = {...localVarAxiosArgs.options, url: basePath + localVarAxiosArgs.url};
@@ -421,12 +421,12 @@ export const TransactionsApiFactory = function (configuration?: Configuration, b
         /**
          * <p align=\"right\">status: <strong>stable</strong></p>  Create and send transaction from the wallet. 
          * @summary Create
-         * @param {Body5} body 
+         * @param {ApiPostTransactionData} body 
          * @param {string} walletId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        postTransaction(body: Body5, walletId: string, options?: any): AxiosPromise<ApiTransaction> {
+        postTransaction(body: ApiPostTransactionData, walletId: string, options?: any): AxiosPromise<ApiTransaction> {
             return TransactionsApiFp(configuration).postTransaction(body, walletId, options).then((request) => request(axios, basePath));
         },
         /**
@@ -492,13 +492,13 @@ export class TransactionsApi extends BaseAPI {
     /**
      * <p align=\"right\">status: <strong>stable</strong></p>  Create and send transaction from the wallet. 
      * @summary Create
-     * @param {Body5} body 
+     * @param {ApiPostTransactionData} body 
      * @param {string} walletId 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof TransactionsApi
      */
-    public postTransaction(body: Body5, walletId: string, options?: any) {
+    public postTransaction(body: ApiPostTransactionData, walletId: string, options?: any) {
         return TransactionsApiFp(this.configuration).postTransaction(body, walletId, options).then((request) => request(this.axios, this.basePath));
     }
     /**

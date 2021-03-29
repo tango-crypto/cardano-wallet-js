@@ -106,4 +106,20 @@ export class ShelleyWallet implements ApiWallet {
 			let res = await this.transactionsApi.postTransactionFee(payload, this.id);
 			return FeeWallet.from(res.data);
 		}
+
+		async sendPayment(passphrase: any, addresses: AddressWallet[], amounts: number[]): Promise<TransactionWallet> { 
+			let payload: ApiPostTransactionData = {
+				passphrase: passphrase,
+				payments: addresses.map((addr, i) =>  {
+					let amount: WalletswalletIdpaymentfeesAmount = { unit: WalletswalletIdpaymentfeesAmountUnitEnum.Lovelace, quantity: amounts[i] };
+					let payment: WalletswalletIdpaymentfeesPayments = { 
+						address: addr.address, 
+						amount: amount
+					};
+					return payment;
+				})
+			};
+			let res = await this.transactionsApi.postTransaction(payload, this.id);
+			return TransactionWallet.from(res.data);
+		}
 }

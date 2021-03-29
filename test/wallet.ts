@@ -100,7 +100,8 @@ describe('Cardano wallet API', function() {
 	describe('transaction', function(){
 		it('should get tx details', async function() {
 			let id = '16f129e025b97f907a760a4cf7b0740d7b4e7993';
-			let tx = '2d7928a59fcba5bf71c40fe6428a301ffda4d2fa681e5357051970436462b894';
+			//let tx = '2d7928a59fcba5bf71c40fe6428a301ffda4d2fa681e5357051970436462b894';
+			let tx = '2316b6510634f4f1bb24c6fa3eef03f49fa0e780ace23266e3013fc019fec927';
 			let heightUnits = [WalletsTipHeightUnitEnum.Block];
 			let txStatus = [ApiTransactionStatusEnum.Expired, ApiTransactionStatusEnum.InLedger, ApiTransactionStatusEnum.Pending];
 			let amountUnits = [WalletswalletIdtransactionsAmountUnitEnum.Lovelace];
@@ -151,7 +152,7 @@ describe('Cardano wallet API', function() {
 
 			let rWallet = await walletServer.getShelleyWallet(receiver);
 			let addresses = (await rWallet.getUnusedAddresses()).slice(0,1);
-			let amounts = [1500000];
+			let amounts = [1200000];
 
 			let wallet = await walletServer.getShelleyWallet(payeer);
 			let estimatedFees = await wallet.estimateFee(addresses, amounts);
@@ -167,5 +168,65 @@ describe('Cardano wallet API', function() {
 
 			expect(estimatedFees).have.property('minimum_coins').be.a('array');
 		});
+
+		// it('should send a payment transfer', async function(){
+		// 	// let txId = '2316b6510634f4f1bb24c6fa3eef03f49fa0e780ace23266e3013fc019fec927';
+		// 	let receiver = '16f129e025b97f907a760a4cf7b0740d7b4e7993';
+		// 	let payeer = '4157603597d008fd8fe88b84f72696809e9a6a06';
+		// 	let passphrase = '1234567890';
+		// 	let amountUnits = [WalletswalletIdtransactionsAmountUnitEnum.Lovelace];
+		// 	let txDirections = [ApiTransactionDirectionEnum.Incoming, ApiTransactionDirectionEnum.Outgoing];
+		// 	let txStatus = [ApiTransactionStatusEnum.Expired, ApiTransactionStatusEnum.InLedger, ApiTransactionStatusEnum.Pending];
+
+
+		// 	let rWallet = await walletServer.getShelleyWallet(receiver);
+		// 	let addresses = (await rWallet.getUnusedAddresses()).slice(0,1);
+		// 	let amounts = [1500000];
+
+		// 	let wallet = await walletServer.getShelleyWallet(payeer);
+		// 	let transaction = await wallet.sendPayment(passphrase, addresses, amounts);
+			
+		// 	// transaction.amount.quantity;
+		// 	// transaction.amount.unit;
+		// 	expect(transaction).have.property('amount').with.property('quantity').be.a('number');
+		// 	expect(amountUnits).include(transaction.amount.unit);
+
+		// 	expect(transaction).have.property('fee').with.property('quantity').be.a('number');
+		// 	expect(amountUnits).include(transaction.fee.unit);
+
+		// 	expect(transaction).have.property('deposit').with.property('quantity').be.a('number');
+		// 	expect(amountUnits).include(transaction.deposit.unit);
+
+		// 	expect(txDirections).include(transaction.direction);
+
+		// 	expect(transaction).have.property('inputs').be.a('array');
+		// 	transaction.inputs.forEach(input => {
+		// 		expect(input).have.property('id').lengthOf(64);
+		// 		expect(input).have.property('index').least(0);
+		// 	});
+
+		// 	expect(transaction).have.property('outputs').be.a('array');
+		// 	transaction.outputs.forEach(output => {
+		// 		expect(output).have.property('address').be.a('string');
+		// 		expect(output.amount).have.property('quantity').least(0);
+		// 		expect(amountUnits).include(output.amount.unit);
+		// 	});
+
+		// 	expect(transaction).have.property('withdrawals').be.a('array');
+		// 	transaction.withdrawals.forEach(withdrawal => {
+		// 		expect(withdrawal).have.property('stake_address').be.a('string');
+		// 		expect(withdrawal.amount).have.property('quantity').least(0);
+		// 		expect(amountUnits).include(withdrawal.amount.unit);
+		// 	});
+
+		// 	expect(transaction).have.property('mint').be.a('array');
+		// 	transaction.mint.forEach(mint => {
+		// 		expect(mint).have.property('policy_id').lengthOf(56);
+		// 		expect(mint).have.property('asset_name').lengthOf(64);
+		// 		expect(mint).have.property('quantity').be.a('number');
+		// 	});
+
+		// 	expect(txStatus).include(transaction.status);
+		// });
 	})
 });

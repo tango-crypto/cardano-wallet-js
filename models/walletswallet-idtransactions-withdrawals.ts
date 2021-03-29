@@ -11,6 +11,9 @@
  * https://github.com/swagger-api/swagger-codegen.git
  * Do not edit the class manually.
  */
+
+import { WalletswalletIdpaymentfeesAmount } from ".";
+
 /**
  * 
  * @export
@@ -28,5 +31,5 @@ export interface WalletswalletIdtransactionsWithdrawals {
      * @type {WalletswalletIdpaymentfeesAmount}
      * @memberof WalletswalletIdtransactionsWithdrawals
      */
-    amount: any;
+    amount: WalletswalletIdpaymentfeesAmount;
 }
