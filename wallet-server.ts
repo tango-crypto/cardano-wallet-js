@@ -1,9 +1,7 @@
 import { WalletsApi, NetworkApi } from './api';
 import { Configuration } from './configuration';
-import { ApiWallet, ApiWalletPostData } from './models';
+import { ApiWalletPostData } from './models';
 import { ShelleyWallet } from './wallet/shelley-wallet';
-import { WalletsValuePassphrase } from './wallet/passphrase-wallet';
-
 export class WalletServer {
 	networkApi: NetworkApi;
 	walletsApi: WalletsApi;
@@ -47,32 +45,20 @@ export class WalletServer {
 		try {
 			const res = await this.walletsApi.postWallet(payload);
 			let apiWallet = res.data;
-			let password: WalletsValuePassphrase = {
-				last_updated_at: apiWallet.passphrase.last_updated_at,
-				value: passphrase
-			}
-			return ShelleyWallet.from(apiWallet, this.config, password, mnemonic_sentence, mnemonic_second_factor);
+			return ShelleyWallet.from(apiWallet, this.config);
 		}
 		catch(error) {
 			let message = error.response.data.message;
 				let match = message.match(/id:\s*(?<id>[0-9a-fA-F]{40})/);
 				if (match) {
 					let id = match.groups['id'];
-					let wallet = await this.getShelleyWallet(id);
-					wallet.passphrase.value = passphrase;
-					wallet.mnemonic_sentence = mnemonic_sentence;
-					wallet.mnemonic_second_factor = mnemonic_second_factor;
-					return wallet;
+					return await this.getShelleyWallet(id);
 				}
 		}
 	}
 
 	async getShelleyWallet(id: any): Promise<ShelleyWallet> {
 		const res = await this.walletsApi.getWallet(id);
-		let password: WalletsValuePassphrase = {
-			last_updated_at: res.data.passphrase.last_updated_at,
-			value: ''
-		}
-		return ShelleyWallet.from(res.data, this.config, password);
+		return ShelleyWallet.from(res.data, this.config);
 	}
 }

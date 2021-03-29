@@ -16,8 +16,7 @@ describe('Cardano wallet API', function() {
 					let wallet = await walletServer.createOrGetShelleyWallet(name, recoverPhrase, passphrase);
 					expect(wallet).be.a("object");
 					expect(wallet).have.property('id').equal(id);
-					expect(wallet).have.property('mnemonic_sentence').equal(recoverPhrase);
-					expect(wallet).have.property('passphrase').with.property('value').equal(passphrase);
+					expect(wallet).have.property('passphrase').with.property('last_updated_at').be.a('string');
 					expect(wallet).have.property('name').equal(name);
 				});
 
