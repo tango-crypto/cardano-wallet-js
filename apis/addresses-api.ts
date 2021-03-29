@@ -17,10 +17,10 @@ import { Configuration } from '../configuration';
 // @ts-ignore
 import { BASE_PATH, COLLECTION_FORMATS, RequestArgs, BaseAPI, RequiredError } from '../base';
 import { BadRequest } from '../models';
-import { Body21 } from '../models';
+import { ApiAddressData } from '../models';
 import { InlineResponse20014 } from '../models';
-import { InlineResponse2005 } from '../models';
-import { InlineResponse2023 } from '../models';
+import { ApiAddress } from '../models';
+import { AnyAddress } from '../models';
 import { InlineResponse415 } from '../models';
 import { NoSuchWallet } from '../models';
 import { NotAcceptable } from '../models';
@@ -118,11 +118,11 @@ export const AddressesApiAxiosParamCreator = function (configuration?: Configura
         /**
          * <p align=\"right\">status: <strong>stable</strong></p>  Construct any address by specyfying credential for payment or stake.  In Cardano, Addresses are made of three parts:  ``` *---------*---------*-------* | NETWORK | PAYMENT | STAKE | *---------*---------*-------* ```  The `NETWORK` part allows for distinguishing addresses between different networks like the mainnet or the testnet. It is implicitly handled by the server without you having to worry about it. The `PAYMENT` and `STAKE` parts however can be constructed similarly, using either:  - A public key - A script  The script itself is either constructed out of a public key, or one of the three following primitives:  - all - any - some  Each of which contains one or more script(s) that can be either keys or primitives, and so on. Schematically:  ```                                    ┏─────────┓ SCRIPT = ──┬───────────────────────┤ pub key ├─────────────────────┬──            │                       ┗─────────┛                     │            │  ╭─────╮   ╭────────╮                                 │            ├──┤ ALL ├───┤ SCRIPT ├─┬───────────────────────────────┤            │  ╰─────╯ ^ ╰────────╯ │                               │            │          │   ╭───╮    │                               │            │          └───┤ , ├────┘                               │            │              ╰───╯                                    │            │  ╭─────╮   ╭────────╮                                 │            ├──┤ ALL ├───┤ SCRIPT ├─┬───────────────────────────────┤            │  ╰─────╯ ^ ╰────────╯ │                               │            │          │   ╭───╮    │                               │            │          └───┤ , ├────┘                               │            │              ╰───╯                                    │            │  ╭──────╮ ╭──────────╮ ┏───┓ ╭──────╮   ╭────────╮    │            └──┤ SOME ├─┤ AT_LEAST ├─┤ n ├─┤ FROM ├───┤ SCRIPT ├─┬──┘               ╰──────╯ ╰──────────╯ ┗───┛ ╰──────╯ ^ ╰────────╯ │                                                    │   ╭───╮    │                                                    └───┤ , ├────┘                                                        ╰───╯ ``` 
          * @summary Construct Address
-         * @param {Body21} [body] 
+         * @param {ApiAddressData} [body] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        postAnyAddress: async (body?: Body21, options: any = {}): Promise<RequestArgs> => {
+        postAnyAddress: async (body?: ApiAddressData, options: any = {}): Promise<RequestArgs> => {
             const localVarPath = `/addresses`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, 'https://example.com');
@@ -185,7 +185,7 @@ export const AddressesApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async listAddresses(walletId: string, state?: string, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<InlineResponse2005>>> {
+        async listAddresses(walletId: string, state?: string, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<ApiAddress>>> {
             const localVarAxiosArgs = await AddressesApiAxiosParamCreator(configuration).listAddresses(walletId, state, options);
             return (axios: AxiosInstance = globalAxios, basePath: string = BASE_PATH) => {
                 const axiosRequestArgs = {...localVarAxiosArgs.options, url: basePath + localVarAxiosArgs.url};
@@ -195,11 +195,11 @@ export const AddressesApiFp = function(configuration?: Configuration) {
         /**
          * <p align=\"right\">status: <strong>stable</strong></p>  Construct any address by specyfying credential for payment or stake.  In Cardano, Addresses are made of three parts:  ``` *---------*---------*-------* | NETWORK | PAYMENT | STAKE | *---------*---------*-------* ```  The `NETWORK` part allows for distinguishing addresses between different networks like the mainnet or the testnet. It is implicitly handled by the server without you having to worry about it. The `PAYMENT` and `STAKE` parts however can be constructed similarly, using either:  - A public key - A script  The script itself is either constructed out of a public key, or one of the three following primitives:  - all - any - some  Each of which contains one or more script(s) that can be either keys or primitives, and so on. Schematically:  ```                                    ┏─────────┓ SCRIPT = ──┬───────────────────────┤ pub key ├─────────────────────┬──            │                       ┗─────────┛                     │            │  ╭─────╮   ╭────────╮                                 │            ├──┤ ALL ├───┤ SCRIPT ├─┬───────────────────────────────┤            │  ╰─────╯ ^ ╰────────╯ │                               │            │          │   ╭───╮    │                               │            │          └───┤ , ├────┘                               │            │              ╰───╯                                    │            │  ╭─────╮   ╭────────╮                                 │            ├──┤ ALL ├───┤ SCRIPT ├─┬───────────────────────────────┤            │  ╰─────╯ ^ ╰────────╯ │                               │            │          │   ╭───╮    │                               │            │          └───┤ , ├────┘                               │            │              ╰───╯                                    │            │  ╭──────╮ ╭──────────╮ ┏───┓ ╭──────╮   ╭────────╮    │            └──┤ SOME ├─┤ AT_LEAST ├─┤ n ├─┤ FROM ├───┤ SCRIPT ├─┬──┘               ╰──────╯ ╰──────────╯ ┗───┛ ╰──────╯ ^ ╰────────╯ │                                                    │   ╭───╮    │                                                    └───┤ , ├────┘                                                        ╰───╯ ``` 
          * @summary Construct Address
-         * @param {Body21} [body] 
+         * @param {ApiAddressData} [body] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async postAnyAddress(body?: Body21, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<InlineResponse2023>> {
+        async postAnyAddress(body?: ApiAddressData, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AnyAddress>> {
             const localVarAxiosArgs = await AddressesApiAxiosParamCreator(configuration).postAnyAddress(body, options);
             return (axios: AxiosInstance = globalAxios, basePath: string = BASE_PATH) => {
                 const axiosRequestArgs = {...localVarAxiosArgs.options, url: basePath + localVarAxiosArgs.url};
@@ -233,17 +233,17 @@ export const AddressesApiFactory = function (configuration?: Configuration, base
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        listAddresses(walletId: string, state?: string, options?: any): AxiosPromise<Array<InlineResponse2005>> {
+        listAddresses(walletId: string, state?: string, options?: any): AxiosPromise<Array<ApiAddress>> {
             return AddressesApiFp(configuration).listAddresses(walletId, state, options).then((request) => request(axios, basePath));
         },
         /**
          * <p align=\"right\">status: <strong>stable</strong></p>  Construct any address by specyfying credential for payment or stake.  In Cardano, Addresses are made of three parts:  ``` *---------*---------*-------* | NETWORK | PAYMENT | STAKE | *---------*---------*-------* ```  The `NETWORK` part allows for distinguishing addresses between different networks like the mainnet or the testnet. It is implicitly handled by the server without you having to worry about it. The `PAYMENT` and `STAKE` parts however can be constructed similarly, using either:  - A public key - A script  The script itself is either constructed out of a public key, or one of the three following primitives:  - all - any - some  Each of which contains one or more script(s) that can be either keys or primitives, and so on. Schematically:  ```                                    ┏─────────┓ SCRIPT = ──┬───────────────────────┤ pub key ├─────────────────────┬──            │                       ┗─────────┛                     │            │  ╭─────╮   ╭────────╮                                 │            ├──┤ ALL ├───┤ SCRIPT ├─┬───────────────────────────────┤            │  ╰─────╯ ^ ╰────────╯ │                               │            │          │   ╭───╮    │                               │            │          └───┤ , ├────┘                               │            │              ╰───╯                                    │            │  ╭─────╮   ╭────────╮                                 │            ├──┤ ALL ├───┤ SCRIPT ├─┬───────────────────────────────┤            │  ╰─────╯ ^ ╰────────╯ │                               │            │          │   ╭───╮    │                               │            │          └───┤ , ├────┘                               │            │              ╰───╯                                    │            │  ╭──────╮ ╭──────────╮ ┏───┓ ╭──────╮   ╭────────╮    │            └──┤ SOME ├─┤ AT_LEAST ├─┤ n ├─┤ FROM ├───┤ SCRIPT ├─┬──┘               ╰──────╯ ╰──────────╯ ┗───┛ ╰──────╯ ^ ╰────────╯ │                                                    │   ╭───╮    │                                                    └───┤ , ├────┘                                                        ╰───╯ ``` 
          * @summary Construct Address
-         * @param {Body21} [body] 
+         * @param {ApiAddressData} [body] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        postAnyAddress(body?: Body21, options?: any): AxiosPromise<InlineResponse2023> {
+        postAnyAddress(body?: ApiAddressData, options?: any): AxiosPromise<AnyAddress> {
             return AddressesApiFp(configuration).postAnyAddress(body, options).then((request) => request(axios, basePath));
         },
     };
@@ -282,12 +282,12 @@ export class AddressesApi extends BaseAPI {
     /**
      * <p align=\"right\">status: <strong>stable</strong></p>  Construct any address by specyfying credential for payment or stake.  In Cardano, Addresses are made of three parts:  ``` *---------*---------*-------* | NETWORK | PAYMENT | STAKE | *---------*---------*-------* ```  The `NETWORK` part allows for distinguishing addresses between different networks like the mainnet or the testnet. It is implicitly handled by the server without you having to worry about it. The `PAYMENT` and `STAKE` parts however can be constructed similarly, using either:  - A public key - A script  The script itself is either constructed out of a public key, or one of the three following primitives:  - all - any - some  Each of which contains one or more script(s) that can be either keys or primitives, and so on. Schematically:  ```                                    ┏─────────┓ SCRIPT = ──┬───────────────────────┤ pub key ├─────────────────────┬──            │                       ┗─────────┛                     │            │  ╭─────╮   ╭────────╮                                 │            ├──┤ ALL ├───┤ SCRIPT ├─┬───────────────────────────────┤            │  ╰─────╯ ^ ╰────────╯ │                               │            │          │   ╭───╮    │                               │            │          └───┤ , ├────┘                               │            │              ╰───╯                                    │            │  ╭─────╮   ╭────────╮                                 │            ├──┤ ALL ├───┤ SCRIPT ├─┬───────────────────────────────┤            │  ╰─────╯ ^ ╰────────╯ │                               │            │          │   ╭───╮    │                               │            │          └───┤ , ├────┘                               │            │              ╰───╯                                    │            │  ╭──────╮ ╭──────────╮ ┏───┓ ╭──────╮   ╭────────╮    │            └──┤ SOME ├─┤ AT_LEAST ├─┤ n ├─┤ FROM ├───┤ SCRIPT ├─┬──┘               ╰──────╯ ╰──────────╯ ┗───┛ ╰──────╯ ^ ╰────────╯ │                                                    │   ╭───╮    │                                                    └───┤ , ├────┘                                                        ╰───╯ ``` 
      * @summary Construct Address
-     * @param {Body21} [body] 
+     * @param {ApiAddressData} [body] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof AddressesApi
      */
-    public postAnyAddress(body?: Body21, options?: any) {
+    public postAnyAddress(body?: ApiAddressData, options?: any) {
         return AddressesApiFp(this.configuration).postAnyAddress(body, options).then((request) => request(this.axios, this.basePath));
     }
 }

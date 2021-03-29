@@ -17,7 +17,7 @@ import { Configuration } from '../configuration';
 // @ts-ignore
 import { BASE_PATH, COLLECTION_FORMATS, RequestArgs, BaseAPI, RequiredError } from '../base';
 import { BadRequest } from '../models';
-import { Body6 } from '../models';
+import { ApiPostAccountKeyData } from '../models';
 import { InlineResponse415 } from '../models';
 import { NotAcceptable } from '../models';
 /**
@@ -81,13 +81,13 @@ export const KeysApiAxiosParamCreator = function (configuration?: Configuration)
         /**
          * <p align=\"right\">status: <strong>stable</strong></p> Retrieve account public key from the wallet.  <b>Note:</b> Only `Hard` indexes are supported by this endpoint. 
          * @summary Create
-         * @param {Body6} body 
+         * @param {ApiPostAccountKeyData} body 
          * @param {string} walletId 
          * @param {string} index 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        postAccountKey: async (body: Body6, walletId: string, index: string, options: any = {}): Promise<RequestArgs> => {
+        postAccountKey: async (body: ApiPostAccountKeyData, walletId: string, index: string, options: any = {}): Promise<RequestArgs> => {
             // verify required parameter 'body' is not null or undefined
             if (body === null || body === undefined) {
                 throw new RequiredError('body','Required parameter body was null or undefined when calling postAccountKey.');
@@ -161,13 +161,13 @@ export const KeysApiFp = function(configuration?: Configuration) {
         /**
          * <p align=\"right\">status: <strong>stable</strong></p> Retrieve account public key from the wallet.  <b>Note:</b> Only `Hard` indexes are supported by this endpoint. 
          * @summary Create
-         * @param {Body6} body 
+         * @param {ApiPostAccountKeyData} body 
          * @param {string} walletId 
          * @param {string} index 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async postAccountKey(body: Body6, walletId: string, index: string, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<string>> {
+        async postAccountKey(body: ApiPostAccountKeyData, walletId: string, index: string, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<string>> {
             const localVarAxiosArgs = await KeysApiAxiosParamCreator(configuration).postAccountKey(body, walletId, index, options);
             return (axios: AxiosInstance = globalAxios, basePath: string = BASE_PATH) => {
                 const axiosRequestArgs = {...localVarAxiosArgs.options, url: basePath + localVarAxiosArgs.url};
@@ -198,13 +198,13 @@ export const KeysApiFactory = function (configuration?: Configuration, basePath?
         /**
          * <p align=\"right\">status: <strong>stable</strong></p> Retrieve account public key from the wallet.  <b>Note:</b> Only `Hard` indexes are supported by this endpoint. 
          * @summary Create
-         * @param {Body6} body 
+         * @param {ApiPostAccountKeyData} body 
          * @param {string} walletId 
          * @param {string} index 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        postAccountKey(body: Body6, walletId: string, index: string, options?: any): AxiosPromise<string> {
+        postAccountKey(body: ApiPostAccountKeyData, walletId: string, index: string, options?: any): AxiosPromise<string> {
             return KeysApiFp(configuration).postAccountKey(body, walletId, index, options).then((request) => request(axios, basePath));
         },
     };
@@ -233,14 +233,14 @@ export class KeysApi extends BaseAPI {
     /**
      * <p align=\"right\">status: <strong>stable</strong></p> Retrieve account public key from the wallet.  <b>Note:</b> Only `Hard` indexes are supported by this endpoint. 
      * @summary Create
-     * @param {Body6} body 
+     * @param {ApiPostAccountKeyData} body 
      * @param {string} walletId 
      * @param {string} index 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof KeysApi
      */
-    public postAccountKey(body: Body6, walletId: string, index: string, options?: any) {
+    public postAccountKey(body: ApiPostAccountKeyData, walletId: string, index: string, options?: any) {
         return KeysApiFp(this.configuration).postAccountKey(body, walletId, index, options).then((request) => request(this.axios, this.basePath));
     }
 }
