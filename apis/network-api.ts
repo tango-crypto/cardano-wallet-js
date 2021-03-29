@@ -18,7 +18,7 @@ import { Configuration } from '../configuration';
 import { BASE_PATH, COLLECTION_FORMATS, RequestArgs, BaseAPI, RequiredError } from '../base';
 import { ApiNetworkInformation } from '../models';
 import { ApiNetworkClock } from '../models';
-import { InlineResponse20013 } from '../models';
+import { ApiNetworkParameters } from '../models';
 import { NotAcceptable } from '../models';
 /**
  * NetworkApi - axios parameter creator
@@ -175,7 +175,7 @@ export const NetworkApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getNetworkParameters(options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<InlineResponse20013>> {
+        async getNetworkParameters(options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ApiNetworkParameters>> {
             const localVarAxiosArgs = await NetworkApiAxiosParamCreator(configuration).getNetworkParameters(options);
             return (axios: AxiosInstance = globalAxios, basePath: string = BASE_PATH) => {
                 const axiosRequestArgs = {...localVarAxiosArgs.options, url: basePath + localVarAxiosArgs.url};
@@ -216,7 +216,7 @@ export const NetworkApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getNetworkParameters(options?: any): AxiosPromise<InlineResponse20013> {
+        getNetworkParameters(options?: any): AxiosPromise<ApiNetworkParameters> {
             return NetworkApiFp(configuration).getNetworkParameters(options).then((request) => request(axios, basePath));
         },
     };

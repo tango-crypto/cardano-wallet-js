@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import 'mocha';
-import { ApiNetworkClockStatusEnum } from '../models';
+import { ApiNetworkClockStatusEnum, ApiNetworkParametersActiveSlotCoefficientUnitEnum, ApiNetworkParametersEpochLengthUnitEnum, ApiNetworkParametersSlotLengthUnitEnum, WalletsTipHeightUnitEnum, WalletswalletIdpaymentfeesAmountUnitEnum } from '../models';
 import { ApiNetworkInformationNodeEraEnum } from '../models/api-network-information';
 
 import { WalletServer } from '../wallet-server';
@@ -42,6 +42,51 @@ describe('Cardano wallet network', function() {
 		expect(status).include(clock.status);
 		expect(clock).have.property('offset').with.property('quantity').be.a('number');
 		expect(clock).have.property('offset').with.property('unit').equal('microsecond');
+	});
+
+	
+	it('should get network parameters', async function() {
+			let slotLengthUnits = [ApiNetworkParametersSlotLengthUnitEnum.Second];
+			let coefficientUnits = [ApiNetworkParametersActiveSlotCoefficientUnitEnum.Percent];
+			let epochLengthUnits = [ApiNetworkParametersEpochLengthUnitEnum.Slot];
+			let heightUnits = [WalletsTipHeightUnitEnum.Block];
+			let amountUnits = [WalletswalletIdpaymentfeesAmountUnitEnum.Lovelace];
+			let parameters = await walletServer.getNetworkParameters();
+
+			expect(parameters).have.property('slot_length').with.property('quantity').be.a('number');
+			expect(slotLengthUnits).include(parameters.slot_length.unit);
+
+			expect(parameters).have.property('decentralization_level').with.property('quantity').be.a('number');
+			expect(coefficientUnits).include(parameters.decentralization_level.unit);
+
+			expect(parameters).have.property('genesis_block_hash').lengthOf(64);
+			expect(parameters).have.property('blockchain_start_time').be.a('string');
+			expect(parameters).have.property('desired_pool_number').be.a('number');
+
+			expect(parameters).have.property('epoch_length').with.property('quantity').be.a('number');
+			expect(epochLengthUnits).include(parameters.epoch_length.unit);
+
+			let shelley = parameters.eras.shelley;
+			let mary = parameters.eras.mary;
+			let byron = parameters.eras.byron;
+			let allegra = parameters.eras.allegra;
+			expect(mary).have.property('epoch_start_time').be.a('string');
+			expect(mary).have.property('epoch_number').be.a('number');
+			expect(shelley).have.property('epoch_start_time').be.a('string');
+			expect(shelley).have.property('epoch_number').be.a('number');
+			expect(byron).have.property('epoch_start_time').be.a('string');
+			expect(byron).have.property('epoch_number').be.a('number');
+			expect(allegra).have.property('epoch_start_time').be.a('string');
+			expect(allegra).have.property('epoch_number').be.a('number');
+
+			expect(parameters).have.property('active_slot_coefficient').with.property('quantity').be.a('number');
+			expect(coefficientUnits).include(parameters.active_slot_coefficient.unit);
+
+			expect(parameters).have.property('security_parameter').with.property('quantity').be.a('number');
+			expect(heightUnits).include(parameters.security_parameter.unit);
+
+			expect(parameters).have.property('minimum_utxo_value').with.property('quantity').be.a('number');
+			expect(amountUnits).include(parameters.minimum_utxo_value.unit);
 	});
 
 });

@@ -11,6 +11,9 @@
  * https://github.com/swagger-api/swagger-codegen.git
  * Do not edit the class manually.
  */
+
+import { ApiNetworkParametersActiveSlotCoefficient, ApiNetworkParametersEpochLength, ApiNetworkParametersEras, ApiNetworkParametersSlotLength, WalletsTipHeight, WalletswalletIdpaymentfeesAmount } from ".";
+
 /**
  * 
  * @export
@@ -34,31 +37,31 @@ export interface ApiNetworkParameters {
      * @type {ApiNetworkParametersSlotLength}
      * @memberof ApiNetworkParameters
      */
-    slot_length: any;
+    slot_length: ApiNetworkParametersSlotLength;
     /**
      * 
      * @type {ApiNetworkParametersEpochLength}
      * @memberof ApiNetworkParameters
      */
-    epoch_length: any;
+    epoch_length: ApiNetworkParametersEpochLength;
     /**
      * 
      * @type {WalletsTipHeight}
      * @memberof ApiNetworkParameters
      */
-    security_parameter: any;
+    security_parameter: WalletsTipHeight;
     /**
      * 
      * @type {ApiNetworkParametersActiveSlotCoefficient}
      * @memberof ApiNetworkParameters
      */
-    active_slot_coefficient: any;
+    active_slot_coefficient: ApiNetworkParametersActiveSlotCoefficient;
     /**
      * 
      * @type {ApiNetworkParametersActiveSlotCoefficient}
      * @memberof ApiNetworkParameters
      */
-    decentralization_level: any;
+    decentralization_level: ApiNetworkParametersActiveSlotCoefficient;
     /**
      * 
      * @type {number}
@@ -70,11 +73,11 @@ export interface ApiNetworkParameters {
      * @type {WalletswalletIdpaymentfeesAmount}
      * @memberof ApiNetworkParameters
      */
-    minimum_utxo_value: any;
+    minimum_utxo_value: WalletswalletIdpaymentfeesAmount;
     /**
      * 
      * @type {ApiNetworkParametersEras}
      * @memberof ApiNetworkParameters
      */
-    eras: any;
+    eras: ApiNetworkParametersEras;
 }
