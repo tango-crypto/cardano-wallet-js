@@ -18,7 +18,7 @@ import { Configuration } from '../configuration';
 import { BASE_PATH, COLLECTION_FORMATS, RequestArgs, BaseAPI, RequiredError } from '../base';
 import { BadRequest } from '../models';
 import { ApiWalletPostData } from '../models';
-import { Body2 } from '../models';
+import { ApiWalletPutData } from '../models';
 import { Body3 } from '../models';
 import { ApiWallet } from '../models';
 import { InlineResponse2003 } from '../models';
@@ -233,12 +233,12 @@ export const WalletsApiAxiosParamCreator = function (configuration?: Configurati
         /**
          * <p align=\"right\">status: <strong>stable</strong></p> 
          * @summary Update Metadata
-         * @param {Body2} body 
+         * @param {ApiWalletPutData} body 
          * @param {string} walletId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        putWallet: async (body: Body2, walletId: string, options: any = {}): Promise<RequestArgs> => {
+        putWallet: async (body: ApiWalletPutData, walletId: string, options: any = {}): Promise<RequestArgs> => {
             // verify required parameter 'body' is not null or undefined
             if (body === null || body === undefined) {
                 throw new RequiredError('body','Required parameter body was null or undefined when calling putWallet.');
@@ -409,12 +409,12 @@ export const WalletsApiFp = function(configuration?: Configuration) {
         /**
          * <p align=\"right\">status: <strong>stable</strong></p> 
          * @summary Update Metadata
-         * @param {Body2} body 
+         * @param {ApiWalletPutData} body 
          * @param {string} walletId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async putWallet(body: Body2, walletId: string, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ApiWallet>> {
+        async putWallet(body: ApiWalletPutData, walletId: string, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ApiWallet>> {
             const localVarAxiosArgs = await WalletsApiAxiosParamCreator(configuration).putWallet(body, walletId, options);
             return (axios: AxiosInstance = globalAxios, basePath: string = BASE_PATH) => {
                 const axiosRequestArgs = {...localVarAxiosArgs.options, url: basePath + localVarAxiosArgs.url};
@@ -497,12 +497,12 @@ export const WalletsApiFactory = function (configuration?: Configuration, basePa
         /**
          * <p align=\"right\">status: <strong>stable</strong></p> 
          * @summary Update Metadata
-         * @param {Body2} body 
+         * @param {ApiWalletPutData} body 
          * @param {string} walletId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        putWallet(body: Body2, walletId: string, options?: any): AxiosPromise<ApiWallet> {
+        putWallet(body: ApiWalletPutData, walletId: string, options?: any): AxiosPromise<ApiWallet> {
             return WalletsApiFp(configuration).putWallet(body, walletId, options).then((request) => request(axios, basePath));
         },
         /**
@@ -583,13 +583,13 @@ export class WalletsApi extends BaseAPI {
     /**
      * <p align=\"right\">status: <strong>stable</strong></p> 
      * @summary Update Metadata
-     * @param {Body2} body 
+     * @param {ApiWalletPutData} body 
      * @param {string} walletId 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof WalletsApi
      */
-    public putWallet(body: Body2, walletId: string, options?: any) {
+    public putWallet(body: ApiWalletPutData, walletId: string, options?: any) {
         return WalletsApiFp(this.configuration).putWallet(body, walletId, options).then((request) => request(this.axios, this.basePath));
     }
     /**

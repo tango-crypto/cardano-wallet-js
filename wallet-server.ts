@@ -34,7 +34,12 @@ export class WalletServer {
 		return res.data;
 	}
 
-	async createOrGetShelleyWallet(name: string, mnemonic_sentence: string[], passphrase: string, mnemonic_second_factor?: string[], address_pool_gap?: string): Promise<ShelleyWallet> {
+	async wallets(): Promise<ShelleyWallet[]> {
+			let res = await this.walletsApi.listWallets();
+			return res.data.map(w => ShelleyWallet.from(w, this.config));
+	}
+
+	async createOrRestoreShelleyWallet(name: string, mnemonic_sentence: string[], passphrase: string, mnemonic_second_factor?: string[], address_pool_gap?: string): Promise<ShelleyWallet> {
 		let payload: ApiWalletPostData = { 
 			name: name, 
 			mnemonic_sentence: mnemonic_sentence, 

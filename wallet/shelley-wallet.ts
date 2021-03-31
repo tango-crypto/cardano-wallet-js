@@ -1,7 +1,8 @@
 
-import { AddressesApi, KeysApi, TransactionsApi } from '../api';
+import { config } from 'chai';
+import { AddressesApi, KeysApi, TransactionsApi, WalletsApi } from '../api';
 import { Configuration } from '../configuration';
-import { ApiAddressData, ApiAddressStateEnum, ApiPostTransactionData, ApiPostTransactionFeeData, ApiWallet, WalletsAssets, WalletsBalance, WalletsDelegation, WalletsPassphrase, WalletsState, WalletsTip, WalletswalletIdpaymentfeesAmount, WalletswalletIdpaymentfeesAmountUnitEnum, WalletswalletIdpaymentfeesPayments } from '../models';
+import { ApiAddressData, ApiAddressStateEnum, ApiPostTransactionData, ApiPostTransactionFeeData, ApiWallet, ApiWalletPutData, WalletsAssets, WalletsBalance, WalletsDelegation, WalletsPassphrase, WalletsState, WalletsTip, WalletswalletIdpaymentfeesAmount, WalletswalletIdpaymentfeesAmountUnitEnum, WalletswalletIdpaymentfeesPayments } from '../models';
 import { AddressWallet } from './address-wallet';
 import { FeeWallet } from './fee-wallet';
 import { KeyRoleEnum, KeyWallet } from './key-wallet';
@@ -19,6 +20,7 @@ export class ShelleyWallet implements ApiWallet {
 	addressesApi: AddressesApi;
 	keysApi: KeysApi;
 	transactionsApi: TransactionsApi;
+	walletsApi: WalletsApi;
 
 	constructor(
 		id: any, 
@@ -43,10 +45,24 @@ export class ShelleyWallet implements ApiWallet {
 			this.addressesApi = new AddressesApi(config);
 			this.keysApi = new KeysApi(config);
 			this.transactionsApi = new TransactionsApi(config);
+			this.walletsApi = new WalletsApi(config);
 		}
 
 		static from(wallet: ApiWallet, config: Configuration): ShelleyWallet {
 			return new this(wallet.id, wallet.address_pool_gap, wallet.balance, wallet.assets, wallet.delegation, wallet.name, wallet.passphrase, wallet.state, wallet.tip, config);
+		}
+
+		async rename(name: string) {
+			let payload: ApiWalletPutData = {
+				name: name
+			};
+			let res = await this.walletsApi.putWallet(payload, this.id);
+			this.name = res.data.name;
+			return this;
+		}
+
+		async delete() {
+			return await this.walletsApi.deleteWallet(this.id);
 		}
 
 		async getAddresses(): Promise<AddressWallet[]> {
