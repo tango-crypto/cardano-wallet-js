@@ -1,12 +1,13 @@
 {
-    "name": "cardano-wallet-api-js",
+    "name": "cardano-wallet-ts",
     "version": "1.0.0",
-    "description": "javascript cardano wallet api",
+    "description": "typescript cardano wallet api",
     "author": "Leobel Izquierdo <leobelizquierdo@gmail.com>",
     "license": "ISC",
     "keywords": [
         "cardano",
         "wallet",
+        "api",
         "typescript"
     ],
     "main": "./dist/index.js",
@@ -14,9 +15,15 @@
     "scripts": {
         "build": "tsc --outDir dist/",
         "prepublishOnly": "npm run build",
-        "postinstall": "./address-cli.js",
         "test": "mocha -r ts-node/register 'test/**/*.ts'"
     },
+    "directories": {
+        "bin": "cli"
+    },
+		"repository": {
+			"type": "git",
+			"url": "https://github.com/npm/cli.git"
+		},
     "dependencies": {
         "axios": "^0.21.1",
         "chai": "^4.3.4",
@@ -27,7 +34,7 @@
         "@types/chai": "^4.2.15",
         "@types/mocha": "^8.2.2",
         "@types/node": "^12.11.5",
-				"dotenv": "^8.2.0",
+        "dotenv": "^8.2.0",
         "ts-node": "^9.1.1",
         "typescript": "^3.6.4"
     }
