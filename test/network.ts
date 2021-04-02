@@ -5,6 +5,10 @@ import { ApiNetworkInformationNodeEraEnum } from '../models/api-network-informat
 
 import { WalletServer } from '../wallet-server';
 
+import * as dotenv from "dotenv";
+dotenv.config();
+
+
 describe('Cardano wallet network', function() {
 	let walletServer: WalletServer;
 	let syncProgress = ['syncing', 'ready'];
@@ -12,7 +16,7 @@ describe('Cardano wallet network', function() {
 	let clockStatus = [ApiNetworkClockStatusEnum.Available, ApiNetworkClockStatusEnum.Unavailable, ApiNetworkClockStatusEnum.Pending];
 
 	before('Initializing test cluster', async function(){
-		walletServer = WalletServer.init('http://ec2-35-177-92-7.eu-west-2.compute.amazonaws.com:7355/v2');
+		walletServer = WalletServer.init(`http://${process.env.TEST_WALLET_HOST}:${process.env.TEST_WALLET_PORT}/v2`);
 	});
 
 	it("should get network information", async function() {

@@ -7,6 +7,9 @@ import { Seed } from '../utils';
 import { WalletServer } from '../wallet-server';
 import { KeyRoleEnum } from '../wallet/key-wallet';
 
+import * as dotenv from "dotenv";
+dotenv.config();
+
 describe('Cardano wallet API', function() {
 	this.timeout(0);
 	let walletServer: WalletServer;
@@ -959,7 +962,7 @@ describe('Cardano wallet API', function() {
 	};
 
 	before('Initializing the test cluster ...', async function(){
-		walletServer = await WalletServer.init('http://ec2-35-177-92-7.eu-west-2.compute.amazonaws.com:7355/v2');
+		walletServer = await WalletServer.init(`http://${process.env.TEST_WALLET_HOST}:${process.env.TEST_WALLET_PORT}/v2`);
 
 		for (let i = 0; i < wallets.length; i++) {
 			const w = wallets[i];

@@ -1,11 +1,13 @@
 # cardano-wallet-js
 cardano-wallet javascript/typescript client
 
-
-# Test
+# Requirements
 Stack
 you'll need to install stak >= 1.9.3
 you can find it here: https://docs.haskellstack.org/en/stable/README/
+
+
+# Test
 You may need to install the libsodium-dev, libghc-hsopenssl-dev, gmp, sqlite and systemd development libraries for the build to succeed.
 
 The setup steps are quite simple:
