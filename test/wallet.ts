@@ -1014,6 +1014,17 @@ describe('Cardano wallet API', function() {
 			.and.have.nested.property('response.data.code').equal('wallet_already_exists');
 		});
 
+		it("should get a list of wallets", async function(){
+			let ls = await walletServer.wallets();
+			let ids = ls.map(w => w.id);
+
+			expect(ls.length).least(wallets.length);
+			for (let i = 0; i < wallets.length; i++) {
+				const id = wallets[i].id;
+				expect(ids).include(id);
+			}
+		});
+
 		it("should get a wallet", async function() {
 			let w = wallets.find(w => w.id === '2a793eb367d44a42f658eb02d1004f50c14612fd');
 			
