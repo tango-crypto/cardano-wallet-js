@@ -1,6 +1,6 @@
 import { WalletsApi, NetworkApi, StakePoolsApi } from './api';
 import { Configuration } from './configuration';
-import { ApiWalletPostData } from './models';
+import { ApiMaintenanceActionPostData, ApiMaintenanceActionPostDataMaintenanceActionEnum, ApiWalletPostData } from './models';
 import { MaintenanceActionWallet } from './wallet/maintenance-action-wallet';
 import { ShelleyWallet } from './wallet/shelley-wallet';
 import { StakePoolWallet } from './wallet/stakepool-wallet';
@@ -70,4 +70,13 @@ export class WalletServer {
 		let res = await this.stakePoolsApi.getMaintenanceActions();
 		return new MaintenanceActionWallet(res.data.gc_stake_pools);
 	}
+
+	async triggerStakePoolGarbageCollection() {
+		let payload: ApiMaintenanceActionPostData = {
+			maintenance_action: ApiMaintenanceActionPostDataMaintenanceActionEnum.Pools
+		}
+		await this.stakePoolsApi.postMaintenanceAction(payload);
+		return;
+	}
+
 }

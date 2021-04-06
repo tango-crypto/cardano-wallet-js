@@ -1,6 +1,6 @@
 
 import { config } from 'chai';
-import { AddressesApi, KeysApi, TransactionsApi, WalletsApi } from '../api';
+import { AddressesApi, KeysApi, TransactionsApi, WalletsApi, StakePoolsApi } from '../api';
 import { Configuration } from '../configuration';
 import { ApiAddressData, ApiAddressStateEnum, ApiPostTransactionData, ApiPostTransactionFeeData, ApiWallet, ApiWalletPutData, ApiWalletPutPassphraseData, WalletsAssets, WalletsBalance, WalletsDelegation, WalletsPassphrase, WalletsState, WalletsTip, WalletswalletIdpaymentfeesAmount, WalletswalletIdpaymentfeesAmountUnitEnum, WalletswalletIdpaymentfeesPayments } from '../models';
 import { AddressWallet } from './address-wallet';
@@ -23,6 +23,7 @@ export class ShelleyWallet implements ApiWallet {
 	transactionsApi: TransactionsApi;
 	walletsApi: WalletsApi;
 	config: Configuration;
+	stakePoolApi: StakePoolsApi;
 
 	constructor(
 		id: any, 
@@ -49,6 +50,7 @@ export class ShelleyWallet implements ApiWallet {
 			this.keysApi = new KeysApi(config);
 			this.transactionsApi = new TransactionsApi(config);
 			this.walletsApi = new WalletsApi(config);
+			this.stakePoolApi = new StakePoolsApi(config);
 		}
 
 		static from(wallet: ApiWallet, config: Configuration): ShelleyWallet {
@@ -155,5 +157,10 @@ export class ShelleyWallet implements ApiWallet {
 			};
 			let res = await this.transactionsApi.postTransaction(payload, this.id);
 			return TransactionWallet.from(res.data);
+		}
+
+		async estimateDelegationFee(): Promise<FeeWallet> {
+			let res = await this.stakePoolApi.getDelegationFee(this.id);
+			return FeeWallet.from(res.data);
 		}
 }

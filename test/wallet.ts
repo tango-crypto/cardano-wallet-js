@@ -999,6 +999,22 @@ describe('Cardano wallet API', function () {
     }
 	};
 
+	let delegationFee = {
+    "estimated_min": {
+        "quantity": 124800,
+        "unit": "lovelace"
+    },
+    "deposit": {
+        "quantity": 1000000,
+        "unit": "lovelace"
+    },
+    "minimum_coins": [] as any[],
+    "estimated_max": {
+        "quantity": 153000,
+        "unit": "lovelace"
+    }
+	};
+
 	let poolStake = [
 		{
 			"flags": [] as any[],
@@ -1290,6 +1306,18 @@ describe('Cardano wallet API', function () {
 		it("should return stake pools maintenance actions", async function(){
 			let maintenanceActions = await walletServer.stakePoolMaintenanceActions();
 			expect(maintenanceActions).deep.equal(poolMaintenanceAction);
+		});
+
+		it("should trigger garbage collection", async function(){
+			await walletServer.triggerStakePoolGarbageCollection();
+		});
+
+		it("should estimate delegation fee", async function(){
+			let w = wallets.find(w => w.id == '868d04759fd222ac776484888d4bcd462d146772');
+			let wallet = await walletServer.getShelleyWallet(w.id);
+			let fee = await wallet.estimateDelegationFee();
+
+			expect(fee).deep.equal(delegationFee);
 		});
 
 	});

@@ -17,13 +17,13 @@ import { Configuration } from '../configuration';
 // @ts-ignore
 import { BASE_PATH, COLLECTION_FORMATS, RequestArgs, BaseAPI, RequiredError } from '../base';
 import { BadRequest } from '../models';
-import { Body7 } from '../models';
+import { ApiMaintenanceActionPostData } from '../models';
 import { Body8 } from '../models';
 import { Body9 } from '../models';
 import { CannotCoverFee } from '../models';
 import { ApiStakePool } from '../models';
 import { ApiMaintenanceAction } from '../models';
-import { InlineResponse202 } from '../models';
+import { ApiFee } from '../models';
 import { InlineResponse2021 } from '../models';
 import { InlineResponse4033 } from '../models';
 import { InlineResponse4034 } from '../models';
@@ -214,11 +214,11 @@ export const StakePoolsApiAxiosParamCreator = function (configuration?: Configur
         /**
          * Performs maintenance actions on stake pools, such as triggering metadata garbage collection.  Actions may not be instantaneous. 
          * @summary Trigger Maintenance actions
-         * @param {Body7} body 
+         * @param {ApiMaintenanceActionPostData} body 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        postMaintenanceAction: async (body: Body7, options: any = {}): Promise<RequestArgs> => {
+        postMaintenanceAction: async (body: ApiMaintenanceActionPostData, options: any = {}): Promise<RequestArgs> => {
             // verify required parameter 'body' is not null or undefined
             if (body === null || body === undefined) {
                 throw new RequiredError('body','Required parameter body was null or undefined when calling postMaintenanceAction.');
@@ -319,7 +319,7 @@ export const StakePoolsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getDelegationFee(walletId: string, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<InlineResponse202>> {
+        async getDelegationFee(walletId: string, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ApiFee>> {
             const localVarAxiosArgs = await StakePoolsApiAxiosParamCreator(configuration).getDelegationFee(walletId, options);
             return (axios: AxiosInstance = globalAxios, basePath: string = BASE_PATH) => {
                 const axiosRequestArgs = {...localVarAxiosArgs.options, url: basePath + localVarAxiosArgs.url};
@@ -372,11 +372,11 @@ export const StakePoolsApiFp = function(configuration?: Configuration) {
         /**
          * Performs maintenance actions on stake pools, such as triggering metadata garbage collection.  Actions may not be instantaneous. 
          * @summary Trigger Maintenance actions
-         * @param {Body7} body 
+         * @param {ApiMaintenanceActionPostData} body 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async postMaintenanceAction(body: Body7, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+        async postMaintenanceAction(body: ApiMaintenanceActionPostData, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
             const localVarAxiosArgs = await StakePoolsApiAxiosParamCreator(configuration).postMaintenanceAction(body, options);
             return (axios: AxiosInstance = globalAxios, basePath: string = BASE_PATH) => {
                 const axiosRequestArgs = {...localVarAxiosArgs.options, url: basePath + localVarAxiosArgs.url};
@@ -414,7 +414,7 @@ export const StakePoolsApiFactory = function (configuration?: Configuration, bas
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getDelegationFee(walletId: string, options?: any): AxiosPromise<InlineResponse202> {
+        getDelegationFee(walletId: string, options?: any): AxiosPromise<ApiFee> {
             return StakePoolsApiFp(configuration).getDelegationFee(walletId, options).then((request) => request(axios, basePath));
         },
         /**
@@ -451,11 +451,11 @@ export const StakePoolsApiFactory = function (configuration?: Configuration, bas
         /**
          * Performs maintenance actions on stake pools, such as triggering metadata garbage collection.  Actions may not be instantaneous. 
          * @summary Trigger Maintenance actions
-         * @param {Body7} body 
+         * @param {ApiMaintenanceActionPostData} body 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        postMaintenanceAction(body: Body7, options?: any): AxiosPromise<void> {
+        postMaintenanceAction(body: ApiMaintenanceActionPostData, options?: any): AxiosPromise<void> {
             return StakePoolsApiFp(configuration).postMaintenanceAction(body, options).then((request) => request(axios, basePath));
         },
         /**
@@ -527,12 +527,12 @@ export class StakePoolsApi extends BaseAPI {
     /**
      * Performs maintenance actions on stake pools, such as triggering metadata garbage collection.  Actions may not be instantaneous. 
      * @summary Trigger Maintenance actions
-     * @param {Body7} body 
+     * @param {ApiMaintenanceActionPostData} body 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof StakePoolsApi
      */
-    public postMaintenanceAction(body: Body7, options?: any) {
+    public postMaintenanceAction(body: ApiMaintenanceActionPostData, options?: any) {
         return StakePoolsApiFp(this.configuration).postMaintenanceAction(body, options).then((request) => request(this.axios, this.basePath));
     }
     /**
