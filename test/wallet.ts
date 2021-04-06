@@ -1030,8 +1030,22 @@ describe('Cardano wallet API', function() {
 			let wallet = await walletServer.getShelleyWallet(w.id);
 			wallet = await wallet.rename(name);
 			expect(wallet.name).equal(name);
+
 			wallet = await wallet.rename(w.name);
 			expect(wallet.name).equal(w.name);
+		});
+
+		it("should change a wallet passphrase", async function() {
+			let w = wallets.find(w => w.id === '60bb5513e4e262e445cf203db9cf73ba925064d2');
+			let newPassphrase = 'new-passphrase';
+			
+			let wallet = await walletServer.getShelleyWallet(w.id);
+			let lastUpdatedAt = wallet.passphrase.last_updated_at;
+
+			wallet = await wallet.updatePassphrase(w.passphrase, newPassphrase);
+			expect(wallet.passphrase.last_updated_at).not.equal(lastUpdatedAt);
+
+			await wallet.updatePassphrase(newPassphrase, w.passphrase);
 		});
 	});
 	

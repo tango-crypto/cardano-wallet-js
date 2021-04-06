@@ -2,7 +2,7 @@
 import { config } from 'chai';
 import { AddressesApi, KeysApi, TransactionsApi, WalletsApi } from '../api';
 import { Configuration } from '../configuration';
-import { ApiAddressData, ApiAddressStateEnum, ApiPostTransactionData, ApiPostTransactionFeeData, ApiWallet, ApiWalletPutData, WalletsAssets, WalletsBalance, WalletsDelegation, WalletsPassphrase, WalletsState, WalletsTip, WalletswalletIdpaymentfeesAmount, WalletswalletIdpaymentfeesAmountUnitEnum, WalletswalletIdpaymentfeesPayments } from '../models';
+import { ApiAddressData, ApiAddressStateEnum, ApiPostTransactionData, ApiPostTransactionFeeData, ApiWallet, ApiWalletPutData, ApiWalletPutPassphraseData, WalletsAssets, WalletsBalance, WalletsDelegation, WalletsPassphrase, WalletsState, WalletsTip, WalletswalletIdpaymentfeesAmount, WalletswalletIdpaymentfeesAmountUnitEnum, WalletswalletIdpaymentfeesPayments } from '../models';
 import { AddressWallet } from './address-wallet';
 import { FeeWallet } from './fee-wallet';
 import { KeyRoleEnum, KeyWallet } from './key-wallet';
@@ -21,6 +21,7 @@ export class ShelleyWallet implements ApiWallet {
 	keysApi: KeysApi;
 	transactionsApi: TransactionsApi;
 	walletsApi: WalletsApi;
+	config: Configuration;
 
 	constructor(
 		id: any, 
@@ -42,6 +43,7 @@ export class ShelleyWallet implements ApiWallet {
 			this.passphrase = passphrase;
 			this.state = state;
 			this.tip = tip;
+			this.config = config;
 			this.addressesApi = new AddressesApi(config);
 			this.keysApi = new KeysApi(config);
 			this.transactionsApi = new TransactionsApi(config);
@@ -59,6 +61,16 @@ export class ShelleyWallet implements ApiWallet {
 			let res = await this.walletsApi.putWallet(payload, this.id);
 			this.name = res.data.name;
 			return this;
+		}
+
+		async updatePassphrase(oldPassphrase: string, newPassphrase: string) {
+			let paylaod: ApiWalletPutPassphraseData = {
+				old_passphrase: oldPassphrase,
+				new_passphrase: newPassphrase
+			};
+			await this.walletsApi.putWalletPassphrase(paylaod, this.id);
+			let res = await this.walletsApi.getWallet(this.id);
+			return ShelleyWallet.from(res.data, this.config);
 		}
 
 		async delete() {

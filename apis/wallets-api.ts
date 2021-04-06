@@ -19,7 +19,7 @@ import { BASE_PATH, COLLECTION_FORMATS, RequestArgs, BaseAPI, RequiredError } fr
 import { BadRequest } from '../models';
 import { ApiWalletPostData } from '../models';
 import { ApiWalletPutData } from '../models';
-import { Body3 } from '../models';
+import { ApiWalletPutPassphraseData } from '../models';
 import { ApiWallet } from '../models';
 import { InlineResponse2003 } from '../models';
 import { InlineResponse403 } from '../models';
@@ -282,12 +282,12 @@ export const WalletsApiAxiosParamCreator = function (configuration?: Configurati
         /**
          * <p align=\"right\">status: <strong>stable</strong></p> 
          * @summary Update Passphrase
-         * @param {Body3} body 
+         * @param {ApiWalletPutPassphraseData} body 
          * @param {string} walletId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        putWalletPassphrase: async (body: Body3, walletId: string, options: any = {}): Promise<RequestArgs> => {
+        putWalletPassphrase: async (body: ApiWalletPutPassphraseData, walletId: string, options: any = {}): Promise<RequestArgs> => {
             // verify required parameter 'body' is not null or undefined
             if (body === null || body === undefined) {
                 throw new RequiredError('body','Required parameter body was null or undefined when calling putWalletPassphrase.');
@@ -424,12 +424,12 @@ export const WalletsApiFp = function(configuration?: Configuration) {
         /**
          * <p align=\"right\">status: <strong>stable</strong></p> 
          * @summary Update Passphrase
-         * @param {Body3} body 
+         * @param {ApiWalletPutPassphraseData} body 
          * @param {string} walletId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async putWalletPassphrase(body: Body3, walletId: string, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+        async putWalletPassphrase(body: ApiWalletPutPassphraseData, walletId: string, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
             const localVarAxiosArgs = await WalletsApiAxiosParamCreator(configuration).putWalletPassphrase(body, walletId, options);
             return (axios: AxiosInstance = globalAxios, basePath: string = BASE_PATH) => {
                 const axiosRequestArgs = {...localVarAxiosArgs.options, url: basePath + localVarAxiosArgs.url};
@@ -508,12 +508,12 @@ export const WalletsApiFactory = function (configuration?: Configuration, basePa
         /**
          * <p align=\"right\">status: <strong>stable</strong></p> 
          * @summary Update Passphrase
-         * @param {Body3} body 
+         * @param {ApiWalletPutPassphraseData} body 
          * @param {string} walletId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        putWalletPassphrase(body: Body3, walletId: string, options?: any): AxiosPromise<void> {
+        putWalletPassphrase(body: ApiWalletPutPassphraseData, walletId: string, options?: any): AxiosPromise<void> {
             return WalletsApiFp(configuration).putWalletPassphrase(body, walletId, options).then((request) => request(axios, basePath));
         },
     };
@@ -595,13 +595,13 @@ export class WalletsApi extends BaseAPI {
     /**
      * <p align=\"right\">status: <strong>stable</strong></p> 
      * @summary Update Passphrase
-     * @param {Body3} body 
+     * @param {ApiWalletPutPassphraseData} body 
      * @param {string} walletId 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof WalletsApi
      */
-    public putWalletPassphrase(body: Body3, walletId: string, options?: any) {
+    public putWalletPassphrase(body: ApiWalletPutPassphraseData, walletId: string, options?: any) {
         return WalletsApiFp(this.configuration).putWalletPassphrase(body, walletId, options).then((request) => request(this.axios, this.basePath));
     }
 }
