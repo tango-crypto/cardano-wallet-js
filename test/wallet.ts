@@ -1,6 +1,11 @@
-   // "axios": "^0.19.2",
-import { expect } from 'chai';
+import * as chai from 'chai';
+import * as chaiAsPromised from 'chai-as-promised';
+	
+chai.use(chaiAsPromised);
+const expect = chai.expect;
+	 
 import 'mocha';
+
 import { ApiAddressStateEnum, ApiTransactionDirectionEnum, ApiTransactionStatusEnum, WalletsTipHeightUnitEnum, WalletswalletIdpaymentfeesAmountUnitEnum, WalletswalletIdtransactionsAmountUnitEnum, WalletswalletIdtransactionsDepthUnitEnum } from '../models';
 import { Seed } from '../utils';
 
@@ -964,7 +969,7 @@ describe('Cardano wallet API', function() {
 	before('Initializing the test cluster ...', async function(){
 		walletServer = await WalletServer.init(`http://${process.env.TEST_WALLET_HOST}:${process.env.TEST_WALLET_PORT}/v2`);
 
-		for (let i = 0; i < wallets.length; i++) {
+		for (let i = 0; i < wallets.length - 1; i++) {
 			const w = wallets[i];
 			await walletServer.createOrRestoreShelleyWallet(w.name, w.mnemonic_sentence, w.passphrase);
 		}
@@ -994,12 +999,19 @@ describe('Cardano wallet API', function() {
 		});
 
 		it("should resotre a wallet", async function() {
-			let w = wallets.find(w => w.id === '2a793eb367d44a42f658eb02d1004f50c14612fd');
+			let w = wallets[wallets.length - 1];
 			
 			let wallet = await walletServer.createOrRestoreShelleyWallet(w.name, w.mnemonic_sentence, w.passphrase);
 			expect(wallet.id).equal(w.id);
 			expect(wallet.name).equal(w.name);
 			expect(wallet.passphrase.last_updated_at).be.a('string');
+		});
+
+		it("should throw an 'wallet_already_exist' error", async function(){
+			let w = wallets[0];
+			
+			await expect(walletServer.createOrRestoreShelleyWallet(w.name, w.mnemonic_sentence, w.passphrase)).to.eventually.rejectedWith(Error)
+			.and.have.nested.property('response.data.code').equal('wallet_already_exists');
 		});
 
 		it("should get a wallet", async function() {
@@ -1021,57 +1033,59 @@ describe('Cardano wallet API', function() {
 			wallet = await wallet.rename(w.name);
 			expect(wallet.name).equal(w.name);
 		});
-
+	});
+	
+	describe('address', function () {
 		it('should get wallet addresses', async function() {
 			let w = wallets.find(w => w.id === '60bb5513e4e262e445cf203db9cf73ba925064d2');
 			
 			let wallet = await walletServer.getShelleyWallet(w.id);
 			let addresses = await wallet.getAddresses();
-
+	
 			expect(addresses.length).least(20);
 		});
-
+	
 		it('should get wallet unused addresses', async function() {
 			let w = wallets.find(w => w.id === '60bb5513e4e262e445cf203db9cf73ba925064d2');
 			
 			let wallet = await walletServer.getShelleyWallet(w.id);
 			let addresses = await wallet.getUnusedAddresses();
-
+	
 			expect(addresses).be.an('array');
 			expect(addresses).lengthOf.at.least(wallet.address_pool_gap);
 		});
-
+	
 		it('should get wallet used addresses', async function() {
 			let w = wallets.find(w => w.id === '60bb5513e4e262e445cf203db9cf73ba925064d2');
 			
 			let wallet = await walletServer.getShelleyWallet(w.id);
 			let addresses = await wallet.getUsedAddresses();
-
+	
 			expect(addresses).be.an('array');
 		});
-
+	
 		it('should get first wallet\'s address external verification key', async function() {
 			let id = '2a793eb367d44a42f658eb02d1004f50c14612fd';
 			let addr = 'addr_vk1rfx8dy8dh3t04234qu98gcuu9sqenpvzqx506tfwh9c26vd02fwqmx69lx'; // external verification address at 0
 			
 			let wallet = await walletServer.getShelleyWallet(id);
 			let address = await wallet.getAddressExternalVerificationKey(0);
-
+	
 			expect(address.key).equal(addr);
 			expect(address.role).equal(KeyRoleEnum.AddressExternal);
 		});
-
+	
 		it('should get first wallet\'s stake verification key', async function() {
 			let id = '2a793eb367d44a42f658eb02d1004f50c14612fd';
 			let addr = 'stake_vk1jj0une4hu8sjaye6cdw7tft9eynykzk9kccmfadzz4ytcmt9v9hs2k6s7u'; // stake address at 0
 			
 			let wallet = await walletServer.getShelleyWallet(id);
 			let stake = await wallet.getStakeVerificationKey(0);
-
+	
 			expect(stake).have.property('key').equal(addr);
 			expect(stake).have.property('role').equal(KeyRoleEnum.Stake);
 		});
-
+	
 		it('should get wallet next unused address', async function() {
 			let id = '2a793eb367d44a42f658eb02d1004f50c14612fd';
 			let addr = 'addr1q9z4r9d5hue0rz2qtr6ucu6ygghufe8p2zatwly0twzuus359kkfl90wf7f9vlm99fek6e9l5zh65td8jhw63hn9skqq3mpvge'; // next unused address;
@@ -1079,13 +1093,11 @@ describe('Cardano wallet API', function() {
 			let wallet = await walletServer.getShelleyWallet(id);
 			let addresses = (await wallet.getAddresses()).map(addr => addr.address);
 			let address = await wallet.getNextAddress();
-
+	
 			expect(address.address).equal(addr);
 			expect(address.used()).equal(false);
 			expect(addresses).not.include(address.address);
 		});
-
-	
 	});
 
 	describe('transaction', function(){
@@ -1129,7 +1141,7 @@ describe('Cardano wallet API', function() {
 			let passphrase = 'shelley-small-coins';
 
 			let rWallet = await walletServer.getShelleyWallet(receiver);
-			let addresses = (await rWallet.getUnusedAddresses()).slice(0,1);
+			let addresses = (await rWallet.getUsedAddresses()).slice(0,1);
 			let amounts = [1000000];
 
 			let wallet = await walletServer.getShelleyWallet(payeer);

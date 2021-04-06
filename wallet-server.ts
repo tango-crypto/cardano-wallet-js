@@ -47,19 +47,9 @@ export class WalletServer {
 			mnemonic_second_factor: mnemonic_second_factor, 
 			address_pool_gap: address_pool_gap
 		};
-		try {
-			const res = await this.walletsApi.postWallet(payload);
-			let apiWallet = res.data;
-			return ShelleyWallet.from(apiWallet, this.config);
-		}
-		catch(error) {
-			let message = error.response.data.message;
-				let match = message.match(/id:\s*(?<id>[0-9a-fA-F]{40})/);
-				if (match) {
-					let id = match.groups['id'];
-					return await this.getShelleyWallet(id);
-				}
-		}
+		const res = await this.walletsApi.postWallet(payload);
+		let apiWallet = res.data;
+		return ShelleyWallet.from(apiWallet, this.config);
 	}
 
 	async getShelleyWallet(id: any): Promise<ShelleyWallet> {
