@@ -21,7 +21,7 @@ import { ApiWalletPostData } from '../models';
 import { ApiWalletPutData } from '../models';
 import { ApiWalletPutPassphraseData } from '../models';
 import { ApiWallet } from '../models';
-import { InlineResponse2003 } from '../models';
+import { ApiWalletUTxOsStatistics } from '../models';
 import { InlineResponse403 } from '../models';
 import { NoSuchWallet } from '../models';
 import { NotAcceptable } from '../models';
@@ -358,7 +358,7 @@ export const WalletsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getUTxOsStatistics(walletId: string, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<InlineResponse2003>> {
+        async getUTxOsStatistics(walletId: string, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ApiWalletUTxOsStatistics>> {
             const localVarAxiosArgs = await WalletsApiAxiosParamCreator(configuration).getUTxOsStatistics(walletId, options);
             return (axios: AxiosInstance = globalAxios, basePath: string = BASE_PATH) => {
                 const axiosRequestArgs = {...localVarAxiosArgs.options, url: basePath + localVarAxiosArgs.url};
@@ -462,7 +462,7 @@ export const WalletsApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getUTxOsStatistics(walletId: string, options?: any): AxiosPromise<InlineResponse2003> {
+        getUTxOsStatistics(walletId: string, options?: any): AxiosPromise<ApiWalletUTxOsStatistics> {
             return WalletsApiFp(configuration).getUTxOsStatistics(walletId, options).then((request) => request(axios, basePath));
         },
         /**

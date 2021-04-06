@@ -7,6 +7,7 @@ import { AddressWallet } from './address-wallet';
 import { FeeWallet } from './fee-wallet';
 import { KeyRoleEnum, KeyWallet } from './key-wallet';
 import { TransactionWallet } from './transaction-wallet';
+import { UtxoStatisticsWallet } from './utxo-statistics-wallet';
 export class ShelleyWallet implements ApiWallet {
 	id: any;
 	address_pool_gap: any;
@@ -71,6 +72,11 @@ export class ShelleyWallet implements ApiWallet {
 			await this.walletsApi.putWalletPassphrase(paylaod, this.id);
 			let res = await this.walletsApi.getWallet(this.id);
 			return ShelleyWallet.from(res.data, this.config);
+		}
+
+		async getUtxoStatistics() {
+			let res = await this.walletsApi.getUTxOsStatistics(this.id);
+			return UtxoStatisticsWallet.from(res.data);
 		}
 
 		async delete() {

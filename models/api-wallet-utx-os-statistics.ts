@@ -11,6 +11,10 @@
  * https://github.com/swagger-api/swagger-codegen.git
  * Do not edit the class manually.
  */
+
+import { WalletswalletIdpaymentfeesAmount } from "./walletswallet-idpaymentfees-amount";
+
+
 /**
  * 
  * @export
@@ -22,7 +26,7 @@ export interface ApiWalletUTxOsStatistics {
      * @type {WalletswalletIdpaymentfeesAmount}
      * @memberof ApiWalletUTxOsStatistics
      */
-    total: any;
+    total: WalletswalletIdpaymentfeesAmount;
     /**
      * 
      * @type {string}

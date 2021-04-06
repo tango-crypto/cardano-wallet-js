@@ -878,6 +878,33 @@ describe('Cardano wallet API', function() {
 		}
 	];
 
+	let utxoStats = {
+		"distribution": {
+				"10000000000000000": 0,
+				"100000000000000": 0,
+				"1000000000000": 0,
+				"10000000000": 0,
+				"100000000": 0,
+				"1000000": 0,
+				"10000": 0,
+				"100": 0,
+				"1000000000": 0,
+				"100000000000": 1,
+				"10": 0,
+				"45000000000000000": 0,
+				"1000": 0,
+				"10000000000000": 0,
+				"1000000000000000": 0,
+				"100000": 0,
+				"10000000": 0
+		},
+		"scale": "log10",
+		"total": {
+				"quantity": 100000000000,
+				"unit": "lovelace"
+		}
+	} 
+
 	let fee = {
 			"estimated_min": {
 					"quantity": 130500,
@@ -1023,6 +1050,15 @@ describe('Cardano wallet API', function() {
 				const id = wallets[i].id;
 				expect(ids).include(id);
 			}
+		});
+
+		it("should get utxo wallet statistics", async function(){
+			let w = wallets.find(w => w.id == '2a793eb367d44a42f658eb02d1004f50c14612fd');
+
+			let wallet = await walletServer.getShelleyWallet(w.id);
+			let statistics = await wallet.getUtxoStatistics();
+
+			expect(statistics).deep.equal(utxoStats)
 		});
 
 		it("should get a wallet", async function() {
