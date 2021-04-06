@@ -11,6 +11,9 @@
  * https://github.com/swagger-api/swagger-codegen.git
  * Do not edit the class manually.
  */
+
+import { StakepoolsMetricsNonMyopicMemberRewards } from ".";
+
 /**
  * 
  * @export
@@ -22,7 +25,7 @@ export interface StakepoolsMetrics {
      * @type {StakepoolsMetricsNonMyopicMemberRewards}
      * @memberof StakepoolsMetrics
      */
-    non_myopic_member_rewards: any;
+    non_myopic_member_rewards: StakepoolsMetricsNonMyopicMemberRewards;
     /**
      * 
      * @type {StakepoolsMetricsRelativeStake}

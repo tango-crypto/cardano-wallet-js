@@ -1,11 +1,13 @@
-import { WalletsApi, NetworkApi } from './api';
+import { WalletsApi, NetworkApi, StakePoolsApi } from './api';
 import { Configuration } from './configuration';
 import { ApiWalletPostData } from './models';
 import { ShelleyWallet } from './wallet/shelley-wallet';
+import { StakePoolWallet } from './wallet/stakepool-wallet';
 export class WalletServer {
 	networkApi: NetworkApi;
 	walletsApi: WalletsApi;
 	config: Configuration;
+	stakePoolsApi: StakePoolsApi;
 	private constructor(protected url: string){
 		this.config = {
 			basePath: url
@@ -13,6 +15,7 @@ export class WalletServer {
 
 		this.networkApi = new NetworkApi(this.config);
 		this.walletsApi = new WalletsApi(this.config);
+		this.stakePoolsApi = new StakePoolsApi(this.config);
 	}
 
 	static init(url: string): WalletServer {
@@ -55,5 +58,10 @@ export class WalletServer {
 	async getShelleyWallet(id: any): Promise<ShelleyWallet> {
 		const res = await this.walletsApi.getWallet(id);
 		return ShelleyWallet.from(res.data, this.config);
+	}
+
+	async getStakePools(stake: number): Promise<StakePoolWallet[]> {
+		let res = await this.stakePoolsApi.listStakePools(stake);
+		return res.data.map(pool => StakePoolWallet.from(pool));
 	}
 }

@@ -11,6 +11,9 @@
  * https://github.com/swagger-api/swagger-codegen.git
  * Do not edit the class manually.
  */
+
+import { StakepoolsCost, StakepoolsMargin, StakepoolsMetadata, StakepoolsMetrics, StakepoolsPledge, StakepoolsRetirement } from ".";
+
 /**
  * 
  * @export
@@ -28,37 +31,37 @@ export interface ApiStakePool {
      * @type {StakepoolsMetrics}
      * @memberof ApiStakePool
      */
-    metrics: any;
+    metrics: StakepoolsMetrics;
     /**
      * 
      * @type {StakepoolsCost}
      * @memberof ApiStakePool
      */
-    cost: any;
+    cost: StakepoolsCost;
     /**
      * 
      * @type {StakepoolsMargin}
      * @memberof ApiStakePool
      */
-    margin: any;
+    margin: StakepoolsMargin;
     /**
      * 
      * @type {StakepoolsPledge}
      * @memberof ApiStakePool
      */
-    pledge: any;
+    pledge: StakepoolsPledge;
     /**
      * 
      * @type {StakepoolsMetadata}
      * @memberof ApiStakePool
      */
-    metadata?: any;
+    metadata?: StakepoolsMetadata;
     /**
      * 
      * @type {StakepoolsRetirement}
      * @memberof ApiStakePool
      */
-    retirement?: any;
+    retirement?: StakepoolsRetirement;
     /**
      * Various flags applicable to stake pools. Possible flags:  | flag     | description                                                                                                      | | ---      | ---                                                                                                              | | delisted | The pool is marked as delisted on a configured SMASH server; metadata for this pool have therefore been dropped. | 
      * @type {Array&lt;string&gt;}

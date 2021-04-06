@@ -21,7 +21,7 @@ import { Body7 } from '../models';
 import { Body8 } from '../models';
 import { Body9 } from '../models';
 import { CannotCoverFee } from '../models';
-import { InlineResponse2006 } from '../models';
+import { ApiStakePool } from '../models';
 import { InlineResponse2007 } from '../models';
 import { InlineResponse202 } from '../models';
 import { InlineResponse2021 } from '../models';
@@ -362,7 +362,7 @@ export const StakePoolsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async listStakePools(stake: number, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<InlineResponse2006>>> {
+        async listStakePools(stake: number, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<ApiStakePool>>> {
             const localVarAxiosArgs = await StakePoolsApiAxiosParamCreator(configuration).listStakePools(stake, options);
             return (axios: AxiosInstance = globalAxios, basePath: string = BASE_PATH) => {
                 const axiosRequestArgs = {...localVarAxiosArgs.options, url: basePath + localVarAxiosArgs.url};
@@ -445,7 +445,7 @@ export const StakePoolsApiFactory = function (configuration?: Configuration, bas
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        listStakePools(stake: number, options?: any): AxiosPromise<Array<InlineResponse2006>> {
+        listStakePools(stake: number, options?: any): AxiosPromise<Array<ApiStakePool>> {
             return StakePoolsApiFp(configuration).listStakePools(stake, options).then((request) => request(axios, basePath));
         },
         /**
