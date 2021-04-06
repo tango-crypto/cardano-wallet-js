@@ -11,6 +11,9 @@
  * https://github.com/swagger-api/swagger-codegen.git
  * Do not edit the class manually.
  */
+
+import { ApiMaintenanceActionGcStakePools } from ".";
+
 /**
  * 
  * @export
@@ -22,5 +25,5 @@ export interface ApiMaintenanceAction {
      * @type {ApiMaintenanceActionGcStakePools}
      * @memberof ApiMaintenanceAction
      */
-    gc_stake_pools: any;
+    gc_stake_pools: ApiMaintenanceActionGcStakePools;
 }

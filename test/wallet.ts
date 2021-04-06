@@ -993,6 +993,12 @@ describe('Cardano wallet API', function () {
 		"mint": [] as any[]
 	};
 
+	let poolMaintenanceAction = {
+    "gc_stake_pools": {
+        "status": "not_applicable"
+    }
+	};
+
 	let poolStake = [
 		{
 			"flags": [] as any[],
@@ -1280,6 +1286,12 @@ describe('Cardano wallet API', function () {
 			let rewards = pools.map(p => p.metrics.non_myopic_member_rewards.quantity);
 			expect(rewards).equal(rewards.sort().reverse());
 		});
+
+		it("should return stake pools maintenance actions", async function(){
+			let maintenanceActions = await walletServer.stakePoolMaintenanceActions();
+			expect(maintenanceActions).deep.equal(poolMaintenanceAction);
+		});
+
 	});
 
 	describe('transaction', function () {

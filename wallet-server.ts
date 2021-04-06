@@ -1,6 +1,7 @@
 import { WalletsApi, NetworkApi, StakePoolsApi } from './api';
 import { Configuration } from './configuration';
 import { ApiWalletPostData } from './models';
+import { MaintenanceActionWallet } from './wallet/maintenance-action-wallet';
 import { ShelleyWallet } from './wallet/shelley-wallet';
 import { StakePoolWallet } from './wallet/stakepool-wallet';
 export class WalletServer {
@@ -63,5 +64,10 @@ export class WalletServer {
 	async getStakePools(stake: number): Promise<StakePoolWallet[]> {
 		let res = await this.stakePoolsApi.listStakePools(stake);
 		return res.data.map(pool => StakePoolWallet.from(pool));
+	}
+
+	async stakePoolMaintenanceActions(): Promise<MaintenanceActionWallet>{
+		let res = await this.stakePoolsApi.getMaintenanceActions();
+		return new MaintenanceActionWallet(res.data.gc_stake_pools);
 	}
 }

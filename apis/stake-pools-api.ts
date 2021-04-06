@@ -22,7 +22,7 @@ import { Body8 } from '../models';
 import { Body9 } from '../models';
 import { CannotCoverFee } from '../models';
 import { ApiStakePool } from '../models';
-import { InlineResponse2007 } from '../models';
+import { ApiMaintenanceAction } from '../models';
 import { InlineResponse202 } from '../models';
 import { InlineResponse2021 } from '../models';
 import { InlineResponse4033 } from '../models';
@@ -332,7 +332,7 @@ export const StakePoolsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getMaintenanceActions(options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<InlineResponse2007>> {
+        async getMaintenanceActions(options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ApiMaintenanceAction>> {
             const localVarAxiosArgs = await StakePoolsApiAxiosParamCreator(configuration).getMaintenanceActions(options);
             return (axios: AxiosInstance = globalAxios, basePath: string = BASE_PATH) => {
                 const axiosRequestArgs = {...localVarAxiosArgs.options, url: basePath + localVarAxiosArgs.url};
@@ -423,7 +423,7 @@ export const StakePoolsApiFactory = function (configuration?: Configuration, bas
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getMaintenanceActions(options?: any): AxiosPromise<InlineResponse2007> {
+        getMaintenanceActions(options?: any): AxiosPromise<ApiMaintenanceAction> {
             return StakePoolsApiFp(configuration).getMaintenanceActions(options).then((request) => request(axios, basePath));
         },
         /**
