@@ -879,31 +879,31 @@ describe('Cardano wallet API', function() {
 	];
 
 	let utxoStats = {
-		"distribution": {
-				"10000000000000000": 0,
-				"100000000000000": 0,
-				"1000000000000": 0,
-				"10000000000": 0,
-				"100000000": 0,
-				"1000000": 0,
-				"10000": 0,
-				"100": 0,
-				"1000000000": 0,
-				"100000000000": 1,
-				"10": 0,
-				"45000000000000000": 0,
-				"1000": 0,
-				"10000000000000": 0,
-				"1000000000000000": 0,
-				"100000": 0,
-				"10000000": 0
-		},
-		"scale": "log10",
-		"total": {
-				"quantity": 100000000000,
-				"unit": "lovelace"
-		}
-	} 
+    "distribution": {
+        "10000000000000000": 0,
+        "100000000000000": 0,
+        "1000000000000": 0,
+        "10000000000": 0,
+        "100000000": 0,
+        "1000000": 100,
+        "10000": 0,
+        "100": 0,
+        "1000000000": 0,
+        "100000000000": 100,
+        "10": 0,
+        "45000000000000000": 0,
+        "1000": 0,
+        "10000000000000": 0,
+        "1000000000000000": 0,
+        "100000": 0,
+        "10000000": 0
+    },
+    "scale": "log10",
+    "total": {
+        "quantity": 10000100000000,
+        "unit": "lovelace"
+    }
+	}
 
 	let fee = {
 			"estimated_min": {
@@ -1053,7 +1053,7 @@ describe('Cardano wallet API', function() {
 		});
 
 		it("should get utxo wallet statistics", async function(){
-			let w = wallets.find(w => w.id == '2a793eb367d44a42f658eb02d1004f50c14612fd');
+			let w = wallets.find(w => w.id == '868d04759fd222ac776484888d4bcd462d146772');
 
 			let wallet = await walletServer.getShelleyWallet(w.id);
 			let statistics = await wallet.getUtxoStatistics();
@@ -1069,6 +1069,14 @@ describe('Cardano wallet API', function() {
 			expect(wallet.name).equal(w.name);
 			expect(wallet.passphrase.last_updated_at).be.a('string');
 		});
+
+		it("shuld remove a wallet", async function() {
+			let ls = await walletServer.wallets();
+			let wallet = ls.find(w => w.name == 'tangocrypto-wallet');
+			await wallet.delete();
+			await expect(walletServer.getShelleyWallet(wallet.id)).to.eventually.rejectedWith(Error)
+			.and.have.nested.property('response.status').equal(404);
+		})
 
 		it("should rename a wallet", async function() {
 			let w = wallets.find(w => w.id === '60bb5513e4e262e445cf203db9cf73ba925064d2');
