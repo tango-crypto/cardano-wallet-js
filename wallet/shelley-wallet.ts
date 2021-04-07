@@ -2,7 +2,7 @@
 import { config } from 'chai';
 import { AddressesApi, KeysApi, TransactionsApi, WalletsApi, StakePoolsApi } from '../api';
 import { Configuration } from '../configuration';
-import { ApiAddressData, ApiAddressStateEnum, ApiPostTransactionData, ApiPostTransactionFeeData, ApiWallet, ApiWalletPutData, ApiWalletPutPassphraseData, WalletsAssets, WalletsBalance, WalletsDelegation, WalletsPassphrase, WalletsState, WalletsTip, WalletswalletIdpaymentfeesAmount, WalletswalletIdpaymentfeesAmountUnitEnum, WalletswalletIdpaymentfeesPayments } from '../models';
+import { ApiAddressData, ApiAddressStateEnum, ApiPostTransactionData, ApiPostTransactionFeeData, ApiWallet, ApiWalletPassphrase, ApiWalletPutData, ApiWalletPutPassphraseData, WalletsAssets, WalletsBalance, WalletsDelegation, WalletsPassphrase, WalletsState, WalletsTip, WalletswalletIdpaymentfeesAmount, WalletswalletIdpaymentfeesAmountUnitEnum, WalletswalletIdpaymentfeesPayments } from '../models';
 import { AddressWallet } from './address-wallet';
 import { FeeWallet } from './fee-wallet';
 import { KeyRoleEnum, KeyWallet } from './key-wallet';
@@ -79,6 +79,16 @@ export class ShelleyWallet implements ApiWallet {
 		async getUtxoStatistics() {
 			let res = await this.walletsApi.getUTxOsStatistics(this.id);
 			return UtxoStatisticsWallet.from(res.data);
+		}
+
+		async getBalance() {
+			let res = await this.walletsApi.getWallet(this.id);
+			return res.data.balance;
+		}
+
+		async getDelegation() {
+			let res = await this.walletsApi.getWallet(this.id);
+			return res.data.delegation;
 		}
 
 		async delete() {
@@ -162,5 +172,13 @@ export class ShelleyWallet implements ApiWallet {
 		async estimateDelegationFee(): Promise<FeeWallet> {
 			let res = await this.stakePoolApi.getDelegationFee(this.id);
 			return FeeWallet.from(res.data);
+		}
+
+		async delegate(poolId: string, passphrase: string): Promise<TransactionWallet> {
+			let payload: ApiWalletPassphrase = {
+				passphrase: passphrase
+			};
+			let res = await this.stakePoolApi.joinStakePool(payload, poolId, this.id);
+			return TransactionWallet.from(res.data);
 		}
 }

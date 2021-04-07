@@ -19,12 +19,12 @@ import { BASE_PATH, COLLECTION_FORMATS, RequestArgs, BaseAPI, RequiredError } fr
 import { BadRequest } from '../models';
 import { ApiMaintenanceActionPostData } from '../models';
 import { Body8 } from '../models';
-import { Body9 } from '../models';
+import { ApiWalletPassphrase } from '../models';
 import { CannotCoverFee } from '../models';
 import { ApiStakePool } from '../models';
 import { ApiMaintenanceAction } from '../models';
 import { ApiFee } from '../models';
-import { InlineResponse2021 } from '../models';
+import { ApiTransaction } from '../models';
 import { InlineResponse4033 } from '../models';
 import { InlineResponse4034 } from '../models';
 import { InlineResponse4041 } from '../models';
@@ -116,13 +116,13 @@ export const StakePoolsApiAxiosParamCreator = function (configuration?: Configur
         /**
          * <p align=\"right\">status: <strong>stable</strong></p>  Delegate all (current and future) addresses from the given wallet to the given stake pool.  <strong>Note:</strong> Bech32-encoded stake pool identifiers can vary in length. 
          * @summary Join
-         * @param {Body9} body 
+         * @param {ApiWalletPassphrase} body 
          * @param {string} stakePoolId 
          * @param {string} walletId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        joinStakePool: async (body: Body9, stakePoolId: string, walletId: string, options: any = {}): Promise<RequestArgs> => {
+        joinStakePool: async (body: ApiWalletPassphrase, stakePoolId: string, walletId: string, options: any = {}): Promise<RequestArgs> => {
             // verify required parameter 'body' is not null or undefined
             if (body === null || body === undefined) {
                 throw new RequiredError('body','Required parameter body was null or undefined when calling joinStakePool.');
@@ -342,13 +342,13 @@ export const StakePoolsApiFp = function(configuration?: Configuration) {
         /**
          * <p align=\"right\">status: <strong>stable</strong></p>  Delegate all (current and future) addresses from the given wallet to the given stake pool.  <strong>Note:</strong> Bech32-encoded stake pool identifiers can vary in length. 
          * @summary Join
-         * @param {Body9} body 
+         * @param {ApiWalletPassphrase} body 
          * @param {string} stakePoolId 
          * @param {string} walletId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async joinStakePool(body: Body9, stakePoolId: string, walletId: string, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<InlineResponse2021>> {
+        async joinStakePool(body: ApiWalletPassphrase, stakePoolId: string, walletId: string, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ApiTransaction>> {
             const localVarAxiosArgs = await StakePoolsApiAxiosParamCreator(configuration).joinStakePool(body, stakePoolId, walletId, options);
             return (axios: AxiosInstance = globalAxios, basePath: string = BASE_PATH) => {
                 const axiosRequestArgs = {...localVarAxiosArgs.options, url: basePath + localVarAxiosArgs.url};
@@ -391,7 +391,7 @@ export const StakePoolsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async quitStakePool(body: Body8, walletId: string, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<InlineResponse2021>> {
+        async quitStakePool(body: Body8, walletId: string, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ApiTransaction>> {
             const localVarAxiosArgs = await StakePoolsApiAxiosParamCreator(configuration).quitStakePool(body, walletId, options);
             return (axios: AxiosInstance = globalAxios, basePath: string = BASE_PATH) => {
                 const axiosRequestArgs = {...localVarAxiosArgs.options, url: basePath + localVarAxiosArgs.url};
@@ -429,13 +429,13 @@ export const StakePoolsApiFactory = function (configuration?: Configuration, bas
         /**
          * <p align=\"right\">status: <strong>stable</strong></p>  Delegate all (current and future) addresses from the given wallet to the given stake pool.  <strong>Note:</strong> Bech32-encoded stake pool identifiers can vary in length. 
          * @summary Join
-         * @param {Body9} body 
+         * @param {ApiWalletPassphrase} body 
          * @param {string} stakePoolId 
          * @param {string} walletId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        joinStakePool(body: Body9, stakePoolId: string, walletId: string, options?: any): AxiosPromise<InlineResponse2021> {
+        joinStakePool(body: ApiWalletPassphrase, stakePoolId: string, walletId: string, options?: any): AxiosPromise<ApiTransaction> {
             return StakePoolsApiFp(configuration).joinStakePool(body, stakePoolId, walletId, options).then((request) => request(axios, basePath));
         },
         /**
@@ -466,7 +466,7 @@ export const StakePoolsApiFactory = function (configuration?: Configuration, bas
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        quitStakePool(body: Body8, walletId: string, options?: any): AxiosPromise<InlineResponse2021> {
+        quitStakePool(body: Body8, walletId: string, options?: any): AxiosPromise<ApiTransaction> {
             return StakePoolsApiFp(configuration).quitStakePool(body, walletId, options).then((request) => request(axios, basePath));
         },
     };
@@ -503,14 +503,14 @@ export class StakePoolsApi extends BaseAPI {
     /**
      * <p align=\"right\">status: <strong>stable</strong></p>  Delegate all (current and future) addresses from the given wallet to the given stake pool.  <strong>Note:</strong> Bech32-encoded stake pool identifiers can vary in length. 
      * @summary Join
-     * @param {Body9} body 
+     * @param {ApiWalletPassphrase} body 
      * @param {string} stakePoolId 
      * @param {string} walletId 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof StakePoolsApi
      */
-    public joinStakePool(body: Body9, stakePoolId: string, walletId: string, options?: any) {
+    public joinStakePool(body: ApiWalletPassphrase, stakePoolId: string, walletId: string, options?: any) {
         return StakePoolsApiFp(this.configuration).joinStakePool(body, stakePoolId, walletId, options).then((request) => request(this.axios, this.basePath));
     }
     /**

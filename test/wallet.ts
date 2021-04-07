@@ -13,6 +13,8 @@ import { WalletServer } from '../wallet-server';
 import { KeyRoleEnum } from '../wallet/key-wallet';
 
 import * as dotenv from "dotenv";
+import { resolve } from 'node:dns';
+import { ShelleyWallet } from '../wallet/shelley-wallet';
 dotenv.config();
 
 describe('Cardano wallet API', function () {
@@ -1015,6 +1017,14 @@ describe('Cardano wallet API', function () {
     }
 	};
 
+	let afterDelegationBalance = {
+		"next": [] as any[],
+		"active": {
+				"status": "delegating",
+				"target": "pool1as50x0wtumtyqzs7tceeh5ry0syh8jnvpnuu9wlxswxuv48sw4w"
+		}
+	};
+
 	let poolStake = [
 		{
 			"flags": [] as any[],
@@ -1320,6 +1330,30 @@ describe('Cardano wallet API', function () {
 			expect(fee).deep.equal(delegationFee);
 		});
 
+		it("should deledate to stake pool", async function(){
+			let pool = (await walletServer.getStakePools()).find(p => p.id == 'pool1as50x0wtumtyqzs7tceeh5ry0syh8jnvpnuu9wlxswxuv48sw4w');
+			let w = wallets.find(w => w.id == '2a793eb367d44a42f658eb02d1004f50c14612fd');
+
+			let wallet = await walletServer.getShelleyWallet(w.id);
+			let transaction = await wallet.delegate(pool.id, w.passphrase);
+
+			let inputAmount = transaction.inputs.map(i => i.amount.quantity).reduce((a, b) => a + b);
+			let outputAmount = transaction.outputs.map(o => o.amount.quantity).reduce((a, b) => a + b);
+			let fee = transaction.fee.quantity;
+
+
+			expect(ApiTransactionStatusEnum.Pending).equal(transaction.status);
+			expect(ApiTransactionDirectionEnum.Outgoing).equal(transaction.direction);
+			expect(outputAmount + fee).equal(inputAmount);
+
+			await waitUntilTxFinish(transaction.id, wallet);
+			transaction = await wallet.getTransaction(transaction.id);
+			if(transaction.status == ApiTransactionStatusEnum.InLedger) {
+				let delegation = await wallet.getDelegation();
+				expect(delegation).deep.equal(afterDelegationBalance);
+			}
+		});
+
 	});
 
 	describe('transaction', function () {
@@ -1386,3 +1420,21 @@ describe('Cardano wallet API', function () {
 	});
 
 });
+
+
+async function waitUntilTxFinish(txId: string, wallet: ShelleyWallet): Promise<void> {
+	return new Promise(async (resolve, reject) => {
+		let tx = {status: ApiTransactionStatusEnum.Pending};
+		do {
+			await delay(1);
+			tx = await wallet.getTransaction(txId);
+		}while(tx.status == ApiTransactionStatusEnum.Pending)
+		resolve();
+	})
+};
+
+async function delay(time: number) {
+	return new Promise((resolve, reject) => {
+		setTimeout(function(){ resolve(true);}, time*1000);
+	});
+}

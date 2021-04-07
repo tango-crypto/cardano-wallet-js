@@ -61,7 +61,7 @@ export class WalletServer {
 		return ShelleyWallet.from(res.data, this.config);
 	}
 
-	async getStakePools(stake: number): Promise<StakePoolWallet[]> {
+	async getStakePools(stake: number = 0): Promise<StakePoolWallet[]> {
 		let res = await this.stakePoolsApi.listStakePools(stake);
 		return res.data.map(pool => StakePoolWallet.from(pool));
 	}
