@@ -15,6 +15,10 @@ describe('Cardano wallet network', function() {
 	let nodeEras = [ApiNetworkInformationNodeEraEnum.Allegra, ApiNetworkInformationNodeEraEnum.Byron, ApiNetworkInformationNodeEraEnum.Mary, ApiNetworkInformationNodeEraEnum.Shelley];
 	let clockStatus = [ApiNetworkClockStatusEnum.Available, ApiNetworkClockStatusEnum.Unavailable, ApiNetworkClockStatusEnum.Pending];
 
+	let serverSettings = {
+    "pool_metadata_source": "direct"
+	};
+
 	before('Initializing test cluster', async function(){
 		walletServer = WalletServer.init(`http://${process.env.TEST_WALLET_HOST}:${process.env.TEST_WALLET_PORT}/v2`);
 	});
@@ -96,6 +100,16 @@ describe('Cardano wallet network', function() {
 
 			expect(parameters).have.property('minimum_utxo_value').with.property('quantity').be.a('number');
 			expect(amountUnits).include(parameters.minimum_utxo_value.unit);
+	});
+
+	it("should update metadata source", async function(){
+		let poolMetadataSource = "direct";
+		await walletServer.updateMetadataSource(poolMetadataSource);
+	});
+
+	it("should get metadata source", async function(){
+		let metadataSource = await walletServer.getMetadataSource();
+		expect(serverSettings.pool_metadata_source).equal(metadataSource);
 	});
 
 });

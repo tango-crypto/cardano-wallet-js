@@ -37,6 +37,23 @@
 		{
 			"type": "node",
 			"request": "launch",
+			"name": "Mocha Network",
+			"program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
+			"args": [
+				"-r",
+				"ts-node/register",
+				"--timeout",
+				"999999",
+				"--colors",
+				"${workspaceFolder}/test/network.ts"
+			],
+			"console": "integratedTerminal",
+			"internalConsoleOptions": "neverOpen",
+			"protocol": "inspector"
+		},
+		{
+			"type": "node",
+			"request": "launch",
 			"name": "Mocha Seed",
 			"program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
 			"args": [

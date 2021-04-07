@@ -17,8 +17,8 @@ import { Configuration } from '../configuration';
 // @ts-ignore
 import { BASE_PATH, COLLECTION_FORMATS, RequestArgs, BaseAPI, RequiredError } from '../base';
 import { BadRequest } from '../models';
-import { Body22 } from '../models';
-import { InlineResponse20015 } from '../models';
+import { ApiSettingsPutData } from '../models';
+import { ApiGetSettings } from '../models';
 import { UnsupportedMediaType } from '../models';
 /**
  * SettingsApi - axios parameter creator
@@ -63,11 +63,11 @@ export const SettingsApiAxiosParamCreator = function (configuration?: Configurat
         /**
          * <p align=\"right\">status: <strong>stable</strong></p>  Overwrite current settings. 
          * @summary Update settings
-         * @param {Body22} body 
+         * @param {ApiSettingsPutData} body 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        putSettings: async (body: Body22, options: any = {}): Promise<RequestArgs> => {
+        putSettings: async (body: ApiSettingsPutData, options: any = {}): Promise<RequestArgs> => {
             // verify required parameter 'body' is not null or undefined
             if (body === null || body === undefined) {
                 throw new RequiredError('body','Required parameter body was null or undefined when calling putSettings.');
@@ -118,7 +118,7 @@ export const SettingsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getSettings(options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<InlineResponse20015>> {
+        async getSettings(options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ApiGetSettings>> {
             const localVarAxiosArgs = await SettingsApiAxiosParamCreator(configuration).getSettings(options);
             return (axios: AxiosInstance = globalAxios, basePath: string = BASE_PATH) => {
                 const axiosRequestArgs = {...localVarAxiosArgs.options, url: basePath + localVarAxiosArgs.url};
@@ -128,11 +128,11 @@ export const SettingsApiFp = function(configuration?: Configuration) {
         /**
          * <p align=\"right\">status: <strong>stable</strong></p>  Overwrite current settings. 
          * @summary Update settings
-         * @param {Body22} body 
+         * @param {ApiSettingsPutData} body 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async putSettings(body: Body22, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+        async putSettings(body: ApiSettingsPutData, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
             const localVarAxiosArgs = await SettingsApiAxiosParamCreator(configuration).putSettings(body, options);
             return (axios: AxiosInstance = globalAxios, basePath: string = BASE_PATH) => {
                 const axiosRequestArgs = {...localVarAxiosArgs.options, url: basePath + localVarAxiosArgs.url};
@@ -154,17 +154,17 @@ export const SettingsApiFactory = function (configuration?: Configuration, baseP
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getSettings(options?: any): AxiosPromise<InlineResponse20015> {
+        getSettings(options?: any): AxiosPromise<ApiGetSettings> {
             return SettingsApiFp(configuration).getSettings(options).then((request) => request(axios, basePath));
         },
         /**
          * <p align=\"right\">status: <strong>stable</strong></p>  Overwrite current settings. 
          * @summary Update settings
-         * @param {Body22} body 
+         * @param {ApiSettingsPutData} body 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        putSettings(body: Body22, options?: any): AxiosPromise<void> {
+        putSettings(body: ApiSettingsPutData, options?: any): AxiosPromise<void> {
             return SettingsApiFp(configuration).putSettings(body, options).then((request) => request(axios, basePath));
         },
     };
@@ -190,12 +190,12 @@ export class SettingsApi extends BaseAPI {
     /**
      * <p align=\"right\">status: <strong>stable</strong></p>  Overwrite current settings. 
      * @summary Update settings
-     * @param {Body22} body 
+     * @param {ApiSettingsPutData} body 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof SettingsApi
      */
-    public putSettings(body: Body22, options?: any) {
+    public putSettings(body: ApiSettingsPutData, options?: any) {
         return SettingsApiFp(this.configuration).putSettings(body, options).then((request) => request(this.axios, this.basePath));
     }
 }

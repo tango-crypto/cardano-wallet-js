@@ -1,6 +1,6 @@
-import { WalletsApi, NetworkApi, StakePoolsApi } from './api';
+import { WalletsApi, NetworkApi, StakePoolsApi, SettingsApi } from './api';
 import { Configuration } from './configuration';
-import { ApiMaintenanceActionPostData, ApiMaintenanceActionPostDataMaintenanceActionEnum, ApiWalletPostData } from './models';
+import { ApiMaintenanceActionPostData, ApiMaintenanceActionPostDataMaintenanceActionEnum, ApiSettingsPutData, ApiWalletPostData } from './models';
 import { MaintenanceActionWallet } from './wallet/maintenance-action-wallet';
 import { ShelleyWallet } from './wallet/shelley-wallet';
 import { StakePoolWallet } from './wallet/stakepool-wallet';
@@ -9,6 +9,7 @@ export class WalletServer {
 	walletsApi: WalletsApi;
 	config: Configuration;
 	stakePoolsApi: StakePoolsApi;
+	settingsApi: SettingsApi;
 	private constructor(protected url: string){
 		this.config = {
 			basePath: url
@@ -17,6 +18,7 @@ export class WalletServer {
 		this.networkApi = new NetworkApi(this.config);
 		this.walletsApi = new WalletsApi(this.config);
 		this.stakePoolsApi = new StakePoolsApi(this.config);
+		this.settingsApi = new SettingsApi(this.config);
 	}
 
 	static init(url: string): WalletServer {
@@ -77,6 +79,20 @@ export class WalletServer {
 		}
 		await this.stakePoolsApi.postMaintenanceAction(payload);
 		return;
+	}
+
+	async updateMetadataSource(metadataSource: string) {
+		let payload: ApiSettingsPutData = {
+			settings: {
+				pool_metadata_source: metadataSource
+			}
+		};
+		await this.settingsApi.putSettings(payload);
+	}
+
+	async getMetadataSource(){
+		let res = await this.settingsApi.getSettings();
+		return res.data.pool_metadata_source;
 	}
 
 }
