@@ -51,5 +51,22 @@
 			"internalConsoleOptions": "neverOpen",
 			"protocol": "inspector"
 		},
+		{
+			"type": "node",
+			"request": "launch",
+			"name": "Mocha Wallet",
+			"program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
+			"args": [
+				"-r",
+				"ts-node/register",
+				"--timeout",
+				"999999",
+				"--colors",
+				"${workspaceFolder}/test/wallet.ts"
+			],
+			"console": "integratedTerminal",
+			"internalConsoleOptions": "neverOpen",
+			"protocol": "inspector"
+		},
 	]
 }

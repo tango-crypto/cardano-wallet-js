@@ -18,7 +18,6 @@ import { Configuration } from '../configuration';
 import { BASE_PATH, COLLECTION_FORMATS, RequestArgs, BaseAPI, RequiredError } from '../base';
 import { BadRequest } from '../models';
 import { ApiMaintenanceActionPostData } from '../models';
-import { Body8 } from '../models';
 import { ApiWalletPassphrase } from '../models';
 import { CannotCoverFee } from '../models';
 import { ApiStakePool } from '../models';
@@ -257,12 +256,12 @@ export const StakePoolsApiAxiosParamCreator = function (configuration?: Configur
         /**
          * <p align=\"right\">status: <strong>stable</strong></p>  Stop delegating completely. The wallet's stake will become inactive.  > ⚠️  Disclaimer ⚠️ > > This endpoint historically use to take a stake pool id as a path parameter. > However, retiring from delegation is ubiquitous and not tight to a particular > stake pool. For backward-compatibility reasons, sending stake pool ids as path > parameter will still be accepted by the server but new integrations are > encouraged to provide a placeholder asterisk `*` instead. 
          * @summary Quit
-         * @param {Body8} body 
+         * @param {ApiWalletPassphrase} body 
          * @param {string} walletId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        quitStakePool: async (body: Body8, walletId: string, options: any = {}): Promise<RequestArgs> => {
+        quitStakePool: async (body: ApiWalletPassphrase, walletId: string, options: any = {}): Promise<RequestArgs> => {
             // verify required parameter 'body' is not null or undefined
             if (body === null || body === undefined) {
                 throw new RequiredError('body','Required parameter body was null or undefined when calling quitStakePool.');
@@ -386,12 +385,12 @@ export const StakePoolsApiFp = function(configuration?: Configuration) {
         /**
          * <p align=\"right\">status: <strong>stable</strong></p>  Stop delegating completely. The wallet's stake will become inactive.  > ⚠️  Disclaimer ⚠️ > > This endpoint historically use to take a stake pool id as a path parameter. > However, retiring from delegation is ubiquitous and not tight to a particular > stake pool. For backward-compatibility reasons, sending stake pool ids as path > parameter will still be accepted by the server but new integrations are > encouraged to provide a placeholder asterisk `*` instead. 
          * @summary Quit
-         * @param {Body8} body 
+         * @param {ApiWalletPassphrase} body 
          * @param {string} walletId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async quitStakePool(body: Body8, walletId: string, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ApiTransaction>> {
+        async quitStakePool(body: ApiWalletPassphrase, walletId: string, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ApiTransaction>> {
             const localVarAxiosArgs = await StakePoolsApiAxiosParamCreator(configuration).quitStakePool(body, walletId, options);
             return (axios: AxiosInstance = globalAxios, basePath: string = BASE_PATH) => {
                 const axiosRequestArgs = {...localVarAxiosArgs.options, url: basePath + localVarAxiosArgs.url};
@@ -461,12 +460,12 @@ export const StakePoolsApiFactory = function (configuration?: Configuration, bas
         /**
          * <p align=\"right\">status: <strong>stable</strong></p>  Stop delegating completely. The wallet's stake will become inactive.  > ⚠️  Disclaimer ⚠️ > > This endpoint historically use to take a stake pool id as a path parameter. > However, retiring from delegation is ubiquitous and not tight to a particular > stake pool. For backward-compatibility reasons, sending stake pool ids as path > parameter will still be accepted by the server but new integrations are > encouraged to provide a placeholder asterisk `*` instead. 
          * @summary Quit
-         * @param {Body8} body 
+         * @param {ApiWalletPassphrase} body 
          * @param {string} walletId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        quitStakePool(body: Body8, walletId: string, options?: any): AxiosPromise<ApiTransaction> {
+        quitStakePool(body: ApiWalletPassphrase, walletId: string, options?: any): AxiosPromise<ApiTransaction> {
             return StakePoolsApiFp(configuration).quitStakePool(body, walletId, options).then((request) => request(axios, basePath));
         },
     };
@@ -538,13 +537,13 @@ export class StakePoolsApi extends BaseAPI {
     /**
      * <p align=\"right\">status: <strong>stable</strong></p>  Stop delegating completely. The wallet's stake will become inactive.  > ⚠️  Disclaimer ⚠️ > > This endpoint historically use to take a stake pool id as a path parameter. > However, retiring from delegation is ubiquitous and not tight to a particular > stake pool. For backward-compatibility reasons, sending stake pool ids as path > parameter will still be accepted by the server but new integrations are > encouraged to provide a placeholder asterisk `*` instead. 
      * @summary Quit
-     * @param {Body8} body 
+     * @param {ApiWalletPassphrase} body 
      * @param {string} walletId 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof StakePoolsApi
      */
-    public quitStakePool(body: Body8, walletId: string, options?: any) {
+    public quitStakePool(body: ApiWalletPassphrase, walletId: string, options?: any) {
         return StakePoolsApiFp(this.configuration).quitStakePool(body, walletId, options).then((request) => request(this.axios, this.basePath));
     }
 }

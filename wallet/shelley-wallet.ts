@@ -2,7 +2,7 @@
 import { config } from 'chai';
 import { AddressesApi, KeysApi, TransactionsApi, WalletsApi, StakePoolsApi } from '../api';
 import { Configuration } from '../configuration';
-import { ApiAddressData, ApiAddressStateEnum, ApiPostTransactionData, ApiPostTransactionFeeData, ApiWallet, ApiWalletPassphrase, ApiWalletPutData, ApiWalletPutPassphraseData, WalletsAssets, WalletsBalance, WalletsDelegation, WalletsPassphrase, WalletsState, WalletsTip, WalletswalletIdpaymentfeesAmount, WalletswalletIdpaymentfeesAmountUnitEnum, WalletswalletIdpaymentfeesPayments } from '../models';
+import { ApiAddressData, ApiAddressStateEnum, ApiPostTransactionData, ApiPostTransactionDataWithdrawalEnum, ApiPostTransactionFeeData, ApiWallet, ApiWalletPassphrase, ApiWalletPutData, ApiWalletPutPassphraseData, WalletsAssets, WalletsBalance, WalletsDelegation, WalletsPassphrase, WalletsState, WalletsTip, WalletswalletIdpaymentfeesAmount, WalletswalletIdpaymentfeesAmountUnitEnum, WalletswalletIdpaymentfeesPayments } from '../models';
 import { AddressWallet } from './address-wallet';
 import { FeeWallet } from './fee-wallet';
 import { KeyRoleEnum, KeyWallet } from './key-wallet';
@@ -62,7 +62,7 @@ export class ShelleyWallet implements ApiWallet {
 				name: name
 			};
 			let res = await this.walletsApi.putWallet(payload, this.id);
-			this.name = res.data.name;
+			this.updateData(res.data);
 			return this;
 		}
 
@@ -73,7 +73,8 @@ export class ShelleyWallet implements ApiWallet {
 			};
 			await this.walletsApi.putWalletPassphrase(paylaod, this.id);
 			let res = await this.walletsApi.getWallet(this.id);
-			return ShelleyWallet.from(res.data, this.config);
+			this.updateData(res.data);
+			return this;
 		}
 
 		async getUtxoStatistics() {
@@ -81,14 +82,26 @@ export class ShelleyWallet implements ApiWallet {
 			return UtxoStatisticsWallet.from(res.data);
 		}
 
-		async getBalance() {
-			let res = await this.walletsApi.getWallet(this.id);
-			return res.data.balance;
+		getTotalBalance() {
+			return this.balance.total.quantity;
 		}
 
-		async getDelegation() {
+		getAvailableBalance() {
+			return this.balance.available.quantity;
+		}
+
+		getRewardBalance() {
+			return this.balance.reward.quantity;
+		}
+
+		getDelegation() {
+			return this.delegation;
+		}
+
+		async refresh() {
 			let res = await this.walletsApi.getWallet(this.id);
-			return res.data.delegation;
+			this.updateData(res.data);
+			return this;
 		}
 
 		async delete() {
@@ -180,5 +193,41 @@ export class ShelleyWallet implements ApiWallet {
 			};
 			let res = await this.stakePoolApi.joinStakePool(payload, poolId, this.id);
 			return TransactionWallet.from(res.data);
+		}
+
+		async withdraw(passphrase: any, addresses: AddressWallet[], amounts: number[]): Promise<TransactionWallet> { 
+			let payload: ApiPostTransactionData = {
+				passphrase: passphrase,
+				payments: addresses.map((addr, i) =>  {
+					let amount: WalletswalletIdpaymentfeesAmount = { unit: WalletswalletIdpaymentfeesAmountUnitEnum.Lovelace, quantity: amounts[i] };
+					let payment: WalletswalletIdpaymentfeesPayments = { 
+						address: addr.address, 
+						amount: amount
+					};
+					return payment;
+				}),
+				withdrawal: ApiPostTransactionDataWithdrawalEnum.Self
+			};
+			let res = await this.transactionsApi.postTransaction(payload, this.id);
+			return TransactionWallet.from(res.data);
+		}
+
+		async stopDelegation(passphrase: string) {
+			let payload: ApiWalletPassphrase = {
+				passphrase: passphrase
+			};
+			let res = await this.stakePoolApi.quitStakePool(payload, this.id);
+			return TransactionWallet.from(res.data);
+		}
+
+		private updateData(data: ApiWallet) {
+			this.address_pool_gap = data.address_pool_gap;
+			this.balance = data.balance;
+			this.assets = data.assets;
+			this.delegation = data.delegation;
+			this.name = data.name;
+			this.passphrase = data.passphrase;
+			this.state = data.state;
+			this.tip = data.tip;
 		}
 }

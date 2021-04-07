@@ -22,7 +22,7 @@ export interface WalletsBalanceReward {
      * @type {number}
      * @memberof WalletsBalanceReward
      */
-    quantity: any;
+    quantity: number;
     /**
      * 
      * @type {string}

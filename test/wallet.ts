@@ -6,7 +6,7 @@ const expect = chai.expect;
 
 import 'mocha';
 
-import { ApiAddressStateEnum, ApiTransactionDirectionEnum, ApiTransactionStatusEnum, WalletsTipHeightUnitEnum, WalletswalletIdpaymentfeesAmountUnitEnum, WalletswalletIdtransactionsAmountUnitEnum, WalletswalletIdtransactionsDepthUnitEnum } from '../models';
+import { ApiAddressStateEnum, ApiTransactionDirectionEnum, ApiTransactionStatusEnum, WalletsDelegationActiveStatusEnum, WalletsTipHeightUnitEnum, WalletswalletIdpaymentfeesAmountUnitEnum, WalletswalletIdtransactionsAmountUnitEnum, WalletswalletIdtransactionsDepthUnitEnum } from '../models';
 import { Seed } from '../utils';
 
 import { WalletServer } from '../wallet-server';
@@ -1017,7 +1017,7 @@ describe('Cardano wallet API', function () {
     }
 	};
 
-	let afterDelegationBalance = {
+	let afterDelegation = {
 		"next": [] as any[],
 		"active": {
 				"status": "delegating",
@@ -1292,8 +1292,8 @@ describe('Cardano wallet API', function () {
 		});
 
 		it('should get wallet next unused address', async function () {
-			let id = '2a793eb367d44a42f658eb02d1004f50c14612fd';
-			let addr = 'addr1q9z4r9d5hue0rz2qtr6ucu6ygghufe8p2zatwly0twzuus359kkfl90wf7f9vlm99fek6e9l5zh65td8jhw63hn9skqq3mpvge'; // next unused address;
+			let id = '4ea40ca5323bad2efb77c68ae42e5bb7205ab5e6';
+			let addr = 'addr1q99q78gt2898zgu2dcswf2yuxj6vujcqece38rycc7wsncl5lx8y8swrhrt93dt5kykkhtd57gpc0hc8820vh6cy8n6su9tsj8'; // next unused address;
 
 			let wallet = await walletServer.getShelleyWallet(id);
 			let addresses = (await wallet.getAddresses()).map(addr => addr.address);
@@ -1330,7 +1330,7 @@ describe('Cardano wallet API', function () {
 			expect(fee).deep.equal(delegationFee);
 		});
 
-		it("should deledate to stake pool", async function(){
+		it("should delegate to stake pool", async function(){
 			let pool = (await walletServer.getStakePools()).find(p => p.id == 'pool1as50x0wtumtyqzs7tceeh5ry0syh8jnvpnuu9wlxswxuv48sw4w');
 			let w = wallets.find(w => w.id == '2a793eb367d44a42f658eb02d1004f50c14612fd');
 
@@ -1339,8 +1339,38 @@ describe('Cardano wallet API', function () {
 
 			let inputAmount = transaction.inputs.map(i => i.amount.quantity).reduce((a, b) => a + b);
 			let outputAmount = transaction.outputs.map(o => o.amount.quantity).reduce((a, b) => a + b);
-			let fee = transaction.fee.quantity;
+			let spent = transaction.amount.quantity; // fee + deposit
 
+			expect(ApiTransactionStatusEnum.Pending).equal(transaction.status);
+			expect(ApiTransactionDirectionEnum.Outgoing).equal(transaction.direction);
+			expect(outputAmount + spent).equal(inputAmount);
+
+			await waitUntilTxFinish(transaction.id, wallet);
+			transaction = await wallet.getTransaction(transaction.id);
+			if(transaction.status == ApiTransactionStatusEnum.InLedger) {
+				await wallet.refresh();
+				if(wallet.delegation.next.length > 0 ) {
+					let epoch = wallet.delegation.next.sort((a, b) => -(a.changes_at.epoch_number - b.changes_at.epoch_number)).map(d => d.changes_at.epoch_number)[0];
+					await waitUntilEpoch(epoch, walletServer);
+					await wallet.refresh();
+				}
+				let delegation = wallet.getDelegation();
+				expect(delegation).deep.equal(afterDelegation);
+			}
+		});
+
+		it("should withdraw wallet rewards", async function(){
+			let w = wallets.find(w => w.id == '2a793eb367d44a42f658eb02d1004f50c14612fd');
+
+			let wallet = await walletServer.getShelleyWallet(w.id);
+			let addresses = (await wallet.getUsedAddresses()).slice(0, 1);
+			let amounts = [wallet.getRewardBalance()];
+			let availableBalance = wallet.getAvailableBalance();
+			let transaction = await wallet.withdraw(w.passphrase, addresses, amounts);
+
+			let inputAmount = transaction.inputs.map(i => i.amount.quantity).reduce((a, b) => a + b);
+			let outputAmount = transaction.outputs.map(o => o.amount.quantity).reduce((a, b) => a + b);
+			let fee = transaction.fee.quantity;
 
 			expect(ApiTransactionStatusEnum.Pending).equal(transaction.status);
 			expect(ApiTransactionDirectionEnum.Outgoing).equal(transaction.direction);
@@ -1349,8 +1379,38 @@ describe('Cardano wallet API', function () {
 			await waitUntilTxFinish(transaction.id, wallet);
 			transaction = await wallet.getTransaction(transaction.id);
 			if(transaction.status == ApiTransactionStatusEnum.InLedger) {
-				let delegation = await wallet.getDelegation();
-				expect(delegation).deep.equal(afterDelegationBalance);
+				await wallet.refresh();
+				let newAvailableBalance = wallet.getAvailableBalance() + fee;
+				expect(availableBalance + amounts[0]).equal(newAvailableBalance);
+			}
+		});
+
+		it("should stop delegating", async function(){
+			let w = wallets.find(w => w.id == '2a793eb367d44a42f658eb02d1004f50c14612fd');
+
+			let wallet = await walletServer.getShelleyWallet(w.id);
+			let transaction = await wallet.stopDelegation(w.passphrase);
+
+			let inputAmount = transaction.inputs.map(i => i.amount.quantity).reduce((a, b) => a + b);
+			let outputAmount = transaction.outputs.map(o => o.amount.quantity).reduce((a, b) => a + b);
+			let amount = transaction.amount.quantity;
+
+			expect(ApiTransactionStatusEnum.Pending).equal(transaction.status);
+			expect(ApiTransactionDirectionEnum.Incoming).equal(transaction.direction);
+			expect(amount + inputAmount).equal(outputAmount);
+			await waitUntilTxFinish(transaction.id, wallet);
+			transaction = await wallet.getTransaction(transaction.id);
+			if(transaction.status == ApiTransactionStatusEnum.InLedger) {
+				await wallet.refresh();
+				if(wallet.delegation.next.length > 0 ) {
+					let epoch = wallet.delegation.next.sort((a, b) => -(a.changes_at.epoch_number - b.changes_at.epoch_number)).map(d => d.changes_at.epoch_number)[0];
+					await waitUntilEpoch(epoch, walletServer);
+					await wallet.refresh();
+				}
+				let delegation = wallet.getDelegation();
+				let rewards = wallet.getRewardBalance();
+				expect(rewards).equal(0);
+				expect(delegation.active.status).equal(WalletsDelegationActiveStatusEnum.NotDelegating);
 			}
 		});
 
@@ -1378,7 +1438,7 @@ describe('Cardano wallet API', function () {
 		});
 
 		it('should get payment fee', async function () {
-			let receiver = '2a793eb367d44a42f658eb02d1004f50c14612fd';
+			let receiver = '9ada973fd29d6b3d096ab361ef5fd082576bdbe3';
 			let payeer = '60bb5513e4e262e445cf203db9cf73ba925064d2';
 
 			let rWallet = await walletServer.getShelleyWallet(receiver);
@@ -1423,7 +1483,7 @@ describe('Cardano wallet API', function () {
 
 
 async function waitUntilTxFinish(txId: string, wallet: ShelleyWallet): Promise<void> {
-	return new Promise(async (resolve, reject) => {
+	return new Promise<void>(async (resolve, reject) => {
 		let tx = {status: ApiTransactionStatusEnum.Pending};
 		do {
 			await delay(1);
@@ -1433,8 +1493,20 @@ async function waitUntilTxFinish(txId: string, wallet: ShelleyWallet): Promise<v
 	})
 };
 
+async function waitUntilEpoch(epoch: number, server: WalletServer) {
+	return new Promise<void>(async (resolve, reject) => {
+		let information = {epoch_number: 0};
+		do {
+			await delay(1);
+			let info = await server.getNetworkInformation();
+			information.epoch_number = info.node_tip.epoch_number;
+		}while(information.epoch_number < epoch)
+		resolve();
+	})
+}
+
 async function delay(time: number) {
-	return new Promise((resolve, reject) => {
-		setTimeout(function(){ resolve(true);}, time*1000);
+	return new Promise<void>((resolve, reject) => {
+		setTimeout(function(){ resolve();}, time*1000);
 	});
 }
