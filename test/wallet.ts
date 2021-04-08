@@ -6,14 +6,13 @@ const expect = chai.expect;
 
 import 'mocha';
 
-import { ApiAddressStateEnum, ApiTransactionDirectionEnum, ApiTransactionStatusEnum, WalletsDelegationActiveStatusEnum, WalletsTipHeightUnitEnum, WalletswalletIdpaymentfeesAmountUnitEnum, WalletswalletIdtransactionsAmountUnitEnum, WalletswalletIdtransactionsDepthUnitEnum } from '../models';
+import { ApiTransactionDirectionEnum, ApiTransactionStatusEnum, WalletsDelegationActiveStatusEnum } from '../models';
 import { Seed } from '../utils';
 
 import { WalletServer } from '../wallet-server';
 import { KeyRoleEnum } from '../wallet/key-wallet';
 
 import * as dotenv from "dotenv";
-import { resolve } from 'node:dns';
 import { ShelleyWallet } from '../wallet/shelley-wallet';
 dotenv.config();
 
