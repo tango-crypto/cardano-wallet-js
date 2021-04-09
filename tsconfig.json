@@ -9,7 +9,8 @@
 		"experimentalDecorators": true,
     "lib": [
       "es6",
-      "dom"
+      "dom",
+			"es2019"
     ],
     "typeRoots": [
       "node_modules/@types"
