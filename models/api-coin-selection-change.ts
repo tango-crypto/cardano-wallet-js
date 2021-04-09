@@ -11,6 +11,9 @@
  * https://github.com/swagger-api/swagger-codegen.git
  * Do not edit the class manually.
  */
+
+import { WalletsAssetsAvailable, WalletswalletIdpaymentfeesAmount } from ".";
+
 /**
  * 
  * @export
@@ -28,17 +31,17 @@ export interface ApiCoinSelectionChange {
      * @type {WalletswalletIdpaymentfeesAmount}
      * @memberof ApiCoinSelectionChange
      */
-    amount: any;
+    amount: WalletswalletIdpaymentfeesAmount;
     /**
      * A flat list of assets.
      * @type {Array&lt;WalletsAssetsAvailable&gt;}
      * @memberof ApiCoinSelectionChange
      */
-    assets?: any;
+    assets?: WalletsAssetsAvailable[];
     /**
      * A path for deriving a child key from a parent key.
      * @type {Array&lt;string&gt;}
      * @memberof ApiCoinSelectionChange
      */
-    derivation_path: any;
+    derivation_path: string[];
 }

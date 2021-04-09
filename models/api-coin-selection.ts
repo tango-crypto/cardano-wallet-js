@@ -11,6 +11,9 @@
  * https://github.com/swagger-api/swagger-codegen.git
  * Do not edit the class manually.
  */
+
+import { ApiCoinSelectionCertificates, ApiCoinSelectionChange, ApiCoinSelectionInputs, ApiCoinSelectionWithdrawals, WalletswalletIdpaymentfeesAmount, WalletswalletIdpaymentfeesPayments } from ".";
+
 /**
  * 
  * @export
@@ -22,37 +25,37 @@ export interface ApiCoinSelection {
      * @type {Array&lt;ApiCoinSelectionInputs&gt;}
      * @memberof ApiCoinSelection
      */
-    inputs: any;
+    inputs: ApiCoinSelectionInputs[];
     /**
      * A list of target outputs
      * @type {Array&lt;WalletswalletIdpaymentfeesPayments&gt;}
      * @memberof ApiCoinSelection
      */
-    outputs: any;
+    outputs: WalletswalletIdpaymentfeesPayments[];
     /**
      * A list of transaction change outputs.
      * @type {Array&lt;ApiCoinSelectionChange&gt;}
      * @memberof ApiCoinSelection
      */
-    change: any;
+    change: ApiCoinSelectionChange[];
     /**
      * A list of withdrawals from stake addresses.
      * @type {Array&lt;ApiCoinSelectionWithdrawals&gt;}
      * @memberof ApiCoinSelection
      */
-    withdrawals?: any;
+    withdrawals?: ApiCoinSelectionWithdrawals[];
     /**
      * 
      * @type {Array&lt;ApiCoinSelectionCertificates&gt;}
      * @memberof ApiCoinSelection
      */
-    certificates?: any;
+    certificates?: ApiCoinSelectionCertificates[];
     /**
      * A list of deposits associated with a transaction.
      * @type {Array&lt;WalletswalletIdpaymentfeesAmount&gt;}
      * @memberof ApiCoinSelection
      */
-    deposits?: any;
+    deposits?: WalletswalletIdpaymentfeesAmount[];
     /**
      * Transaction metadata, serialized according to the expected on-chain binary format, base64-encoded.
      * @type {string}

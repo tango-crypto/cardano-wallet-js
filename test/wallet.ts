@@ -6,7 +6,7 @@ const expect = chai.expect;
 
 import 'mocha';
 
-import { ApiTransactionDirectionEnum, ApiTransactionStatusEnum, WalletsDelegationActiveStatusEnum } from '../models';
+import { ApiTransactionDirectionEnum, ApiTransactionStatusEnum, WalletsDelegationActiveStatusEnum, WalletswalletIdpaymentfeesAmountUnitEnum } from '../models';
 import { Seed } from '../utils';
 
 import { WalletServer } from '../wallet-server';
@@ -14,6 +14,7 @@ import { KeyRoleEnum } from '../wallet/key-wallet';
 
 import * as dotenv from "dotenv";
 import { ShelleyWallet } from '../wallet/shelley-wallet';
+import { CoinSelectionWallet } from '../wallet/coin-selection-wallet';
 dotenv.config();
 
 describe('Cardano wallet API', function () {
@@ -1128,6 +1129,12 @@ describe('Cardano wallet API', function () {
 		}
 	];
 
+	let txRaw = {
+    "type": "TxBodyMary",
+    "description": "",
+    "cborHex": "82a400818258202d7928a59fcba5bf71c40fe6428a301ffda4d2fa681e5357051970436462b89400018282583900c0e88694ab569f42453eb950fb4ec14cb50f4d5d26ac83fdec2c505d818bcebf1df51c84239805b8a330d68fdbc3c047c12bb4c3172cb9391a002b335f825839003d2d9ceb1a47bc1b62b7498ca496b16a7b4bbcc6d97ede81ba8621ebd6d947875fcf4845ef3a5f08dd5522581cf6de7b9c065379cbb3754d1a001e8480021a00029361031a01672b7ef6"
+	};
+
 	before('Initializing the test cluster ...', async function () {
 		walletServer = await WalletServer.init(`http://${process.env.TEST_WALLET_HOST}:${process.env.TEST_WALLET_PORT}/v2`);
 
@@ -1476,6 +1483,22 @@ describe('Cardano wallet API', function () {
 			expect(spent).equal(transaction.amount.quantity);
 			expect(outputAmount + fee).equal(inputAmount);
 		});
+
+		it('should get coin selection', async function(){
+			let w = wallets.find(w => w.id == '2a793eb367d44a42f658eb02d1004f50c14612fd');
+			let receiver = wallets.find(w => w.id == '60bb5513e4e262e445cf203db9cf73ba925064d2');
+
+			let wallet = await walletServer.getShelleyWallet(w.id);
+			let addresses = (await (await walletServer.getShelleyWallet(receiver.id)).getUsedAddresses()).slice(0, 1);
+			let amounts = [5000000];
+			let coins = await wallet.getCoinSelection(addresses, amounts);
+
+			let inputAmount = coins.inputs.map(i => i.amount.quantity).reduce((a, b) => a + b);
+			let outputAmount = coins.outputs.map(o => o.amount.quantity).reduce((a, b) => a + b);
+			let changeAmount = coins.change.map(c => c.amount.quantity).reduce((a, b) => a + b);
+			expect(inputAmount).least(outputAmount + changeAmount);
+		});
+
 	});
 
 });

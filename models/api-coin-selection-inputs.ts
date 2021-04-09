@@ -11,6 +11,9 @@
  * https://github.com/swagger-api/swagger-codegen.git
  * Do not edit the class manually.
  */
+
+import { WalletsAssetsAvailable, WalletswalletIdpaymentfeesAmount } from ".";
+
 /**
  * 
  * @export
@@ -28,13 +31,13 @@ export interface ApiCoinSelectionInputs {
      * @type {WalletswalletIdpaymentfeesAmount}
      * @memberof ApiCoinSelectionInputs
      */
-    amount: any;
+    amount: WalletswalletIdpaymentfeesAmount;
     /**
      * A flat list of assets.
      * @type {Array&lt;WalletsAssetsAvailable&gt;}
      * @memberof ApiCoinSelectionInputs
      */
-    assets?: any;
+    assets?: WalletsAssetsAvailable[];
     /**
      * A unique identifier for this transaction
      * @type {string}
@@ -46,7 +49,7 @@ export interface ApiCoinSelectionInputs {
      * @type {Array&lt;string&gt;}
      * @memberof ApiCoinSelectionInputs
      */
-    derivation_path: any;
+    derivation_path: string[];
     /**
      * 
      * @type {number}

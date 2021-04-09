@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import 'mocha';
-import { WalletswalletIdpaymentfeesAmountUnitEnum } from '../models';
+import { WalletswalletIdpaymentfeesAmountUnitEnum, WalletsAssetsAvailable } from '../models';
 import { Seed } from '../utils';
 import { CoinSelectionWallet } from '../wallet/coin-selection-wallet';
 
@@ -20,7 +20,7 @@ describe('Wallet utilities', function(){
         {
             "amount": {
                 "quantity": 2831199,
-                "unit": "lovelace"
+                "unit": WalletswalletIdpaymentfeesAmountUnitEnum.Lovelace
             },
             "address": "addr_test1qrqw3p554dtf7sj986u4p76wc9xt2r6dt5n2eqlaask9qhvp308t7804rjzz8xq9hz3np450m0puq37p9w6vx9evhyus0fldvl",
             "id": "6b4b99362d807c31a251a575809ac535f4d6440b560d82bc120d07ae10b6e377",
@@ -31,13 +31,13 @@ describe('Wallet utilities', function(){
                 "1",
                 "0"
             ],
-            "assets": [] as any[],
+            "assets": [],
             "index": 0
         },
         {
             "amount": {
                 "quantity": 1500000,
-                "unit": "lovelace"
+                "unit": WalletswalletIdpaymentfeesAmountUnitEnum.Lovelace
             },
             "address": "addr_test1qrwwqf0yj50uzxx8yr6gv6lzdcwn8azkfcql4umt5ftty4yp308t7804rjzz8xq9hz3np450m0puq37p9w6vx9evhyusz9fhph",
             "id": "2316b6510634f4f1bb24c6fa3eef03f49fa0e780ace23266e3013fc019fec927",
@@ -52,7 +52,7 @@ describe('Wallet utilities', function(){
             "index": 0
         }
     ],
-    "deposits": [] as any[],
+    "deposits": [],
     "change": [
         {
             "amount": {
@@ -67,7 +67,7 @@ describe('Wallet utilities', function(){
                 "1",
                 "1"
             ],
-            "assets": [] as any[]
+            "assets": []
         }
     ],
     "outputs": [
@@ -77,7 +77,7 @@ describe('Wallet utilities', function(){
                 "unit": WalletswalletIdpaymentfeesAmountUnitEnum.Lovelace
             },
             "address": "addr_test1qq7jm88trfrmcxmzkaycefykk948kjaucmvhah5ph2rzr67km9rcwh70fpz77wjlprw42gjcrnmdu7uuqefhnjanw4xsupazrx",
-            "assets": [] as any[]
+            "assets": []
         }
     ]
 	};

@@ -1,9 +1,10 @@
 
 import { config } from 'chai';
-import { AddressesApi, KeysApi, TransactionsApi, WalletsApi, StakePoolsApi } from '../api';
+import { AddressesApi, KeysApi, TransactionsApi, WalletsApi, StakePoolsApi, CoinSelectionsApi } from '../api';
 import { Configuration } from '../configuration';
 import { ApiAddressData, ApiAddressStateEnum, ApiPostTransactionData, ApiPostTransactionDataWithdrawalEnum, ApiPostTransactionFeeData, ApiWallet, ApiWalletPassphrase, ApiWalletPutData, ApiWalletPutPassphraseData, WalletsAssets, WalletsBalance, WalletsDelegation, WalletsPassphrase, WalletsState, WalletsTip, WalletswalletIdpaymentfeesAmount, WalletswalletIdpaymentfeesAmountUnitEnum, WalletswalletIdpaymentfeesPayments } from '../models';
 import { AddressWallet } from './address-wallet';
+import { CoinSelectionWallet } from './coin-selection-wallet';
 import { FeeWallet } from './fee-wallet';
 import { KeyRoleEnum, KeyWallet } from './key-wallet';
 import { TransactionWallet } from './transaction-wallet';
@@ -24,6 +25,7 @@ export class ShelleyWallet implements ApiWallet {
 	walletsApi: WalletsApi;
 	config: Configuration;
 	stakePoolApi: StakePoolsApi;
+	coinSelectionsApi: CoinSelectionsApi;
 
 	constructor(
 		id: any, 
@@ -51,6 +53,7 @@ export class ShelleyWallet implements ApiWallet {
 			this.transactionsApi = new TransactionsApi(config);
 			this.walletsApi = new WalletsApi(config);
 			this.stakePoolApi = new StakePoolsApi(config);
+			this.coinSelectionsApi = new CoinSelectionsApi(config);
 		}
 
 		static from(wallet: ApiWallet, config: Configuration): ShelleyWallet {
@@ -212,12 +215,27 @@ export class ShelleyWallet implements ApiWallet {
 			return TransactionWallet.from(res.data);
 		}
 
-		async stopDelegation(passphrase: string) {
+		async stopDelegation(passphrase: string): Promise<TransactionWallet> {
 			let payload: ApiWalletPassphrase = {
 				passphrase: passphrase
 			};
 			let res = await this.stakePoolApi.quitStakePool(payload, this.id);
 			return TransactionWallet.from(res.data);
+		}
+
+		async getCoinSelection(addresses: AddressWallet[], amounts: number[]): Promise<CoinSelectionWallet> {
+			let payload: ApiPostTransactionFeeData = {
+				payments: addresses.map((addr, i) =>  {
+					let amount: WalletswalletIdpaymentfeesAmount = { unit: WalletswalletIdpaymentfeesAmountUnitEnum.Lovelace, quantity: amounts[i] };
+					let payment: WalletswalletIdpaymentfeesPayments = { 
+						address: addr.address, 
+						amount: amount
+					};
+					return payment;
+				})
+			};
+			let res = await this.coinSelectionsApi.selectCoins(payload, this.id);
+			return CoinSelectionWallet.from(res.data);
 		}
 
 		private updateData(data: ApiWallet) {
@@ -230,4 +248,6 @@ export class ShelleyWallet implements ApiWallet {
 			this.state = data.state;
 			this.tip = data.tip;
 		}
+
+
 }

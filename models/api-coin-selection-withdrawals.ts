@@ -11,6 +11,9 @@
  * https://github.com/swagger-api/swagger-codegen.git
  * Do not edit the class manually.
  */
+
+import { WalletswalletIdpaymentfeesAmount } from ".";
+
 /**
  * 
  * @export
@@ -28,11 +31,11 @@ export interface ApiCoinSelectionWithdrawals {
      * @type {Array&lt;string&gt;}
      * @memberof ApiCoinSelectionWithdrawals
      */
-    derivation_path: any;
+    derivation_path: string[];
     /**
      * 
      * @type {WalletswalletIdpaymentfeesAmount}
      * @memberof ApiCoinSelectionWithdrawals
      */
-    amount: any;
+    amount: WalletswalletIdpaymentfeesAmount;
 }

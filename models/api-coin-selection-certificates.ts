@@ -34,7 +34,7 @@ export interface ApiCoinSelectionCertificates {
      * @type {Array&lt;string&gt;}
      * @memberof ApiCoinSelectionCertificates
      */
-    reward_account_path: any;
+    reward_account_path: string[];
 }
 
 /**

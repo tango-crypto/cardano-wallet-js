@@ -17,8 +17,8 @@ import { Configuration } from '../configuration';
 // @ts-ignore
 import { BASE_PATH, COLLECTION_FORMATS, RequestArgs, BaseAPI, RequiredError } from '../base';
 import { BadRequest } from '../models';
-import { Body10 } from '../models';
-import { InlineResponse2008 } from '../models';
+import { ApiPostTransactionFeeData } from '../models';
+import { ApiCoinSelection } from '../models';
 import { InlineResponse4035 } from '../models';
 import { NoSuchWallet } from '../models';
 import { NotAcceptable } from '../models';
@@ -32,12 +32,12 @@ export const CoinSelectionsApiAxiosParamCreator = function (configuration?: Conf
         /**
          * <p align=\"right\">status: <strong>stable</strong></p>  Select coins to cover the given set of payments.  Uses the <a href=\"https://iohk.io/blog/self-organisation-in-coin-selection/\"> Random-Improve coin selection algorithm</a>. 
          * @summary Random
-         * @param {Body10} body 
+         * @param {ApiPostTransactionFeeData} body 
          * @param {string} walletId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        selectCoins: async (body: Body10, walletId: string, options: any = {}): Promise<RequestArgs> => {
+        selectCoins: async (body: ApiPostTransactionFeeData, walletId: string, options: any = {}): Promise<RequestArgs> => {
             // verify required parameter 'body' is not null or undefined
             if (body === null || body === undefined) {
                 throw new RequiredError('body','Required parameter body was null or undefined when calling selectCoins.');
@@ -90,12 +90,12 @@ export const CoinSelectionsApiFp = function(configuration?: Configuration) {
         /**
          * <p align=\"right\">status: <strong>stable</strong></p>  Select coins to cover the given set of payments.  Uses the <a href=\"https://iohk.io/blog/self-organisation-in-coin-selection/\"> Random-Improve coin selection algorithm</a>. 
          * @summary Random
-         * @param {Body10} body 
+         * @param {ApiPostTransactionFeeData} body 
          * @param {string} walletId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async selectCoins(body: Body10, walletId: string, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<InlineResponse2008>> {
+        async selectCoins(body: ApiPostTransactionFeeData, walletId: string, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ApiCoinSelection>> {
             const localVarAxiosArgs = await CoinSelectionsApiAxiosParamCreator(configuration).selectCoins(body, walletId, options);
             return (axios: AxiosInstance = globalAxios, basePath: string = BASE_PATH) => {
                 const axiosRequestArgs = {...localVarAxiosArgs.options, url: basePath + localVarAxiosArgs.url};
@@ -114,12 +114,12 @@ export const CoinSelectionsApiFactory = function (configuration?: Configuration,
         /**
          * <p align=\"right\">status: <strong>stable</strong></p>  Select coins to cover the given set of payments.  Uses the <a href=\"https://iohk.io/blog/self-organisation-in-coin-selection/\"> Random-Improve coin selection algorithm</a>. 
          * @summary Random
-         * @param {Body10} body 
+         * @param {ApiPostTransactionFeeData} body 
          * @param {string} walletId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        selectCoins(body: Body10, walletId: string, options?: any): AxiosPromise<InlineResponse2008> {
+        selectCoins(body: ApiPostTransactionFeeData, walletId: string, options?: any): AxiosPromise<ApiCoinSelection> {
             return CoinSelectionsApiFp(configuration).selectCoins(body, walletId, options).then((request) => request(axios, basePath));
         },
     };
@@ -135,13 +135,13 @@ export class CoinSelectionsApi extends BaseAPI {
     /**
      * <p align=\"right\">status: <strong>stable</strong></p>  Select coins to cover the given set of payments.  Uses the <a href=\"https://iohk.io/blog/self-organisation-in-coin-selection/\"> Random-Improve coin selection algorithm</a>. 
      * @summary Random
-     * @param {Body10} body 
+     * @param {ApiPostTransactionFeeData} body 
      * @param {string} walletId 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof CoinSelectionsApi
      */
-    public selectCoins(body: Body10, walletId: string, options?: any) {
+    public selectCoins(body: ApiPostTransactionFeeData, walletId: string, options?: any) {
         return CoinSelectionsApiFp(this.configuration).selectCoins(body, walletId, options).then((request) => request(this.axios, this.basePath));
     }
 }
