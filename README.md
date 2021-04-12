@@ -153,6 +153,27 @@ This will print out something like this:
         }
     }
 
+## Useful operations
+
+### Generate Recovery Phrases
+   
+    const { Seed } = require('cardano-wallet-js');
+    
+    // generate a recovery phrase of 15 words (default)
+    let recoveryPhrase = Seed.generateRecoveryPhrase();
+    console.log(recoveryPhrase);
+   
+    Output:
+    >> "hip dust material keen buddy fresh thank program stool ill regret honey multiply venture imitate"
+> **IMPORTANT:** The recovery phrase is the only way you can restore you wallet and you **SHOULD KEEP IT SECURE AND PRIVATE**. You'll get a complete different recovery phrase each time you execute the method. 
+
+For convinience you can convert the recovery phrase into an array using this:
+
+    let words = Seed.toMnemonicList(recoveryPhrase);
+    console.log(words);
+    
+    Output:
+    >> ['hip', 'dust', 'material', 'keen', 'buddy', 'fresh', 'thank', 'program', 'stool', 'ill', 'regret', 'honey', 'multiply', 'venture', 'imitate']
 
 # Test
 
