@@ -49,6 +49,7 @@ To begin, start with a `WalletServer`. It allows you to connect to some remote `
 First you can try is getting some blockchain information like: (network parameters, information and clock)
 
 Get network information
+
     let information = await walletServer.getNetworkInformation();
     console.log(information);
 This will print out something like this:
