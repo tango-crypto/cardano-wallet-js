@@ -253,6 +253,68 @@ You can create/discover next unused address:
     
     // you can also pass the specific index
      let address = await wallet.getAddressAt(45);  
+     
+### Stake Pool
+
+Get stake pool ranking list by member rewards:
+
+    let stake = 1000000000;
+    let pools = await walletServer.getStakePools(stake);
+    
+> **NOTE**: You'll get pool ordered by `non_myopic_member_rewards` which basically means from heighest to lower expected rewards. By default the wallet server
+> isn't configured to fecth the pool's metadata (e.g. ticker, name, homepage) but you can specify it through the update settings functionality, see Update Settings section below.
+   
+Estimate delegation fee:
+
+    let fee = await wallet.estimateDelegationFee();
+
+> **NOTE**: The very first time you delegate to a pool you'll be charged an extra 2 ADA. This extra fee won't be included on the response.
+ 
+Delegate to stake pool:
+
+    let passphrase = 'tangocrypto';
+    // choose the first pool from the previous ranking list, but you can select whatever you want.
+    let pool = pools[0]; 
+    let transaction = await wallet.delegate(pool.id, passphrase);
+    
+> **NOTE**: The transacion status initially is set to `pending`, so you should keep tracking the transaction using the `id` in order to make sure the final status (e.g. `in_ledger`). You can learn more about the transacion's life cycle [here](https://github.com/input-output-hk/cardano-wallet/wiki/About-Transactions-Lifecycle). 
+> For delegate to another stake pool use the same method above specifying a different stake pool.   
+
+Withdraw stake pool's rewards:
+
+    let passphrase = 'tangocrypto';
+    
+    // select the address to receive the rewards
+    let address = await wallet.getUsedAddresses())[0];
+    
+    // get the reward balance available to withdraw
+    let rewardBalance = wallet.getRewardBalance();
+    
+    let transaction = await wallet.withdraw(passphrase, [address], [rewardBalance]);
+    
+> **NOTE**: You can send the rewards to multiple addresses splitting up the rewardBalance for each one. Also you can send it to any valid address whether it's in your wallet or not.
+
+Stop delegating:
+
+    let transaction = await wallet.stopDelegation(passphrase);
+
+Stake pool maintenance actions:
+
+    let maintenanceActions = await walletServer.stakePoolMaintenanceActions();
+    
+    Possible values are:
+
+     - not_applicable -> we're currently not querying a SMASH server for metadata
+     - not_started -> the Garbage Collection hasn't started yet, try again in a short while
+     - restarting -> the Garbage Collection thread is currently restarting, try again in short while
+     - has_run -> the Garbage Collection has run successfully
+ 
+> **NOTE**: Maintenance actions will depend on whether or not the wallet server is using a Stakepool Metadata Aggregation Server (SMASH).
+
+Manually trigger Garbage Collection:
+
+    await walletServer.triggerStakePoolGarbageCollection();
+    
 
 # Test
 
