@@ -1,5 +1,5 @@
 {
-    "name": "cardano-wallet-ts",
+    "name": "cardano-wallet-js",
     "version": "1.0.0",
     "description": "typescript cardano wallet api",
     "author": "Leobel Izquierdo <leobelizquierdo@gmail.com>",

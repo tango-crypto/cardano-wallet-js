@@ -1,4 +1,4 @@
-import { WalletsApi, NetworkApi, StakePoolsApi, SettingsApi } from './api';
+import { WalletsApi, NetworkApi, StakePoolsApi, SettingsApi, ProxyApi } from './api';
 import { Configuration } from './configuration';
 import { ApiMaintenanceActionPostData, ApiMaintenanceActionPostDataMaintenanceActionEnum, ApiSettingsPutData, ApiWalletPostData } from './models';
 import { MaintenanceActionWallet } from './wallet/maintenance-action-wallet';
@@ -10,6 +10,7 @@ export class WalletServer {
 	config: Configuration;
 	stakePoolsApi: StakePoolsApi;
 	settingsApi: SettingsApi;
+	proxyApi: ProxyApi;
 	private constructor(protected url: string){
 		this.config = {
 			basePath: url
@@ -19,6 +20,7 @@ export class WalletServer {
 		this.walletsApi = new WalletsApi(this.config);
 		this.stakePoolsApi = new StakePoolsApi(this.config);
 		this.settingsApi = new SettingsApi(this.config);
+		this.proxyApi = new ProxyApi(this.config);
 	}
 
 	static init(url: string): WalletServer {
@@ -93,6 +95,17 @@ export class WalletServer {
 	async getMetadataSource(){
 		let res = await this.settingsApi.getSettings();
 		return res.data.pool_metadata_source;
+	}
+
+	async submitTx(tx: any): Promise<string> {
+		try{
+			let res = await this.proxyApi.postExternalTransaction(tx);
+			return res.data.id;
+		}catch(err) {
+			let error = err;
+			console.log(error);
+			throw err;
+		}
 	}
 
 }

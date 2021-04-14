@@ -84,7 +84,8 @@ export class Seed {
 			spawnSync('rm', ['-r', keyPath]);
 		}
 		spawnSync('rm', ['-r', path, signed]);
-
+		// let buffer = fs.readFileSync('/home/leo/cardano-node/tx.signed_copy');
+		// fs.writeFileSync('/tmp/tx.signed', buffer, { encoding: 'binary' });
 		return result;		
 	}
 }

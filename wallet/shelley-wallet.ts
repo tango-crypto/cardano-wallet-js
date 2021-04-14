@@ -9,6 +9,8 @@ import { FeeWallet } from './fee-wallet';
 import { KeyRoleEnum, KeyWallet } from './key-wallet';
 import { TransactionWallet } from './transaction-wallet';
 import { UtxoStatisticsWallet } from './utxo-statistics-wallet';
+
+const HEX_PATTERN = /^[0-9|a-f|A-F]+$/;
 export class ShelleyWallet implements ApiWallet {
 	id: any;
 	address_pool_gap: any;
@@ -26,6 +28,7 @@ export class ShelleyWallet implements ApiWallet {
 	config: Configuration;
 	stakePoolApi: StakePoolsApi;
 	coinSelectionsApi: CoinSelectionsApi;
+
 
 	constructor(
 		id: any, 
@@ -126,9 +129,7 @@ export class ShelleyWallet implements ApiWallet {
 			return res.data.map(addr => new AddressWallet(addr.id, addr.state));
 		}
 
-		async getNextAddress(): Promise<AddressWallet> {
-			let addresses = await this.getAddresses();
-			let index = addresses.length;
+		async getAddressAt(index: number): Promise<AddressWallet> {
 			let addressVk = await this.getAddressExternalVerificationKey(index);
 			let stakeVk = await this.getStakeVerificationKey(0);
 			let payload: ApiAddressData = {
@@ -137,6 +138,11 @@ export class ShelleyWallet implements ApiWallet {
 			};
 			let next = await this.addressesApi.postAnyAddress(payload); 
 			return new AddressWallet(next.data.address);
+		}
+
+		async getNextAddress(): Promise<AddressWallet> {
+			let index = (await this.getAddresses()).length;
+			return this.getAddressAt(index);
 		}
 
 		async getAddressExternalVerificationKey(index: number): Promise<KeyWallet> {
@@ -169,7 +175,8 @@ export class ShelleyWallet implements ApiWallet {
 			return FeeWallet.from(res.data);
 		}
 
-		async sendPayment(passphrase: any, addresses: AddressWallet[], amounts: number[]): Promise<TransactionWallet> { 
+		async sendPayment(passphrase: any, addresses: AddressWallet[], amounts: number[], data?: any): Promise<TransactionWallet> { 
+			let metadata = data ? this.constructMetadata(data) : undefined;
 			let payload: ApiPostTransactionData = {
 				passphrase: passphrase,
 				payments: addresses.map((addr, i) =>  {
@@ -179,7 +186,8 @@ export class ShelleyWallet implements ApiWallet {
 						amount: amount
 					};
 					return payment;
-				})
+				}),
+				metadata: metadata
 			};
 			let res = await this.transactionsApi.postTransaction(payload, this.id);
 			return TransactionWallet.from(res.data);
@@ -249,5 +257,70 @@ export class ShelleyWallet implements ApiWallet {
 			this.tip = data.tip;
 		}
 
+		private constructMetadata(data: any) {
+			let metadata: any = {};
 
+			if(Array.isArray(data)) {
+				for (let i = 0; i < data.length; i++) {
+					const value = data[i];
+					metadata[i] = this.getMetadataObject(value);
+				}
+			} else {
+				let keys = Object.keys(data);
+				for (let i = 0; i < keys.length; i++) {
+					const key = keys[i];
+					let index = parseInt(key);
+					if(!isNaN(index)) {
+						metadata[index] = this.getMetadataObject(data[key]);
+					}
+				}
+			}
+			return metadata;
+		}
+
+		private getMetadataObject(data:any) {
+			let result: any = {};
+			let type = typeof data;
+			if(type == "number") {
+				result[MetadateTypesEnum.Number] = data;
+			} else if(type == "string") {
+				if (this.isHex(data)) {
+					if(Buffer.byteLength(data, "hex") <= 64) {
+						result[MetadateTypesEnum.Bytes] = data;
+					}
+				} else if(Buffer.byteLength(data, 'utf-8') <= 64) {
+					result[MetadateTypesEnum.String] = data;
+				}
+			} else if(type == "boolean"){
+				result[MetadateTypesEnum.String] = data.toString();
+			} else if(type == "undefined"){
+				result[MetadateTypesEnum.String] = "undefined";
+			}else if(Array.isArray(data)) {
+				result[MetadateTypesEnum.List] = data.map(a => this.getMetadataObject(a));
+			} else if (type == "object") {
+				if (data) {
+					result[MetadateTypesEnum.Map] = Object.keys(data).map(k => {
+						return {
+							"k": this.getMetadataObject(k),
+							"v": this.getMetadataObject(data[k])
+						}
+					});
+				} else {
+					result[MetadateTypesEnum.String] = "null";
+				}
+			}
+			return result;
+		}
+
+		private isHex(s: string): boolean {
+			return HEX_PATTERN.test(s);
+		}
+}
+
+export enum MetadateTypesEnum {
+	Number = "int",
+	String = "string",
+	Bytes = "bytes",
+	List = "list",
+	Map = "map",
 }

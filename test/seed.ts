@@ -101,8 +101,8 @@ describe('Wallet utilities', function(){
 	};
 
 	it('should generate a recovery phrase string', function(){
-		let recoverPhrase = Seed.generateRecoveryPhrase();
-		expect(recoverPhrase).be.a('string');
+		let recoveryPhrase = Seed.generateRecoveryPhrase();
+		expect(recoveryPhrase).be.a('string');
 	});
 
 	it('should generate a recovery phrase string', function(){
