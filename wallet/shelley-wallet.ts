@@ -155,6 +155,13 @@ export class ShelleyWallet implements ApiWallet {
 			return new KeyWallet(account.data, KeyRoleEnum.Stake);
 		}
 
+		async getTransactions(start?: Date, end?: Date): Promise<TransactionWallet[]> {
+			let startdate = start ? start.toISOString() : undefined;
+			let enddate = end ? end.toISOString() : undefined;
+			let res = await this.transactionsApi.listTransactions(this.id, startdate, enddate);
+			return res.data.map(data => TransactionWallet.from(data));
+		}
+
 		async getTransaction(txId: string): Promise<TransactionWallet> {
 			let res = await this.transactionsApi.getTransaction(this.id, txId);
 			return TransactionWallet.from(res.data);
@@ -301,7 +308,7 @@ export class ShelleyWallet implements ApiWallet {
 				if (data) {
 					result[MetadateTypesEnum.Map] = Object.keys(data).map(k => {
 						return {
-							"k": this.getMetadataObject(k),
+							"k": isNaN(parseInt(k)) ? this.getMetadataObject(k) : this.getMetadataObject(parseInt(k)),
 							"v": this.getMetadataObject(data[k])
 						}
 					});

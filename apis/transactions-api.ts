@@ -18,9 +18,8 @@ import { Configuration } from '../configuration';
 import { BASE_PATH, COLLECTION_FORMATS, RequestArgs, BaseAPI, RequiredError } from '../base';
 import { ApiPostTransactionFeeData } from '../models';
 import { ApiPostTransactionData } from '../models';
-import { InlineResponse2004 } from '../models';
-import { ApiFee } from '../models';
 import { ApiTransaction } from '../models';
+import { ApiFee } from '../models';
 import { InlineResponse400 } from '../models';
 import { InlineResponse4001 } from '../models';
 import { InlineResponse4031 } from '../models';
@@ -336,7 +335,7 @@ export const TransactionsApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async listTransactions(walletId: string, start?: string, end?: string, order?: string, minWithdrawal?: number, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<InlineResponse2004>>> {
+        async listTransactions(walletId: string, start?: string, end?: string, order?: string, minWithdrawal?: number, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<ApiTransaction>>> {
             const localVarAxiosArgs = await TransactionsApiAxiosParamCreator(configuration).listTransactions(walletId, start, end, order, minWithdrawal, options);
             return (axios: AxiosInstance = globalAxios, basePath: string = BASE_PATH) => {
                 const axiosRequestArgs = {...localVarAxiosArgs.options, url: basePath + localVarAxiosArgs.url};
@@ -415,7 +414,7 @@ export const TransactionsApiFactory = function (configuration?: Configuration, b
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        listTransactions(walletId: string, start?: string, end?: string, order?: string, minWithdrawal?: number, options?: any): AxiosPromise<Array<InlineResponse2004>> {
+        listTransactions(walletId: string, start?: string, end?: string, order?: string, minWithdrawal?: number, options?: any): AxiosPromise<Array<ApiTransaction>> {
             return TransactionsApiFp(configuration).listTransactions(walletId, start, end, order, minWithdrawal, options).then((request) => request(axios, basePath));
         },
         /**

@@ -1246,7 +1246,7 @@ describe('Cardano wallet API', function () {
 		});
 	});
 
-	describe.skip('address', function () {
+	describe('address', function () {
 		it('should get wallet addresses', async function () {
 			let w = wallets.find(w => w.id === '60bb5513e4e262e445cf203db9cf73ba925064d2');
 
@@ -1311,7 +1311,7 @@ describe('Cardano wallet API', function () {
 		});
 	});
 
-	describe.skip('stake pool', function () {
+	describe('stake pool', function () {
 		it("should return stake pool ranking list by member rewards", async function () {
 			let stake = 1000000000;
 			let pools = await walletServer.getStakePools(stake);
@@ -1423,6 +1423,16 @@ describe('Cardano wallet API', function () {
 	});
 
 	describe('transaction', function () {
+		it('should get tx list', async function(){
+			let w = wallets.find(w => w.id == '2a793eb367d44a42f658eb02d1004f50c14612fd');
+			let wallet = await walletServer.getShelleyWallet(w.id);
+			let start = new Date(2021, 0, 1); // January 1st 2021;
+			let end = new Date(Date.now());
+			let transactions = await wallet.getTransactions(start, end);
+
+			expect(transactions).be.an('array');
+		});
+
 		it('should get tx details', async function () {
 			let w = wallets.find(w => w.id == '2a793eb367d44a42f658eb02d1004f50c14612fd');
 			let tx = w.txs.find(t => t.id == '1d9025cddb72f9e15510dff6e67d1d7718704f19d6b66f1f4232dc5847f921d4');
@@ -1468,6 +1478,34 @@ describe('Cardano wallet API', function () {
 
 			let wallet = await walletServer.getShelleyWallet(payeer);
 			let transaction = await wallet.sendPayment(passphrase, addresses, amounts);
+			let output = transaction.outputs.find(o => o.address == addresses[0].address);
+			let inputAmount = transaction.inputs.map(i => i.amount.quantity).reduce((a, b) => a + b);
+			let outputAmount = transaction.outputs.map(o => o.amount.quantity).reduce((a, b) => a + b);
+			let fee = transaction.fee.quantity;
+			let spent = output.amount.quantity + fee;
+			let paid = amounts.reduce((a, b) => a + b);
+
+
+			expect(tx.status).equal(transaction.status);
+			expect(tx.direction).equal(transaction.direction);
+			expect(output).to.not.undefined;
+			expect(output.amount.quantity).equal(paid);
+			expect(spent).equal(transaction.amount.quantity);
+			expect(outputAmount + fee).equal(inputAmount);
+		});
+
+		it('should send a payment transfer with complex metadata', async function () {
+			let receiver = '2a793eb367d44a42f658eb02d1004f50c14612fd';
+			let payeer = '60bb5513e4e262e445cf203db9cf73ba925064d2';
+			let passphrase = 'shelley-small-coins';
+
+			let rWallet = await walletServer.getShelleyWallet(receiver);
+			let addresses = (await rWallet.getUsedAddresses()).slice(0, 1);
+			let amounts = [1000000];
+
+			let wallet = await walletServer.getShelleyWallet(payeer);
+			let metadata: any = {0: 'hello', 1: '2512a00e9653fe49a44a5886202e24d77eeb998f', 4: [1, 2, {0: true}], 5: {'key': null, 'l': [3, true, {}]}, 6: undefined};
+			let transaction = await wallet.sendPayment(passphrase, addresses, amounts, metadata);
 			let output = transaction.outputs.find(o => o.address == addresses[0].address);
 			let inputAmount = transaction.inputs.map(i => i.amount.quantity).reduce((a, b) => a + b);
 			let outputAmount = transaction.outputs.map(o => o.amount.quantity).reduce((a, b) => a + b);
