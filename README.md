@@ -175,6 +175,85 @@ For convinience you can convert the recovery phrase into an array using this:
     Output:
     >> ['hip', 'dust', 'material', 'keen', 'buddy', 'fresh', 'thank', 'program', 'stool', 'ill', 'regret', 'honey', 'multiply', 'venture', 'imitate']
 
+### Wallet
+
+Create/restore a wallet:
+
+    const { Seed, WalletServer } = require('cardano-wallet-js');
+    
+    let walletServer = WalletServer.init('http://you.server.com');
+    let recoveryPhrase = Seed.generateRecoveryPhrase();
+    let mnemonic_sentence = Seed.toMnemonicList(recoveryPhrase);
+    let passphrase = 'tangocrypto';
+    let name = 'tangocrypto-wallet';
+    
+    let wallet = await walletServer.createOrRestoreShelleyWallet(name, mnemonic_sentence, passphrase);
+    
+List wallets:
+    
+    let wallets = await walletServer.wallets();
+    
+Get wallet by Id:
+
+    let wallets = await walletServer.wallets();
+    let id = wallets[0].id;
+    let wallet = await walletServer.getShelleyWallet(id);
+
+Get wallet's utxo statistics:
+
+    let statistics = await wallet.getUtxoStatistics();
+    
+Statistics will contain the UTxOs distribution across the whole wallet, in the form of a histogram similar to the one below.
+<pre><code>     │
+ <span class="token number">100</span> ─
+     │
+     │                                 ┌───┐
+  <span class="token number">10</span> ─                         ┌───┐   │   │                   ┌───┐
+     │                 ┌───┐   │   │   │   │                   │   │
+     │                 │   │   │   │   │   │   ┌───┐           │   │
+   <span class="token number">1</span> ─ ┌───┐           │   │   │   │   │   │   │   │           │   │
+     │ │   │           │   │   │   │   │   │   │   │           │   │
+     │ │   │ │       │ │   │ │ │   │ ╷ │   │ ╷ │   │ ╷       ╷ │   │
+     └─┘   └─│───────│─┘   └─│─┘   └─│─┘   └─│─┘   └─│───────│─┘   └────
+           <span class="token number">10</span>μ₳    <span class="token number">100</span>μ₳   <span class="token number">1000</span>μ₳   <span class="token number">0.1</span>₳    <span class="token number">1</span>₳      <span class="token number">10</span>₳     <span class="token number">100</span>₳</code></pre>
+           
+Remove wallet:
+
+    await wallet.delete();
+    
+Rename wallet:
+
+    let newName = 'new-name';
+    wallet = await wallet.rename(newName);
+
+Change wallet passphrase:
+
+    let oldPassphrase = 'tangocrypto';
+    let newPassphrase = 'new-passphrase';
+    wallet = await wallet.updatePassphrase(oldPassphrase, newPassphrase);
+> **NOTE**: the wallet itself doesn't hold the passphrase, you can check it's correctly updated trying to call a method needing the passphrase e.g: `sendPayment`
+
+### Wallet addresses
+Cardano wallets are Multi-Account Hierarchy Deterministic that follow a variation of BIP-44 described [here](https://github.com/input-output-hk/implementation-decisions/blob/e2d1bed5e617f0907bc5e12cf1c3f3302a4a7c42/text/1852-hd-chimeric.md). All the addresses are derived from a root key (is like a key factory) which you can get from the recovery phrase. Also the wallets will always have 20 "consecutive" unused address, so anytime you use one of them new address will be "discovered" to keep the rule.
+
+    let addresses = await wallet.getAddresses(); // list will contain at least 20 address
+
+Get unused addresses:
+
+    let unusedAddresses = await wallet.getUnusedAddresses();
+    
+Get used addresses:
+
+    let usedAddresses = await wallet.getUsedAddresses();
+
+You can create/discover next unused address:
+
+    // you'll get the n-th address where n is the current addresses list length 
+    let address = await wallet.getNextAddress();    
+    
+    // you can also pass the specific index
+     let address = await wallet.getAddressAt(45);  
+
 # Test
 
 ## Stack
