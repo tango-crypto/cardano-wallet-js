@@ -451,6 +451,13 @@ Send a more complex metadata object:
     let transaction = await wallet.sendPayment(passphrase, addresses, amounts, metadata);
 
 > **NOTE**: Values like boolean, null and undefined are passed as string (e.g "true", "null", "undefined").
+ 
+Forget transaction:
+If for some reason your transaction hang on status `pending`, for a long period, you can consider to "cancel" it.
+
+    wallet.forgetTransaction(transaction.id)
+    
+> **Importantly**: A transaction, when sent, cannot be cancelled. One can only request forgetting about it in order to try spending (concurrently) the same UTxO in another transaction. But, the transaction may still show up later in a block and therefore, appear in the wallet.
 
 # Test
 
