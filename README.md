@@ -264,7 +264,60 @@ You can create/discover next unused address:
 
     // get total balance. Total balance is the sum of available balance plus reward balance
     let totalBalance = wallet.getTotalBalance();
-     
+
+### Wallet delegation
+The wallet have information about whether already delegate on a stake pool or not
+
+    let delegation = wallet.getDelegation();
+    console.log(delegation);
+
+It the wallet is not delegate to any stake pool the output should be something similar to this:
+
+    {
+        "next": [],
+        "active": {
+            "status": "not_delegating"
+        }
+    }
+
+If you start delegating (see Stake pool section [bellow](#stake-pool)) the action will not take effect inmediatelly but the `next` property will indicate when the delegation will finally take effect. 
+The delegation meanwhile should look like this:
+
+    {
+     "next": [
+      {
+       "status": "delegating",
+       "changes_at": {
+        "epoch_start_time": "2021-04-15T15:03:27Z",
+        "epoch_number": 10
+       },
+       "target": "pool1as50x0wtumtyqzs7tceeh5ry0syh8jnvpnuu9wlxswxuv48sw4w"
+      }
+     ],
+     "active": {
+      "status": "not_delegating"
+     }
+    }
+> **NOTE**: Property `changes_at` will indicate the epoch at the delegation will take effect
+
+If we ask again after/during the epoch 10, we should get the delgation in place:
+
+    // refresh the wallet if you are using the same object. This will fecth the info from the blockchain
+    await wallet.refresh();
+    
+    let delegation = wallet.getDelegation();
+    console.log(delegation);
+    
+Output:
+    
+    {
+      next: [],
+      active: {
+        status: 'delegating',
+        target: 'pool1as50x0wtumtyqzs7tceeh5ry0syh8jnvpnuu9wlxswxuv48sw4w'
+      }
+    }
+    
 ### Stake Pool
 
 Get stake pool ranking list by member rewards:
