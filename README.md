@@ -253,6 +253,17 @@ You can create/discover next unused address:
     
     // you can also pass the specific index
      let address = await wallet.getAddressAt(45);  
+ 
+### Wallet balances
+
+    // get available balance. The balance you can expend
+    let totalBalance = wallet.getAvailableBalance();
+    
+    // get rewards balance. The balance available to withdraw
+    let rewardBalance = wallet.getRewardBalance();
+
+    // get total balance. Total balance is the sum of available balance plus reward balance
+    let totalBalance = wallet.getTotalBalance();
      
 ### Stake Pool
 
@@ -314,6 +325,7 @@ Stake pool maintenance actions:
 Manually trigger Garbage Collection:
 
     await walletServer.triggerStakePoolGarbageCollection();
+    
     
 ### Wallet transactions
 
