@@ -280,7 +280,7 @@ It the wallet is not delegate to any stake pool the output should be something s
         }
     }
 
-If you start delegating (see Stake pool section [bellow](#stake-pool)) the action will not take effect inmediatelly but the `next` property will indicate when the delegation will finally take effect. 
+If you start delegating (see [Stake pool section](#stake-pool)) the action will not take effect inmediatelly but the `next` property will indicate when the delegation will finally take effect. 
 The delegation meanwhile should look like this:
 
     {
