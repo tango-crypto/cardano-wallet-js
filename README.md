@@ -349,7 +349,7 @@ Withdraw stake pool's rewards:
     let passphrase = 'tangocrypto';
     
     // select the address to receive the rewards
-    let address = await wallet.getUsedAddresses())[0];
+    let address = (await wallet.getUsedAddresses())[0];
     
     // get the reward balance available to withdraw
     let rewardBalance = wallet.getRewardBalance();
