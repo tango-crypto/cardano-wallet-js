@@ -315,6 +315,77 @@ Manually trigger Garbage Collection:
 
     await walletServer.triggerStakePoolGarbageCollection();
     
+### Wallet transactions
+
+Get wallet transactions:
+
+    // get all wallet transactions
+    let transactions = await wallet.getTransactions(start, end);
+    
+    // filter by start and end date
+    let start = new Date(2021, 0, 1); // January 1st 2021;
+    let end = new Date(Date.now());
+    let transactions = await wallet.getTransactions(start, end);
+
+
+Get transaction details:
+
+    let transaction = await wallet.getTransaction(tx.id);
+
+Get payment fees:
+
+    // receiver address
+    let address = 'addr1q99q78gt2898zgu2dcswf2yuxj6vujcqece38rycc7wsncl5lx8y....';
+    let amount = 5000000; // 5 ADA
+    let estimatedFees = await wallet.estimateFee([address], [amount]);
+
+Send payment transfer:
+
+    let passphrase = 'tangocrypto';
+    
+    // receiver address
+    let addresses = ['addr1q99q78gt2898zgu2dcswf2yuxj6vujcqece38rycc7wsncl5lx8y....'];
+    let amounts = [5000000]; // 5 ADA
+    
+    let transaction = await wallet.sendPayment(passphrase, addresses, amounts);
+
+> **NOTE**: You can pass a list of address and amount. We expect both list have the same length where elemetns on each list is index related to the other. 
+> You can think of it as sending `amounts[i]` to `addresses[i]`.
+
+Send payment transfer with metadata:
+
+Metadata can be expressed as a JSON object with some restrictions:
+  - All top-level keys must be integers between 0 and 2^64 - 1.
+  - Each metadata value is tagged with its type.
+  - Strings must be at most 64 bytes when UTF-8 encoded.
+  - Bytestrings are hex-encoded, with a maximum length of 64 bytes.
+ 
+For more information check [here](https://github.com/input-output-hk/cardano-wallet/wiki/TxMetadata).
+
+
+    let passphrase = 'tangocrypto';
+    
+    // receiver address
+    let addresses = ['addr1q99q78gt2898zgu2dcswf2yuxj6vujcqece38rycc7wsncl5lx8y....'];
+    let amounts = [5000000]; // 5 ADA
+    
+    let metadata = ['abc', '2512a00e9653fe49a44a5886202e24d77eeb998f', 123];
+    let transaction = await wallet.sendPayment(passphrase, addresses, amounts, metadata);
+    
+> **WARNING**: Please note that metadata provided in a transaction will be stored on the blockchain forever. Make sure not to include any sensitive data, in particular personally identifiable information (PII).
+
+Send a more complex metadata object:
+
+    let passphrase = 'tangocrypto';
+    
+    // receiver address
+    let addresses = ['addr1q99q78gt2898zgu2dcswf2yuxj6vujcqece38rycc7wsncl5lx8y....'];
+    let amounts = [5000000]; // 5 ADA
+    
+    let metadata: any = {0: 'hello', 1: Buffer.from('2512a00e9653fe49a44a5886202e24d77eeb998f', 'hex'), 4: [1, 2, {0: true}], 5: {'key': null, 'l': [3, true, {}]}, 6: undefined};
+    let transaction = await wallet.sendPayment(passphrase, addresses, amounts, metadata);
+
+> **NOTE**: Values like boolean, null and undefined are passed as string (e.g "true", "null", "undefined").
 
 # Test
 
