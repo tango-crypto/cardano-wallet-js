@@ -1504,7 +1504,7 @@ describe('Cardano wallet API', function () {
 			let amounts = [1000000];
 
 			let wallet = await walletServer.getShelleyWallet(payeer);
-			let metadata: any = {0: 'hello', 1: '2512a00e9653fe49a44a5886202e24d77eeb998f', 4: [1, 2, {0: true}], 5: {'key': null, 'l': [3, true, {}]}, 6: undefined};
+			let metadata: any = {0: 'hello', 1: Buffer.from('2512a00e9653fe49a44a5886202e24d77eeb998f', 'hex'), 4: [1, 2, {0: true}], 5: {'key': null, 'l': [3, true, {}]}, 6: undefined};
 			let transaction = await wallet.sendPayment(passphrase, addresses, amounts, metadata);
 			let output = transaction.outputs.find(o => o.address == addresses[0].address);
 			let inputAmount = transaction.inputs.map(i => i.amount.quantity).reduce((a, b) => a + b);
@@ -1555,9 +1555,9 @@ describe('Cardano wallet API', function () {
 				return Seed.convertPrivateKeyToSigningKey(privateKey);
 			});
 			let txBody = Seed.sign(txBuild, signingKeys);
-			let buff = Buffer.from(txBody.cborHex);
+			let buffer = Buffer.from(txBody.cborHex, "hex");
 			// buff.toString('base64')
-			let txId = await walletServer.submitTx({ payload: Buffer.from(JSON.stringify(txBody)).toString('base64')});
+			let txId = await walletServer.submitTx(buffer);
 			expect(txId).not.undefined;
 		});
 	});

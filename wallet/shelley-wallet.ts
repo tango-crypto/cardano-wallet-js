@@ -290,14 +290,10 @@ export class ShelleyWallet implements ApiWallet {
 			let type = typeof data;
 			if(type == "number") {
 				result[MetadateTypesEnum.Number] = data;
-			} else if(type == "string") {
-				if (this.isHex(data)) {
-					if(Buffer.byteLength(data, "hex") <= 64) {
-						result[MetadateTypesEnum.Bytes] = data;
-					}
-				} else if(Buffer.byteLength(data, 'utf-8') <= 64) {
-					result[MetadateTypesEnum.String] = data;
-				}
+			} else if(type == "string" && Buffer.byteLength(data, 'utf-8') <= 64) {
+				result[MetadateTypesEnum.String] = data;
+			}else if(Buffer.isBuffer(data) && Buffer.byteLength(data, "hex") <= 64) {
+				result[MetadateTypesEnum.Bytes] = data.toString("hex");
 			} else if(type == "boolean"){
 				result[MetadateTypesEnum.String] = data.toString();
 			} else if(type == "undefined"){
@@ -317,10 +313,6 @@ export class ShelleyWallet implements ApiWallet {
 				}
 			}
 			return result;
-		}
-
-		private isHex(s: string): boolean {
-			return HEX_PATTERN.test(s);
 		}
 }
 
