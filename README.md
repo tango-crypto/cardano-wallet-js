@@ -382,7 +382,7 @@ Send a more complex metadata object:
     let addresses = ['addr1q99q78gt2898zgu2dcswf2yuxj6vujcqece38rycc7wsncl5lx8y....'];
     let amounts = [5000000]; // 5 ADA
     
-    let metadata: any = {0: 'hello', 1: '2512a00e9653fe49a44a5886202e24d77eeb998f', 4: [1, 2, {0: true}], 5: {'key': null, 'l': [3, true, {}]}, 6: undefined};
+    let metadata: any = {0: 'hello', 1: Buffer.from('2512a00e9653fe49a44a5886202e24d77eeb998f', 'hex'), 4: [1, 2, {0: true}], 5: {'key': null, 'l': [3, true, {}]}, 6: undefined};
     let transaction = await wallet.sendPayment(passphrase, addresses, amounts, metadata);
 
 > **NOTE**: Values like boolean, null and undefined are passed as string (e.g "true", "null", "undefined").
