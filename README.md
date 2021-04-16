@@ -472,7 +472,7 @@ execute: `stack install cardano-wallet:exe:local-cluster`
 Set a specific port `export CARDANO_WALLET_PORT=7355` so the wallet always start at the same port.
 run `~/.local/bin/local-cluster`
 
-## Support our project
+# Support our project
 - Delegate with us:  
 Ticker: **TANGO**  
 Pool Id: bd5f6b254798e3ddde1a9c3609fa9d6e468d638bd9103afb02e29ae5  
