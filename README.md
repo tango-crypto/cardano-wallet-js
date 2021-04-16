@@ -461,7 +461,7 @@ If for some reason your transaction hang on status `pending`, for a long period,
 
 # Test
 
-## Stack
+### Stack
 you'll need to install stak >= 1.9.3
 you can find it here: https://docs.haskellstack.org/en/stable/README/
 You may need to install the libsodium-dev, libghc-hsopenssl-dev, gmp, sqlite and systemd development libraries for the build to succeed.
