@@ -1,13 +1,14 @@
 {
     "name": "cardano-wallet-js",
     "version": "1.0.0",
-    "description": "typescript cardano wallet api",
+    "description": " javascript/typescript client for the official cardano-wallet api",
     "author": "Leobel Izquierdo <leobelizquierdo@gmail.com>",
     "license": "ISC",
     "keywords": [
         "cardano",
         "wallet",
         "api",
+				"javascript",
         "typescript"
     ],
     "main": "./dist/index.js",
@@ -22,7 +23,7 @@
     },
     "repository": {
         "type": "git",
-        "url": "https://github.com/npm/cli.git"
+        "url": "https://github.com/tango-crypto/cardano-wallet-js.git"
     },
     "dependencies": {
         "axios": "^0.21.1",
