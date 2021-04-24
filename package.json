@@ -1,5 +1,5 @@
 {
-    "name": "cardano-wallet-js",
+    "name": "@tangocrypto/cardano-wallet-js",
     "version": "1.0.0",
     "description": " javascript/typescript client for the official cardano-wallet api",
     "author": "Leobel Izquierdo <leobelizquierdo@gmail.com>",
@@ -8,7 +8,7 @@
         "cardano",
         "wallet",
         "api",
-				"javascript",
+        "javascript",
         "typescript"
     ],
     "main": "./dist/index.js",
