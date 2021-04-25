@@ -1,9 +1,10 @@
 import { spawnSync } from 'child_process';
 import * as fs from 'fs';
 import { CoinSelectionWallet } from './wallet/coin-selection-wallet';
+import { getCommand } from './binaries';
 
-const cardano_address_cmd = 'cardano-address';
-const cardano_cli_cmd = 'cardano-cli';
+const cardano_address_cmd = getCommand('cardano-address');
+const cardano_cli_cmd = getCommand('cardano-cli');
 export class Seed {
 	static generateRecoveryPhrase(size: number = 15): string {
 		const ls = spawnSync(cardano_address_cmd, ['recovery-phrase', 'generate', '--size', size.toString()], {});

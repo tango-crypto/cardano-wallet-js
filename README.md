@@ -35,7 +35,7 @@ download the `docker-composer.yml` they provide and start it using `docker-compo
 ## Installation
 Using npm:
 
-    npm i @tangocrypto/cardano-wallet-js
+    npm i cardano-wallet-js
 
 ## Usage
 To begin, start with a `WalletServer`. It allows you to connect to some remote `cardano-wallet` service.
