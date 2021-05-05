@@ -1537,27 +1537,24 @@ describe('Cardano wallet API', function () {
 			expect(inputAmount).least(outputAmount + changeAmount);
 		});
 
-		it.skip("should send a offline signed payment transaction", async function(){
+		it("should send a offline signed payment transaction", async function(){
 			let receiver = '2a793eb367d44a42f658eb02d1004f50c14612fd';
 			let payeer = wallets.find(w => w.id == "60bb5513e4e262e445cf203db9cf73ba925064d2");
 			let wallet = await walletServer.getShelleyWallet(payeer.id);
 			let addresses = (await (await walletServer.getShelleyWallet(receiver)).getUnusedAddresses()).slice(0, 1);
 			let amounts = [1000000];
-			let fee = await wallet.estimateFee(addresses, amounts);
 			let info = await walletServer.getNetworkInformation();
 			let coinSelection = await wallet.getCoinSelection(addresses, amounts);
 
 			//build and sign tx
-			let txBuild = Seed.buildTransaction(coinSelection, fee.estimated_max.quantity, info.node_tip.absolute_slot_number * 12000);
+			let txBuild = Seed.buildTransaction(coinSelection, info.node_tip.absolute_slot_number * 12000);
 			let signingKeys = coinSelection.inputs.map(i => {
 				let rootKey = Seed.rootKeyFromRecoveryPhrase(payeer.mnemonic_sentence); 
 				let privateKey = Seed.derivePrivateKey(rootKey, i.derivation_path.join("/"));
 				return Seed.convertPrivateKeyToSigningKey(privateKey);
 			});
 			let txBody = Seed.sign(txBuild, signingKeys);
-			let buffer = Buffer.from(txBody.cborHex, "hex");
-			// buff.toString('base64')
-			let txId = await walletServer.submitTx(buffer);
+			let txId = await walletServer.submitTx(txBody.cborHex);
 			expect(txId).not.undefined;
 		});
 	});

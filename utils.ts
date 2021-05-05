@@ -38,8 +38,20 @@ export class Seed {
 		return result;
 	}
 	
-	static buildTransaction(coinSelection: CoinSelectionWallet, fee: number, ttl: number): any {
+	static buildTransaction(coinSelection: CoinSelectionWallet, ttl: number): any {
+		/**
+		 * cardano-cli transaction build-raw \
+		 * --tx-in .... \
+		 * --tx-out .... \
+		 * --fee ...\
+		 * --ttl ...\
+		 * --out-file ...
+		 * 01d28cc6d420e35653393f0c6c4f2aba69331646c25f64cab99aa03316c6b7d9e0324b0b494b00c6f1735e7374eb485f72668f3a0a1e8671a76c39445084ea0ec5f7a745b91256c2883db16cc6313b9b4a22ceab2ed9c2ef96672d429a55f09209969400578fcde3a00acea493
+		*/
 		let args = ['transaction', 'build-raw'];
+		let fee: number = coinSelection.inputs.reduce((acc, c) => c.amount.quantity + acc, 0) 
+		- coinSelection.outputs.reduce((acc, c) => c.amount.quantity + acc, 0) 
+		- coinSelection.change.reduce((acc, c) => c.amount.quantity + acc, 0);
 		let inputs = coinSelection.inputs.map(i => `${i.id}#${i.index}`);
 		let outpust = coinSelection.change.map(c => `${c.address}+${c.amount.quantity}`)
 		.concat(coinSelection.outputs.map(o => `${o.address}+${o.amount.quantity}`));
@@ -57,7 +69,14 @@ export class Seed {
 		return result;
 	}
 
-	static sign(tx: any, keys: any[], network = '--mainnet', magic = ''): any {	
+	static sign(tx: any, keys: any[], network = '--mainnet', magic = ''): any {
+		/**
+		 * cardano-cli transaction sign \
+		 * --tx-body-file ...\
+		 * --signing-key-file ... \
+		 * --mainnet \
+		 * --out-file ... 
+		 * */	
 		let now = (new Date()).getTime();
 		let path = `/tmp/tx-${now}.raw`;
 		let signed = `/tmp/tx-${now}.signed`;
