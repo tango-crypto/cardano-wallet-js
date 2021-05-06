@@ -26,7 +26,9 @@
         "url": "https://github.com/tango-crypto/cardano-wallet-js.git"
     },
     "dependencies": {
+        "@emurgo/cardano-serialization-lib-nodejs": "^7.0.0",
         "axios": "^0.21.1",
+        "bip39": "^3.0.4",
         "chai": "^4.3.4",
         "child_process": "^1.0.2",
         "mocha": "^8.3.2"

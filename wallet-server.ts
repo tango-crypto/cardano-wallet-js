@@ -97,9 +97,15 @@ export class WalletServer {
 		return res.data.pool_metadata_source;
 	}
 
-	async submitTx(tx: string): Promise<string> {
-		let buffer = Buffer.from(tx, "hex");
-		let res = await this.proxyApi.postExternalTransaction(buffer);
-		return res.data.id;
+	async submitTx(tx: any): Promise<string> {
+		try {
+			let buffer = Buffer.from(tx);
+			let res = await this.proxyApi.postExternalTransaction(buffer);
+			return res.data.id;
+		} catch(err) {
+			let error = err;
+			console.log(error);
+			throw err;
+		}
 	}
 }

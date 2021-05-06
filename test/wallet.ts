@@ -14,7 +14,6 @@ import { KeyRoleEnum } from '../wallet/key-wallet';
 
 import * as dotenv from "dotenv";
 import { ShelleyWallet } from '../wallet/shelley-wallet';
-import { CoinSelectionWallet } from '../wallet/coin-selection-wallet';
 dotenv.config();
 
 describe('Cardano wallet API', function () {
@@ -1136,7 +1135,7 @@ describe('Cardano wallet API', function () {
 	};
 
 	before('Initializing the test cluster ...', async function () {
-		walletServer = await WalletServer.init(`http://${process.env.TEST_WALLET_HOST}:${process.env.TEST_WALLET_PORT}/v2`);
+		walletServer = WalletServer.init(`http://${process.env.TEST_WALLET_HOST}:${process.env.TEST_WALLET_PORT}/v2`);
 
 		for (let i = 0; i < wallets.length - 1; i++) {
 			const w = wallets[i];
@@ -1547,14 +1546,15 @@ describe('Cardano wallet API', function () {
 			let coinSelection = await wallet.getCoinSelection(addresses, amounts);
 
 			//build and sign tx
-			let txBuild = Seed.buildTransaction(coinSelection, info.node_tip.absolute_slot_number * 12000);
+			let rootKey = Seed.deriveRootKey(payeer.mnemonic_sentence); 
 			let signingKeys = coinSelection.inputs.map(i => {
-				let rootKey = Seed.rootKeyFromRecoveryPhrase(payeer.mnemonic_sentence); 
-				let privateKey = Seed.derivePrivateKey(rootKey, i.derivation_path.join("/"));
-				return Seed.convertPrivateKeyToSigningKey(privateKey);
+				let privateKey = Seed.deriveKey(rootKey, i.derivation_path);
+				return privateKey;
 			});
+
+			let txBuild = Seed.buildTransaction(coinSelection, info.node_tip.absolute_slot_number * 12000);
 			let txBody = Seed.sign(txBuild, signingKeys);
-			let txId = await walletServer.submitTx(txBody.cborHex);
+			let txId = await walletServer.submitTx(txBody.to_bytes());
 			expect(txId).not.undefined;
 		});
 	});
