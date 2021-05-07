@@ -1554,7 +1554,8 @@ describe('Cardano wallet API', function () {
 
 			let txBuild = Seed.buildTransaction(coinSelection, info.node_tip.absolute_slot_number * 12000);
 			let txBody = Seed.sign(txBuild, signingKeys);
-			let txId = await walletServer.submitTx(txBody.to_bytes());
+			let signed = Buffer.from(txBody.to_bytes()).toString('hex');
+			let txId = await walletServer.submitTx(signed);
 			expect(txId).not.undefined;
 		});
 	});
