@@ -459,6 +459,111 @@ If for some reason your transaction hang on status `pending`, for a long period,
     
 > **Importantly**: A transaction, when sent, cannot be cancelled. One can only request forgetting about it in order to try spending (concurrently) the same UTxO in another transaction. But, the transaction may still show up later in a block and therefore, appear in the wallet.
 
+### Submit external transaction
+You can pass in a transaction created externally (by other tools or not) and submit it into the blockchain. You can use this library to create the transaction
+offline as well. Here is an example put in all together:
+   
+    // recovery phrase, this should be the same you use to create the wallet (see Wallet section)
+    let recovery_phrase = [...];
+    
+    // get first unused wallet's address
+    let addresses = (await wallet.getUnusedAddresses()).slice(0, 1);
+			 let amounts = [1000000];
+    
+    // get ttl 
+    let info = await walletServer.getNetworkInformation();
+    let ttl = info.node_tip.absolute_slot_number * 12000;
+    
+    // you can include metadata
+    let data: any = {0: 'hello', 1: Buffer.from('2512a00e9653fe49a44a5886202e24d77eeb998f', 'hex'), 4: [1, 2, {0: true}], 5: {'key': null, 'l': [3, true, {}]}, 6: undefined};
+    
+    // get the tx structure with all the necessary components (inputs, outputs, change, etc).
+    let coinSelection = await wallet.getCoinSelection(addresses, amounts, data);
+
+    // get the signing keys (can be offline)
+    let rootKey = Seed.deriveRootKey(recovery_phrase); 
+    let signingKeys = coinSelection.inputs.map(i => {
+     let privateKey = Seed.deriveKey(rootKey, i.derivation_path);
+     return privateKey;
+    });
+    
+    // build and sign tx (can be offline)
+    // include the metadata in the build and sign process
+    let metadata = Seed.construcTransactionMetadata(data);
+    let txBuild = Seed.buildTransaction(coinSelection, ttl, metadata);
+    let txBody = Seed.sign(txBuild, signingKeys, metadata);
+    
+    // submit the tx into the blockchain
+    let signed = Buffer.from(txBody.to_bytes()).toString('hex');
+    let txId = await walletServer.submitTx(signed);
+    
+### Key handling
+There ara a couple of methods you can use to derive and get private/public key pairs. For more info check [here](https://docs.cardano.org/projects/cardano-wallet/en/latest/About-Address-Derivation.html).
+
+Get root key from recovery phrase
+
+    let phrase = [...];
+    let rootKey = Seed.deriveRootKey(phrase);
+    console.log(rootKey.to_bech32());
+    
+    Output:
+    >> "xprv..."
+
+Derive private/signing key (also known as spending key) from root key
+
+    let rootKey = Seed.deriveRootKey(phrase);
+    let privateKey = Seed.deriveKey(rootKey, ['1852H','1815H','0H','0','0']).to_raw_key();
+    console.log(privateKey.to_bech32());
+    
+    Output:
+    >> "ed25519e_sk1..."
+
+Derive account key from root
+
+    let rootKey = Seed.deriveRootKey(phrase);
+    let accountKey = Seed.deriveAccountKey(rootKey, 0);
+    console.log(accountKey.to_bech32());
+    
+    Output:
+     >> "xprv..."
+   
+All the method mentioned above return a `Bip32PrivateKey` which you can use to keep deriving and generating keys and addresses check [here](https://docs.cardano.org/projects/cardano-serialization-lib/en/latest/) for more info. For example, assuming you have `cardano-serialization-lib` installed, 
+you can get a stake address like this:
+
+    let rootKey = Seed.deriveRootKey(phrase);
+    let stakePrvKey = Seed.deriveKey(rootKey, ['1852H','1815H','0H','2','0']).to_raw_key();
+    const stakePubKey = stakePrvKey.to_public();
+
+    const rewardAddr = RewardAddress.new(
+      NetworkInfo.mainnet().network_id(),
+      StakeCredential.from_keyhash(stakePubKey.hash())
+     )
+     .to_address();
+     console.log(rewardAddr.to_bech32());
+     
+     Output:
+     >> "stake..."
+
+Sign and verify a message using a private/public key pair.
+
+    let message = 'Hello World!!!';
+    const rootKey = Seed.deriveRootKey(phrase);
+    const accountKey = Seed.deriveAccountKey(rootKey);
+    
+    // we'll use the stake private/public key at 0 in this case but you can use whatever private/public key pair.
+    const stakePrvKey = accountKey
+      .derive(CARDANO_CHIMERIC) // chimeric
+      .derive(0);
+
+    const privateKey = stakePrvKey.to_raw_key();
+    const publicKey = privateKey.to_public();
+
+    const signed = Seed.signMessage(privateKey, message);
+    const verify_result = Seed.verifyMessage(publicKey, message, signed);
+
+    Output:
+    >> True
+
 # Test
 
 ### Stack
