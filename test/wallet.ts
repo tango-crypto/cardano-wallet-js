@@ -1549,7 +1549,7 @@ describe('Cardano wallet API', function () {
 			//build and sign tx
 			let rootKey = Seed.deriveRootKey(payeer.mnemonic_sentence); 
 			let signingKeys = coinSelection.inputs.map(i => {
-				let privateKey = Seed.deriveKey(rootKey, i.derivation_path);
+				let privateKey = Seed.deriveKey(rootKey, i.derivation_path).to_raw_key();
 				return privateKey;
 			});
 

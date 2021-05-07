@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import 'mocha';
 import { WalletswalletIdpaymentfeesAmountUnitEnum } from '../models';
-import { Seed } from '../utils';
+import { CARDANO_COIN_TYPE, CARDANO_PUROPOSE, CARDANO_CHIMERIC, Seed } from '../utils';
 import { CoinSelectionWallet } from '../wallet/coin-selection-wallet';
 import { Bip32PrivateKey, NetworkInfo, RewardAddress, StakeCredential, TransactionBody } from '@emurgo/cardano-serialization-lib-nodejs';
 import { mnemonicToEntropy } from 'bip39';
@@ -101,14 +101,14 @@ describe('Wallet utilities', function(){
 
 	it("should return derive private/signing key from root", function(){
 		let rootKey = Seed.deriveRootKey(phrase);
-		let privateKey = Seed.deriveKey(rootKey, ['1852H','1815H','0H','0','0'])
+		let privateKey = Seed.deriveKey(rootKey, ['1852H','1815H','0H','0','0']).to_raw_key()
 		.to_bech32();
 		expect(prvKey).equal(privateKey);
 	});
 
 	it("should return derive stake address from root", function(){
 		let rootKey = Seed.deriveRootKey(phrase);
-		let stakePrvKey = Seed.deriveKey(rootKey, ['1852H','1815H','0H','2','0']);
+		let stakePrvKey = Seed.deriveKey(rootKey, ['1852H','1815H','0H','2','0']).to_raw_key();
 		const stakePubKey = stakePrvKey
 			.to_public();
 
@@ -131,7 +131,7 @@ describe('Wallet utilities', function(){
 		let txBuild = TransactionBody.from_bytes(Buffer.from(txRawHex, 'hex'));
 		let rootKey = Seed.deriveRootKey(phrase); 
 		let signingKeys = coinSelection.inputs.map(i => {
-			let privateKey = Seed.deriveKey(rootKey, i.derivation_path);
+			let privateKey = Seed.deriveKey(rootKey, i.derivation_path).to_raw_key();
 			return privateKey;
 		});
 		let txBody = Seed.sign(txBuild, signingKeys);
@@ -140,33 +140,21 @@ describe('Wallet utilities', function(){
 	});
 
 	it("should sing and verify a message", function(){
-		let message = Buffer.from(`I'm staking on this pool with address: ${stakeAddress}`);
-		const entropy = mnemonicToEntropy(phrase.join(' '));
+		let message = `I'm staking on this pool with address: ${stakeAddress}`;
 
-		const rootKey = Bip32PrivateKey.from_bip39_entropy(
-			Buffer.from(entropy, 'hex'),
-  		Buffer.from(''),
-		);
-
-		const accountKey = rootKey
-			.derive(harden(1852)) // purpose
-			.derive(harden(1815)) // coin type
-			.derive(harden(0)); // account #0
+		const rootKey = Seed.deriveRootKey(phrase);
+		const accountKey = Seed.deriveAccountKey(rootKey);
 
 		const stakePrvKey = accountKey
-			.derive(2) // chimeric
+			.derive(CARDANO_CHIMERIC) // chimeric
 			.derive(0);
 
 		const privateKey = stakePrvKey.to_raw_key();
 		const publicKey = privateKey.to_public();
-
-		const signed = privateKey.sign(message);
-		const verify_result = publicKey.verify(message, signed);
+		
+		const signed = Seed.signMessage(privateKey, message);
+		const verify_result = Seed.verifyMessage(publicKey, message, signed);
 		expect(verify_result).equal(true);
 	});
 
-	function harden(num: number) {
-		return 0x80000000 + num; 
-	}
-	
 });

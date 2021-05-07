@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import { CoinSelectionWallet } from './wallet/coin-selection-wallet';
 import { getCommand } from './binaries';
 import { mnemonicToEntropy } from 'bip39';
-import { Address, BigNum, Bip32PrivateKey, GeneralTransactionMetadata, hash_metadata, hash_transaction, Int, LinearFee, make_vkey_witness, MetadataList, MetadataMap, PrivateKey, Transaction, TransactionBody, TransactionBuilder, TransactionHash, TransactionInput, TransactionMetadata, TransactionMetadatum, TransactionOutput, TransactionWitnessSet, Value, Vkeywitnesses } from '@emurgo/cardano-serialization-lib-nodejs';
+import { Address, BigNum, Bip32PrivateKey, Ed25519Signature, GeneralTransactionMetadata, hash_metadata, hash_transaction, Int, LinearFee, make_vkey_witness, MetadataList, MetadataMap, PrivateKey, PublicKey, Transaction, TransactionBody, TransactionBuilder, TransactionHash, TransactionInput, TransactionMetadata, TransactionMetadatum, TransactionOutput, TransactionWitnessSet, Value, Vkeywitnesses } from '@emurgo/cardano-serialization-lib-nodejs';
 import { Config } from './config';
 
 const cardano_address_cmd = getCommand('cardano-address');
@@ -29,12 +29,12 @@ export class Seed {
 
 	static deriveAccountKey(key: Bip32PrivateKey, index: number = 0): Bip32PrivateKey{
 			return key
-			.derive(Seed.harden(1852)) // purpose
-			.derive(Seed.harden(1815)) // coin type
+			.derive(Seed.harden(CARDANO_PUROPOSE)) // purpose
+			.derive(Seed.harden(CARDANO_COIN_TYPE)) // coin type
 			.derive(Seed.harden(index)); // account #0
 	 }
 
-	static deriveKey(key: Bip32PrivateKey, path: string[]): PrivateKey {
+	static deriveKey(key: Bip32PrivateKey, path: string[]): Bip32PrivateKey {
 		let result = key;
 		path.forEach(p => {
 			result = result.derive(p.endsWith('H') || p.endsWith("'") 
@@ -42,7 +42,7 @@ export class Seed {
 				: Number.parseInt(p))
 		});
 
-		return result.to_raw_key();
+		return result;
 	}
 
 	static buildTransaction(coinSelection: CoinSelectionWallet, ttl: number, data?: TransactionMetadata, config = Config.Mainnet): TransactionBody {
@@ -134,6 +134,14 @@ export class Seed {
 		);
 
 		return transaction;
+	}
+
+	static signMessage(key: PrivateKey, message: string): string {
+		return key.sign(Buffer.from(message)).to_hex();
+	}
+
+	static verifyMessage(key: PublicKey, message: string, signed: string): boolean {
+		return key.verify(Buffer.from(message), Ed25519Signature.from_hex(signed));
 	}
 
 	static harden(num: number): number{
@@ -238,3 +246,9 @@ export enum MetadateTypesEnum {
 	List = "list",
 	Map = "map",
 }
+
+export const CARDANO_PUROPOSE = 1852;
+export const CARDANO_COIN_TYPE = 1815;
+export const CARDANO_EXTERNAL = 0;
+export const CARDANO_CHANGE = 1;
+export const CARDANO_CHIMERIC = 2;
