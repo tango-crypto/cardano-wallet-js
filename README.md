@@ -498,7 +498,7 @@ offline as well. Here is an example put in all together:
     let txId = await walletServer.submitTx(signed);
     
 ### Key handling
-There ara a couple of methods you can use to derive and get private/public key pairs. for more info you can check (here)[https://docs.cardano.org/projects/cardano-wallet/en/latest/About-Address-Derivation.html].
+There ara a couple of methods you can use to derive and get private/public key pairs. For more info check [here](https://docs.cardano.org/projects/cardano-wallet/en/latest/About-Address-Derivation.html).
 
 Get root key from recovery phrase
 
@@ -544,6 +544,25 @@ you can get a stake address like this:
      Output:
      >> "stake..."
 
+Sign and verify a message using a private/public key pair.
+
+    let message = 'Hello World!!!';
+    const rootKey = Seed.deriveRootKey(phrase);
+    const accountKey = Seed.deriveAccountKey(rootKey);
+    
+    // we'll use the stake private/public key at 0 in this case but you can use whatever private/public key pair.
+    const stakePrvKey = accountKey
+      .derive(CARDANO_CHIMERIC) // chimeric
+      .derive(0);
+
+    const privateKey = stakePrvKey.to_raw_key();
+    const publicKey = privateKey.to_public();
+
+    const signed = Seed.signMessage(privateKey, message);
+    const verify_result = Seed.verifyMessage(publicKey, message, signed);
+
+    Output:
+    >> True
 
 # Test
 
