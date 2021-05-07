@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import { CoinSelectionWallet } from './wallet/coin-selection-wallet';
 import { getCommand } from './binaries';
 import { mnemonicToEntropy } from 'bip39';
-import { Address, BigNum, Bip32PrivateKey, hash_transaction, LinearFee, make_vkey_witness, PrivateKey, Transaction, TransactionBody, TransactionBuilder, TransactionHash, TransactionInput, TransactionOutput, TransactionWitnessSet, Value, Vkeywitnesses } from '@emurgo/cardano-serialization-lib-nodejs';
+import { Address, BigNum, Bip32PrivateKey, GeneralTransactionMetadata, hash_metadata, hash_transaction, Int, LinearFee, make_vkey_witness, MetadataList, MetadataMap, PrivateKey, Transaction, TransactionBody, TransactionBuilder, TransactionHash, TransactionInput, TransactionMetadata, TransactionMetadatum, TransactionOutput, TransactionWitnessSet, Value, Vkeywitnesses } from '@emurgo/cardano-serialization-lib-nodejs';
 import { Config } from './config';
 
 const cardano_address_cmd = getCommand('cardano-address');
@@ -45,7 +45,7 @@ export class Seed {
 		return result.to_raw_key();
 	}
 
-	static buildTransaction(coinSelection: CoinSelectionWallet, ttl: number, config = Config.Mainnet): TransactionBody {
+	static buildTransaction(coinSelection: CoinSelectionWallet, ttl: number, data?: TransactionMetadata, config = Config.Mainnet): TransactionBody {
 		const protocolParams = config.protocolParams;
 		let txBuilder = TransactionBuilder.new(
 			// all of these are taken from the mainnet genesis settings
@@ -98,6 +98,11 @@ export class Seed {
 			txBuilder.add_output(txOutput);
 		});
 
+		// add tx metadata
+		if (data) {
+			txBuilder.set_metadata(data);
+		}
+
 		// set tx ttl
 		txBuilder.set_ttl(ttl);
 
@@ -111,7 +116,7 @@ export class Seed {
 		return txBody;
 	}
 	
-	static sign(txBody: TransactionBody, privateKeys: PrivateKey[]): Transaction {
+	static sign(txBody: TransactionBody, privateKeys: PrivateKey[], transactionMetadata?: TransactionMetadata): Transaction {
 		const txHash = hash_transaction(txBody);
 		const witnesses = TransactionWitnessSet.new();
 		const vkeyWitnesses = Vkeywitnesses.new();
@@ -125,7 +130,7 @@ export class Seed {
 		const transaction = Transaction.new(
 			txBody,
 			witnesses,
-			undefined, // transaction metadata
+			transactionMetadata
 		);
 
 		return transaction;
@@ -134,4 +139,102 @@ export class Seed {
 	static harden(num: number): number{
 		return 0x80000000 + num;
 	}
+
+	static constructMetadata(data: any) {
+		let metadata: any = {};
+
+		if(Array.isArray(data)) {
+			for (let i = 0; i < data.length; i++) {
+				const value = data[i];
+				metadata[i] = Seed.getMetadataObject(value);
+			}
+		} else {
+			let keys = Object.keys(data);
+			for (let i = 0; i < keys.length; i++) {
+				const key = keys[i];
+				let index = parseInt(key);
+				if(!isNaN(index)) {
+					metadata[index] = Seed.getMetadataObject(data[key]);
+				}
+			}
+		}
+		return metadata;
+	}
+
+	static getMetadataObject(data:any) {
+		let result: any = {};
+		let type = typeof data;
+		if(type == "number") {
+			result[MetadateTypesEnum.Number] = data;
+		} else if(type == "string" && Buffer.byteLength(data, 'utf-8') <= 64) {
+			result[MetadateTypesEnum.String] = data;
+		}else if(Buffer.isBuffer(data) && Buffer.byteLength(data, "hex") <= 64) {
+			result[MetadateTypesEnum.Bytes] = data.toString("hex");
+		} else if(type == "boolean"){
+			result[MetadateTypesEnum.String] = data.toString();
+		} else if(type == "undefined"){
+			result[MetadateTypesEnum.String] = "undefined";
+		}else if(Array.isArray(data)) {
+			result[MetadateTypesEnum.List] = data.map(a => this.getMetadataObject(a));
+		} else if (type == "object") {
+			if (data) {
+				result[MetadateTypesEnum.Map] = Object.keys(data).map(k => {
+					return {
+						"k": isNaN(parseInt(k)) ? this.getMetadataObject(k) : this.getMetadataObject(parseInt(k)),
+						"v": this.getMetadataObject(data[k])
+					}
+				});
+			} else {
+				result[MetadateTypesEnum.String] = "null";
+			}
+		}
+		return result;
+	}
+
+	static construcTransactionMetadata(data: any): TransactionMetadata {
+		let metadata = Seed.constructMetadata(data);
+		let generalMetatada = GeneralTransactionMetadata.new();
+		for (const key in metadata) {
+			let value = metadata[key];
+			generalMetatada.insert(BigNum.from_str(key), Seed.getTransactionMetadatum(value));
+		}
+		return TransactionMetadata.new(generalMetatada);
+	}
+
+	static getTransactionMetadatum(value:any): TransactionMetadatum {
+		if (value.hasOwnProperty(MetadateTypesEnum.Number)) {
+			return TransactionMetadatum.new_int(Int.new_i32(value[MetadateTypesEnum.Number]));
+		} 
+		if (value.hasOwnProperty(MetadateTypesEnum.String)) {
+			return TransactionMetadatum.new_text(value[MetadateTypesEnum.String]);
+		} 
+		if (value.hasOwnProperty(MetadateTypesEnum.Bytes)) {
+			return TransactionMetadatum.new_bytes(Buffer.from(value[MetadateTypesEnum.Bytes], 'hex'));
+		} 
+		if (value.hasOwnProperty(MetadateTypesEnum.List)) {
+			let list = value[MetadateTypesEnum.List];
+			let metalist = MetadataList.new();
+			for(let i = 0; i < list.length; i++) {
+				metalist.add(Seed.getTransactionMetadatum(list[i]));
+			}
+			return TransactionMetadatum.new_list(metalist);
+		}
+		if (value.hasOwnProperty(MetadateTypesEnum.Map)) {
+			let map = value[MetadateTypesEnum.Map];
+			let metamap = MetadataMap.new();
+			for(let i = 0; i < map.length; i++) {
+				let {k, v} = map[i];
+				metamap.insert(Seed.getTransactionMetadatum(k), Seed.getTransactionMetadatum(v));
+			}
+			return TransactionMetadatum.new_map(metamap);
+		}
+	}
+}
+
+export enum MetadateTypesEnum {
+	Number = "int",
+	String = "string",
+	Bytes = "bytes",
+	List = "list",
+	Map = "map",
 }

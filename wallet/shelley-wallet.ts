@@ -1,5 +1,5 @@
 
-import { config } from 'chai';
+import { Seed } from '../utils';
 import { AddressesApi, KeysApi, TransactionsApi, WalletsApi, StakePoolsApi, CoinSelectionsApi } from '../api';
 import { Configuration } from '../configuration';
 import { ApiAddressData, ApiAddressStateEnum, ApiPostTransactionData, ApiPostTransactionDataWithdrawalEnum, ApiPostTransactionFeeData, ApiWallet, ApiWalletPassphrase, ApiWalletPutData, ApiWalletPutPassphraseData, WalletsAssets, WalletsBalance, WalletsDelegation, WalletsPassphrase, WalletsState, WalletsTip, WalletswalletIdpaymentfeesAmount, WalletswalletIdpaymentfeesAmountUnitEnum, WalletswalletIdpaymentfeesPayments } from '../models';
@@ -183,7 +183,7 @@ export class ShelleyWallet implements ApiWallet {
 		}
 
 		async sendPayment(passphrase: any, addresses: AddressWallet[], amounts: number[], data?: any): Promise<TransactionWallet> { 
-			let metadata = data ? this.constructMetadata(data) : undefined;
+			let metadata = data ? Seed.constructMetadata(data) : undefined;
 			let payload: ApiPostTransactionData = {
 				passphrase: passphrase,
 				payments: addresses.map((addr, i) =>  {
@@ -238,7 +238,8 @@ export class ShelleyWallet implements ApiWallet {
 			return TransactionWallet.from(res.data);
 		}
 
-		async getCoinSelection(addresses: AddressWallet[], amounts: number[]): Promise<CoinSelectionWallet> {
+		async getCoinSelection(addresses: AddressWallet[], amounts: number[], data?: any): Promise<CoinSelectionWallet> {
+			let metadata = data ? Seed.constructMetadata(data) : undefined;
 			let payload: ApiPostTransactionFeeData = {
 				payments: addresses.map((addr, i) =>  {
 					let amount: WalletswalletIdpaymentfeesAmount = { unit: WalletswalletIdpaymentfeesAmountUnitEnum.Lovelace, quantity: amounts[i] };
@@ -247,7 +248,8 @@ export class ShelleyWallet implements ApiWallet {
 						amount: amount
 					};
 					return payment;
-				})
+				}),
+				metadata: metadata
 			};
 			let res = await this.coinSelectionsApi.selectCoins(payload, this.id);
 			return CoinSelectionWallet.from(res.data);

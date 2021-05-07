@@ -1543,7 +1543,8 @@ describe('Cardano wallet API', function () {
 			let addresses = (await (await walletServer.getShelleyWallet(receiver)).getUnusedAddresses()).slice(0, 1);
 			let amounts = [1000000];
 			let info = await walletServer.getNetworkInformation();
-			let coinSelection = await wallet.getCoinSelection(addresses, amounts);
+			let data: any = {0: 'hello', 1: Buffer.from('2512a00e9653fe49a44a5886202e24d77eeb998f', 'hex'), 4: [1, 2, {0: true}], 5: {'key': null, 'l': [3, true, {}]}, 6: undefined};
+			let coinSelection = await wallet.getCoinSelection(addresses, amounts, data);
 
 			//build and sign tx
 			let rootKey = Seed.deriveRootKey(payeer.mnemonic_sentence); 
@@ -1552,8 +1553,9 @@ describe('Cardano wallet API', function () {
 				return privateKey;
 			});
 
-			let txBuild = Seed.buildTransaction(coinSelection, info.node_tip.absolute_slot_number * 12000);
-			let txBody = Seed.sign(txBuild, signingKeys);
+			let metadata = Seed.construcTransactionMetadata(data);
+			let txBuild = Seed.buildTransaction(coinSelection, info.node_tip.absolute_slot_number * 12000, metadata);
+			let txBody = Seed.sign(txBuild, signingKeys, metadata);
 			let signed = Buffer.from(txBody.to_bytes()).toString('hex');
 			let txId = await walletServer.submitTx(signed);
 			expect(txId).not.undefined;
