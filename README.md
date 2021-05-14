@@ -19,6 +19,7 @@
     + [Wallet transactions](#wallet-transactions)
     + [Submit external transaction](#submit-external-transaction)
     + [Key handling](#key-handling)
+    + [Native Tokens](#native-tokens)
 - [Test](#test)
 - [Support our project](#support-our-project)
 
@@ -585,6 +586,103 @@ Sign and verify a message using a private/public key pair.
 
     Output:
     >> True
+   
+### Native Tokens
+You can create native tokens just creating a transaction with a couple of differences, here is an example:
+
+	// address to hold the minted tokens. You can use which you want.
+	let addresses = [(await wallet.getAddresses())[0]];
+			
+	// policy public/private keypair
+	let keyPair= Seed.generateKeyPair();
+	let policyVKey = keyPair.publicKey;
+	let policySKey = keyPair.privateKey;
+
+	// generate single issuer native script
+	let keyHash = Seed.getKeyHash(policyVKey);
+	let script = Seed.buildSingleIssuerScript(keyHash);
+
+	//generate policy id
+	let scriptHash = Seed.getScriptHash(script);
+	let policyId = Seed.getPolicyId(scriptHash);
+
+	// asset
+	let asset = new AssetWallet(policyId, "Tango", 1000000);
+
+	// token
+	let tokens = [new TokenWallet(asset, keyPair, script)];
+
+	//scripts
+	let scripts = tokens.map(t => t.script);
+
+	// get min ada for address holding tokens
+	let minAda = Seed.getMinUtxoValueWithAssets(tokens);
+	let amounts = [minAda];
+
+	// get ttl info
+	let info = await walletServer.getNetworkInformation();
+	let ttl = info.node_tip.absolute_slot_number * 12000;
+
+	// get coin selection structure (without the assets)
+	let coinSelection = await wallet.getCoinSelection(addresses, amounts);
+
+	// add signing keys
+	let rootKey = Seed.deriveRootKey(payeer.mnemonic_sentence); 
+	let signingKeys = coinSelection.inputs.map(i => {
+		let privateKey = Seed.deriveKey(rootKey, i.derivation_path).to_raw_key();
+		return privateKey;
+	});
+
+	// add policy signing key
+	signingKeys.push(policySKey.to_raw_key());
+
+	// let metadata = Seed.construcTransactionMetadata(data);
+	let mint = Seed.buildTransactionMint(tokens);
+
+	// the wallet currently doesn't support including tokens not previuosly minted
+	// so we need to include it manually.
+	coinSelection.outputs = coinSelection.outputs.map(output => {
+		if (output.address === addresses[0].address) {
+			output.assets = tokens.map(t => {
+				let asset: WalletsAssetsAvailable = {
+					 policy_id: t.asset.policy_id,
+					 asset_name: t.asset.asset_name,
+					 quantity: t.asset.quantity
+				};
+				return asset;
+			});
+		}
+		return output;
+	});
+
+	let currentFee = coinSelection.inputs.reduce((acc, c) => c.amount.quantity + acc, 0) 
+	- coinSelection.outputs.reduce((acc, c) => c.amount.quantity + acc, 0)
+	- coinSelection.change.reduce((acc, c) => c.amount.quantity + acc, 0);
+	let change = coinSelection.change.reduce((acc, c) => c.amount.quantity + acc, 0);
+
+	// we need to sing the tx and calculate the actual fee and the build again 
+	// since the coin selection doesnt calculate the fee with the asset tokens included
+	let txBody = Seed.buildTransaction(coinSelection, ttl, null, tokens);
+	txBody.set_mint(mint);
+	let tx = Seed.sign(txBody, signingKeys, null, scripts);
+	let fee = Seed.getTransactionFee(tx);
+	coinSelection.change[0].amount.quantity = change - (parseInt(fee.to_str()) - currentFee);
+
+	// finally build the tx again and sing it
+	txBody = Seed.buildTransaction(coinSelection, ttl, null, tokens);
+	txBody.set_mint(mint);
+	tx = Seed.sign(txBody, signingKeys, null, scripts);
+
+	// submit the tx
+	let signed = Buffer.from(tx.to_bytes()).toString('hex');
+	let txId = await walletServer.submitTx(signed);
+
+> **NOTE**: You can check more scripts on `test/assets.ts`, this example is the equivalent to "RequireSignature" you can create with JSON:
+	
+	{
+	  "type": "sig",
+	  "keyHash": "e09d36c79dec9bd1b3d9e152247701cd0bb860b5ebfd1de8abb6735a"
+	} 
 
 # Test
 
