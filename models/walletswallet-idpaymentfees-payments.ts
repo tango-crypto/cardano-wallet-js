@@ -25,7 +25,7 @@ export interface WalletswalletIdpaymentfeesPayments {
      * @type {string}
      * @memberof WalletswalletIdpaymentfeesPayments
      */
-    address: any;
+    address: string;
     /**
      * 
      * @type {WalletswalletIdpaymentfeesAmount}

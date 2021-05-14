@@ -2,15 +2,14 @@
 import { Seed } from '../utils';
 import { AddressesApi, KeysApi, TransactionsApi, WalletsApi, StakePoolsApi, CoinSelectionsApi } from '../api';
 import { Configuration } from '../configuration';
-import { ApiAddressData, ApiAddressStateEnum, ApiPostTransactionData, ApiPostTransactionDataWithdrawalEnum, ApiPostTransactionFeeData, ApiWallet, ApiWalletPassphrase, ApiWalletPutData, ApiWalletPutPassphraseData, WalletsAssets, WalletsBalance, WalletsDelegation, WalletsPassphrase, WalletsState, WalletsTip, WalletswalletIdpaymentfeesAmount, WalletswalletIdpaymentfeesAmountUnitEnum, WalletswalletIdpaymentfeesPayments } from '../models';
+import { ApiAddressData, ApiAddressStateEnum, ApiPostTransactionData, ApiPostTransactionDataWithdrawalEnum, ApiPostTransactionFeeData, ApiWallet, ApiWalletPassphrase, ApiWalletPutData, ApiWalletPutPassphraseData, WalletsAssets, WalletsAssetsAvailable, WalletsBalance, WalletsDelegation, WalletsPassphrase, WalletsState, WalletsTip, WalletswalletIdpaymentfeesAmount, WalletswalletIdpaymentfeesAmountUnitEnum, WalletswalletIdpaymentfeesPayments } from '../models';
 import { AddressWallet } from './address-wallet';
 import { CoinSelectionWallet } from './coin-selection-wallet';
 import { FeeWallet } from './fee-wallet';
 import { KeyRoleEnum, KeyWallet } from './key-wallet';
 import { TransactionWallet } from './transaction-wallet';
 import { UtxoStatisticsWallet } from './utxo-statistics-wallet';
-
-const HEX_PATTERN = /^[0-9|a-f|A-F]+$/;
+import { AssetWallet } from './asset-wallet';
 export class ShelleyWallet implements ApiWallet {
 	id: any;
 	address_pool_gap: any;
@@ -167,16 +166,26 @@ export class ShelleyWallet implements ApiWallet {
 			return TransactionWallet.from(res.data);
 		}
 
-		async estimateFee(addresses: AddressWallet[], amounts: number[]): Promise<FeeWallet> { 
+		async estimateFee(addresses: AddressWallet[], amounts: number[], data?: any, assets: {[key: string]: AssetWallet[]} = {}): Promise<FeeWallet> { 
+			let metadata = data ? Seed.constructMetadata(data) : undefined;
 			let payload: ApiPostTransactionFeeData = {
 				payments: addresses.map((addr, i) =>  {
 					let amount: WalletswalletIdpaymentfeesAmount = { unit: WalletswalletIdpaymentfeesAmountUnitEnum.Lovelace, quantity: amounts[i] };
 					let payment: WalletswalletIdpaymentfeesPayments = { 
 						address: addr.address, 
-						amount: amount
+						amount: amount,
+						assets: assets[addr.id]?.map(a => {
+							let asset: WalletsAssetsAvailable = {
+								 policy_id: a.policy_id,
+								 asset_name: Buffer.from(a.asset_name).toString('hex'),
+								 quantity: a.quantity
+							}
+							return asset;
+						})
 					};
 					return payment;
-				})
+				}),
+				metadata: metadata
 			};
 			let res = await this.transactionsApi.postTransactionFee(payload, this.id);
 			return FeeWallet.from(res.data);
@@ -238,14 +247,22 @@ export class ShelleyWallet implements ApiWallet {
 			return TransactionWallet.from(res.data);
 		}
 
-		async getCoinSelection(addresses: AddressWallet[], amounts: number[], data?: any): Promise<CoinSelectionWallet> {
+		async getCoinSelection(addresses: AddressWallet[], amounts: number[], data?: any, assets: {[key: string]: AssetWallet[]} = {}): Promise<CoinSelectionWallet> {
 			let metadata = data ? Seed.constructMetadata(data) : undefined;
 			let payload: ApiPostTransactionFeeData = {
 				payments: addresses.map((addr, i) =>  {
 					let amount: WalletswalletIdpaymentfeesAmount = { unit: WalletswalletIdpaymentfeesAmountUnitEnum.Lovelace, quantity: amounts[i] };
 					let payment: WalletswalletIdpaymentfeesPayments = { 
 						address: addr.address, 
-						amount: amount
+						amount: amount,
+						assets: assets[addr.id]?.map(a => {
+							let asset: WalletsAssetsAvailable = {
+								 policy_id: a.policy_id,
+								 asset_name: Buffer.from(a.asset_name).toString('hex'),
+								 quantity: a.quantity
+							}
+							return asset;
+						})
 					};
 					return payment;
 				}),

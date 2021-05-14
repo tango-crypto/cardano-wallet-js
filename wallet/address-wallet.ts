@@ -1,10 +1,10 @@
 import { ApiAddress, ApiAddressStateEnum } from "../models";
 
 export class AddressWallet implements ApiAddress {
-	id: any;
+	id: string;
 	state: ApiAddressStateEnum;
 
-	constructor(address: any, state: ApiAddressStateEnum = ApiAddressStateEnum.Unused) {
+	constructor(address: string, state: ApiAddressStateEnum = ApiAddressStateEnum.Unused) {
 		this.id = address;
 		this.state = state;
 	}

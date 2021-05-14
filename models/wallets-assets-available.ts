@@ -34,5 +34,5 @@ export interface WalletsAssetsAvailable {
      * @type {number}
      * @memberof WalletsAssetsAvailable
      */
-    quantity: any;
+    quantity: number;
 }

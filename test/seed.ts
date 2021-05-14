@@ -1,10 +1,9 @@
 import { expect } from 'chai';
 import 'mocha';
 import { WalletswalletIdpaymentfeesAmountUnitEnum } from '../models';
-import { CARDANO_COIN_TYPE, CARDANO_PUROPOSE, CARDANO_CHIMERIC, Seed } from '../utils';
+import { CARDANO_CHIMERIC, Seed } from '../utils';
 import { CoinSelectionWallet } from '../wallet/coin-selection-wallet';
-import { Bip32PrivateKey, NetworkInfo, RewardAddress, StakeCredential, TransactionBody } from '@emurgo/cardano-serialization-lib-nodejs';
-import { mnemonicToEntropy } from 'bip39';
+import { NetworkInfo, RewardAddress, StakeCredential, TransactionBody } from '@emurgo/cardano-serialization-lib-nodejs';
 
 describe('Wallet utilities', function(){
 	let phrase = ["joy","private","elder","ocean","mobile","orient","arrest","assume","monkey","once","thought","like","warfare","spread","stable"];
@@ -80,8 +79,8 @@ describe('Wallet utilities', function(){
     ]
 	};
 
-	let txRawHex = 'a400828258206b4b99362d807c31a251a575809ac535f4d6440b560d82bc120d07ae10b6e377008258202316b6510634f4f1bb24c6fa3eef03f49fa0e780ace23266e3013fc019fec927000182825839003d2d9ceb1a47bc1b62b7498ca496b16a7b4bbcc6d97ede81ba8621ebd6d947875fcf4845ef3a5f08dd5522581cf6de7b9c065379cbb3754d1a001e84808258390010a1a61833e7bcc819437cce3362c6434e9a44b73c238f76917fecf0818bcebf1df51c84239805b8a330d68fdbc3c047c12bb4c3172cb9391a0020e6a2021a0002ab9d0300';
-	let signedKey = "83a400828258206b4b99362d807c31a251a575809ac535f4d6440b560d82bc120d07ae10b6e377008258202316b6510634f4f1bb24c6fa3eef03f49fa0e780ace23266e3013fc019fec927000182825839003d2d9ceb1a47bc1b62b7498ca496b16a7b4bbcc6d97ede81ba8621ebd6d947875fcf4845ef3a5f08dd5522581cf6de7b9c065379cbb3754d1a001e84808258390010a1a61833e7bcc819437cce3362c6434e9a44b73c238f76917fecf0818bcebf1df51c84239805b8a330d68fdbc3c047c12bb4c3172cb9391a0020e6a2021a0002ab9d0300a10082825820d12ee631220ea5a99639918a21ed9f69e6f611c47a3ecfaf3c41f9d63ce763ae584061333e2191802b5b197eaed26f1fdc80da1bed7389ff331e728eb792360f111634083ecd1d1063735891eb1acf84ff39a7f32283c4cf6a9fe4bdab59976e1e0382582079992cb28ed8b96d8aa4501d46006d95b0f7679b618499336dd9fa7ddb8db05d58402d1a0b91dd8f6894e022ff31f3390739c46a24734294f06dc6d93412b0e3d7630fc95106181e5e8e58bea85059e191539ac69dbe3c16b9bdf28650352940a006f6";
+	let txRawHex = 'a500828258206b4b99362d807c31a251a575809ac535f4d6440b560d82bc120d07ae10b6e377008258202316b6510634f4f1bb24c6fa3eef03f49fa0e780ace23266e3013fc019fec927000182825839003d2d9ceb1a47bc1b62b7498ca496b16a7b4bbcc6d97ede81ba8621ebd6d947875fcf4845ef3a5f08dd5522581cf6de7b9c065379cbb3754d821a001e8480a08258390010a1a61833e7bcc819437cce3362c6434e9a44b73c238f76917fecf0818bcebf1df51c84239805b8a330d68fdbc3c047c12bb4c3172cb9391a0020e6a2021a0002ab9d03000800';
+	let signedKey = "83a500828258206b4b99362d807c31a251a575809ac535f4d6440b560d82bc120d07ae10b6e377008258202316b6510634f4f1bb24c6fa3eef03f49fa0e780ace23266e3013fc019fec927000182825839003d2d9ceb1a47bc1b62b7498ca496b16a7b4bbcc6d97ede81ba8621ebd6d947875fcf4845ef3a5f08dd5522581cf6de7b9c065379cbb3754d821a001e8480a08258390010a1a61833e7bcc819437cce3362c6434e9a44b73c238f76917fecf0818bcebf1df51c84239805b8a330d68fdbc3c047c12bb4c3172cb9391a0020e6a2021a0002ab9d03000800a10082825820d12ee631220ea5a99639918a21ed9f69e6f611c47a3ecfaf3c41f9d63ce763ae5840f13f9759df3df65d513366447cfab09cf554467b45d4a934fbd6b480e57cada4ec2fd47fa8591faf370fd90006d7d56fbb2da208f3fb639571d955eb9ce5a80c82582079992cb28ed8b96d8aa4501d46006d95b0f7679b618499336dd9fa7ddb8db05d5840a1474ff520d8747fb3395ed460fbebc10d988f9228959eae34994c54c28c78ede8d7d620a677975abe841984555e287d5b6931456ad90d698101ba3eacdecb0af6";
 
 	it('should generate a recovery phrase string', function(){
 		let recoveryPhrase = Seed.generateRecoveryPhrase();
@@ -136,7 +135,7 @@ describe('Wallet utilities', function(){
 		});
 		let txBody = Seed.sign(txBuild, signingKeys);
 		let signed = Buffer.from(txBody.to_bytes()).toString('hex');
-		expect(signedKey).deep.equal(signed);
+		expect(signedKey).equal(signed);
 	});
 
 	it("should sing and verify a message", function(){
@@ -156,5 +155,4 @@ describe('Wallet utilities', function(){
 		const verify_result = Seed.verifyMessage(publicKey, message, signed);
 		expect(verify_result).equal(true);
 	});
-
 });

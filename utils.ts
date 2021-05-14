@@ -1,10 +1,10 @@
 import { spawnSync } from 'child_process';
-import * as fs from 'fs';
 import { CoinSelectionWallet } from './wallet/coin-selection-wallet';
 import { getCommand } from './binaries';
 import { mnemonicToEntropy } from 'bip39';
-import { Address, BigNum, Bip32PrivateKey, Ed25519Signature, GeneralTransactionMetadata, hash_metadata, hash_transaction, Int, LinearFee, make_vkey_witness, MetadataList, MetadataMap, PrivateKey, PublicKey, Transaction, TransactionBody, TransactionBuilder, TransactionHash, TransactionInput, TransactionMetadata, TransactionMetadatum, TransactionOutput, TransactionWitnessSet, Value, Vkeywitnesses } from '@emurgo/cardano-serialization-lib-nodejs';
+import { Address, AssetName, Assets, BigNum, Bip32PrivateKey, Bip32PublicKey, Ed25519KeyHash, Ed25519Signature, EnterpriseAddress, GeneralTransactionMetadata, hash_metadata, hash_transaction, Int, LinearFee, make_vkey_witness, MetadataList, MetadataMap, Mint, MintAssets, min_ada_required, min_fee, MultiAsset, NativeScript, NativeScripts, NetworkInfo, PrivateKey, PublicKey, ScriptAll, ScriptAny, ScriptHash, ScriptHashNamespace, ScriptNOfK, ScriptPubkey, StakeCredential, TimelockExpiry, TimelockStart, Transaction, TransactionBody, TransactionBuilder, TransactionHash, TransactionInput, TransactionMetadata, TransactionMetadatum, TransactionOutput, TransactionWitnessSet, Value, Vkeywitnesses } from '@emurgo/cardano-serialization-lib-nodejs';
 import { Config } from './config';
+import { TokenWallet } from './wallet/token-wallet';
 
 const cardano_address_cmd = getCommand('cardano-address');
 export class Seed {
@@ -45,7 +45,7 @@ export class Seed {
 		return result;
 	}
 
-	static buildTransaction(coinSelection: CoinSelectionWallet, ttl: number, data?: TransactionMetadata, config = Config.Mainnet): TransactionBody {
+	static buildTransaction(coinSelection: CoinSelectionWallet, ttl: number, data?: TransactionMetadata, tokens: TokenWallet[] = [], startSlot = 0, config = Config.Mainnet): TransactionBody {
 		const protocolParams = config.protocolParams;
 		let txBuilder = TransactionBuilder.new(
 			// all of these are taken from the mainnet genesis settings
@@ -78,6 +78,22 @@ export class Seed {
 			let amount = Value.new(
 				BigNum.from_str(output.amount.quantity.toString())
 			);
+
+			// add tx assets
+			if(output.assets){
+				let multiAsset = MultiAsset.new();
+				output.assets.forEach(a => {
+					let token = tokens.find(t => t.asset.policy_id === a.policy_id);
+					if (token) {
+						let asset = Assets.new();
+						let scriptHash = Seed.getScriptHash(token.script);
+						asset.insert(AssetName.new(Buffer.from(Buffer.from(a.asset_name).toString('hex'))), BigNum.from_str(a.quantity.toString()));
+						multiAsset.insert(scriptHash, asset);
+					}
+				});
+				amount.set_multiasset(multiAsset);
+			}
+
 			let txOutput = TransactionOutput.new(
 				address,
 				amount
@@ -103,20 +119,41 @@ export class Seed {
 			txBuilder.set_metadata(data);
 		}
 
+		// set tx validity start interval
+		txBuilder.set_validity_start_interval(startSlot);
+
 		// set tx ttl
 		txBuilder.set_ttl(ttl);
 
-		// set tx fee
+		// calculate fee
 		let fee = coinSelection.inputs.reduce((acc, c) => c.amount.quantity + acc, 0) 
 		- coinSelection.outputs.reduce((acc, c) => c.amount.quantity + acc, 0) 
 		- coinSelection.change.reduce((acc, c) => c.amount.quantity + acc, 0);
+		
+		// set tx fee
 		txBuilder.set_fee(BigNum.from_str(fee.toString()));
 
 		let txBody = txBuilder.build();
 		return txBody;
 	}
+
+	static buildTransactionMint(tokens: TokenWallet[]): Mint {
+		let mint = Mint.new();
+		tokens.forEach(t => {
+			let mintAssets = MintAssets.new();
+			let scriptHash = Seed.getScriptHash(t.script);
+			mintAssets.insert(AssetName.new(Buffer.from(Buffer.from(t.asset.asset_name).toString('hex'))), Int.new_i32(t.asset.quantity));
+			mint.insert(scriptHash, mintAssets);
+		});
+
+		return mint;
+	}
+
+	static getTransactionFee(tx: Transaction, config = Config.Mainnet) {
+		return min_fee(tx, LinearFee.new(BigNum.from_str(config.protocolParams.minFeeA.toString()), BigNum.from_str(config.protocolParams.minFeeB.toString())));
+	}
 	
-	static sign(txBody: TransactionBody, privateKeys: PrivateKey[], transactionMetadata?: TransactionMetadata): Transaction {
+	static sign(txBody: TransactionBody, privateKeys: PrivateKey[], transactionMetadata?: TransactionMetadata, scripts?: NativeScript[]): Transaction {
 		const txHash = hash_transaction(txBody);
 		const witnesses = TransactionWitnessSet.new();
 		const vkeyWitnesses = Vkeywitnesses.new();
@@ -126,6 +163,13 @@ export class Seed {
 			vkeyWitnesses.add(vkeyWitness);
 		});
 		witnesses.set_vkeys(vkeyWitnesses);
+		if (scripts) {
+			let nativeScripts = NativeScripts.new();
+			scripts.forEach(s => {
+					nativeScripts.add(s);
+			});
+			witnesses.set_scripts(nativeScripts);
+		}
 
 		const transaction = Transaction.new(
 			txBody,
@@ -237,6 +281,107 @@ export class Seed {
 			return TransactionMetadatum.new_map(metamap);
 		}
 	}
+
+	static generateKeyPair(): Bip32KeyPair {
+		let prvKey = Bip32PrivateKey.generate_ed25519_bip32();
+		let pubKey = prvKey.to_public();
+		let pair: Bip32KeyPair = {
+			privateKey: prvKey,
+			publicKey: pubKey
+		}
+
+		return pair;
+	}
+
+	// enterprise address without staking ability, for use by exchanges/etc
+	static generateEnterpriseAddress(pubKey: Bip32PublicKey, network = 'mainnet'): Address {
+		let networkId = network == 'mainnet' ? NetworkInfo.mainnet().network_id() : NetworkInfo.testnet().network_id();
+		return EnterpriseAddress.new(networkId, StakeCredential.from_keyhash(pubKey.to_raw_key().hash())).to_address();
+	} 
+
+	static getKeyHash(key: Bip32PublicKey): Ed25519KeyHash {
+		return key.to_raw_key().hash();
+	}
+
+	static buildSingleIssuerScript(keyHash: Ed25519KeyHash): NativeScript {
+		let scriptPubKey = ScriptPubkey.new(keyHash);
+		return NativeScript.new_script_pubkey(scriptPubKey);
+	}
+
+	static buildMultiIssuerAllScript(keyHashes: Ed25519KeyHash[]): NativeScript {
+		let nativeScripts = NativeScripts.new();
+		keyHashes.forEach(keyHash => {
+			let nativeScript = Seed.buildSingleIssuerScript(keyHash);
+			nativeScripts.add(nativeScript);
+		});
+		let scriptAll = ScriptAll.new(nativeScripts);
+		return NativeScript.new_script_all(scriptAll);
+	}
+
+	static buildMultiIssuerAnyScript(keyHashes: Ed25519KeyHash[]): NativeScript {
+		let nativeScripts = NativeScripts.new();
+		keyHashes.forEach(keyHash => {
+			let nativeScript = Seed.buildSingleIssuerScript(keyHash);
+			nativeScripts.add(nativeScript);
+		});
+		let scriptAny = ScriptAny.new(nativeScripts);
+		return NativeScript.new_script_any(scriptAny);
+	}
+
+	static buildMultiIssuerAtLeastScript(n: number, keyHashes: Ed25519KeyHash[]): NativeScript {
+		let nativeScripts = NativeScripts.new();
+		keyHashes.forEach(keyHash => {
+			let nativeScript = Seed.buildSingleIssuerScript(keyHash);
+			nativeScripts.add(nativeScript);
+		});
+		let scriptAtLeast = ScriptNOfK.new(n, nativeScripts);
+		return NativeScript.new_script_n_of_k(scriptAtLeast);
+	}
+
+	// you need to set validity range on transcation builder to check on a deterministic way
+	static buildAfterScript(slot: number): NativeScript {
+		let scriptAfter = TimelockStart.new(slot);
+		return NativeScript.new_timelock_start(scriptAfter);
+	}
+
+	// you need to set validity range on transcation builder to check on a deterministic way
+	static buildBeforeScript(slot: number): NativeScript {
+		let scriptBefore = TimelockExpiry.new(slot);
+		return NativeScript.new_timelock_expiry(scriptBefore);
+	}
+
+	static getScriptHash(script: NativeScript): ScriptHash {
+		let keyHash = script.hash(ScriptHashNamespace.NativeScript);
+		let scriptHash = ScriptHash.from_bytes(keyHash.to_bytes());
+		return scriptHash;
+		// let credential = StakeCredential.from_keyhash(keyHash);
+		// return credential.to_scripthash();
+	}
+
+	static getPolicyId(scriptHash: ScriptHash): string {
+		return Buffer.from(scriptHash.to_bytes()).toString('hex');
+	}
+
+	static getMinUtxoValueWithAssets(tokens: TokenWallet[], config = Config.Mainnet): number {
+		let assets = Value.new(BigNum.from_str('1000000'));
+		let multiAsset = MultiAsset.new();
+		tokens.forEach(token => {
+			let asset = Assets.new();
+			let assetName = token.asset.asset_name;
+			let quantity = token.asset.quantity.toString();
+			let scriptHash = Seed.getScriptHash(token.script);
+			asset.insert(AssetName.new(Buffer.from(Buffer.from(assetName).toString('hex'))), BigNum.from_str(quantity));
+			multiAsset.insert(scriptHash, asset);
+		});
+		assets.set_multiasset(multiAsset);
+		let min = min_ada_required(assets, BigNum.from_str(config.protocolParams.minUTxOValue.toString()));
+		return Number.parseInt(min.to_str());
+	}
+}
+
+export class Bip32KeyPair{
+	privateKey: Bip32PrivateKey;
+	publicKey: Bip32PublicKey
 }
 
 export enum MetadateTypesEnum {
