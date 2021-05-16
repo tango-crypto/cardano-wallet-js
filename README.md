@@ -512,7 +512,7 @@ offline as well. Here is an example put in all together:
     
     // build and sign tx (can be offline)
     // include the metadata in the build and sign process
-    let metadata = Seed.construcTransactionMetadata(data);
+    let metadata = Seed.buildTransactionMetadata(data);
     let txBuild = Seed.buildTransaction(coinSelection, ttl, metadata);
     let txBody = Seed.sign(txBuild, signingKeys, metadata);
     
@@ -606,6 +606,19 @@ You can create native tokens just creating a transaction with a couple of differ
 	let scriptHash = Seed.getScriptHash(script);
 	let policyId = Seed.getPolicyId(scriptHash);
 
+	let data: any = {};
+	let tokenData: any = {}
+	tokenData[policyId] = {
+		Tango: {
+			arweaveId: "arweave-id",
+			ipfsId: "ipfs-id",
+			name: "Tango",
+			description: "Tango crypto coin",
+			type: "Coin"
+		}
+	};
+	data[0] = tokenData;
+
 	// asset
 	let asset = new AssetWallet(policyId, "Tango", 1000000);
 
@@ -624,7 +637,7 @@ You can create native tokens just creating a transaction with a couple of differ
 	let ttl = info.node_tip.absolute_slot_number * 12000;
 
 	// get coin selection structure (without the assets)
-	let coinSelection = await wallet.getCoinSelection(addresses, amounts);
+	let coinSelection = await wallet.getCoinSelection(addresses, amounts, data);
 
 	// add signing keys
 	let rootKey = Seed.deriveRootKey(payeer.mnemonic_sentence); 
@@ -636,7 +649,7 @@ You can create native tokens just creating a transaction with a couple of differ
 	// add policy signing keys
 	tokens.filter(t => t.scriptKeyPairs).forEach(t => signingKeys.push(...t.scriptKeyPairs.map(k => k.privateKey.to_raw_key())));
 
-	// let metadata = Seed.construcTransactionMetadata(data);
+	let metadata = Seed.buildTransactionMetadata(data);
 	let mint = Seed.buildTransactionMint(tokens);
 
 	// the wallet currently doesn't support including tokens not previuosly minted
@@ -662,16 +675,19 @@ You can create native tokens just creating a transaction with a couple of differ
 
 	// we need to sing the tx and calculate the actual fee and the build again 
 	// since the coin selection doesnt calculate the fee with the asset tokens included
-	let txBody = Seed.buildTransaction(coinSelection, ttl, null, tokens);
+	let txBody = Seed.buildTransaction(coinSelection, ttl, metadata, tokens);
 	txBody.set_mint(mint);
-	let tx = Seed.sign(txBody, signingKeys, null, scripts);
+	let tx = Seed.sign(txBody, signingKeys, metadata, scripts);
 	let fee = Seed.getTransactionFee(tx);
 	coinSelection.change[0].amount.quantity = change - (parseInt(fee.to_str()) - currentFee);
 
+	// after tx signed the metadata is cleaned, so we need to build it again.
+	metadata = Seed.buildTransactionMetadata(data);
+
 	// finally build the tx again and sing it
-	txBody = Seed.buildTransaction(coinSelection, ttl, null, tokens);
+	txBody = Seed.buildTransaction(coinSelection, ttl, metadata, tokens);
 	txBody.set_mint(mint);
-	tx = Seed.sign(txBody, signingKeys, null, scripts);
+	tx = Seed.sign(txBody, signingKeys, metadata, scripts);
 
 	// submit the tx
 	let signed = Buffer.from(tx.to_bytes()).toString('hex');

@@ -1553,7 +1553,7 @@ describe('Cardano wallet API', function () {
 				return privateKey;
 			});
 
-			let metadata = Seed.construcTransactionMetadata(data);
+			let metadata = Seed.buildTransactionMetadata(data);
 			let txBuild = Seed.buildTransaction(coinSelection, info.node_tip.absolute_slot_number * 12000, metadata);
 			let txBody = Seed.sign(txBuild, signingKeys, metadata);
 			let signed = Buffer.from(txBody.to_bytes()).toString('hex');

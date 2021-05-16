@@ -967,8 +967,6 @@ describe('Cardano asset tokens', function () {
 
 			// address to hold the minted tokens
 			let addresses = [(await wallet.getAddresses())[0]];
-
-			// let data: any = {0: 'hello', 1: Buffer.from('2512a00e9653fe49a44a5886202e24d77eeb998f', 'hex'), 4: [1, 2, {0: true}], 5: {'key': null, 'l': [3, true, {}]}, 6: undefined};
 			
 			// policy public/private keypair
 			let keyPair= Seed.generateKeyPair();
@@ -982,6 +980,19 @@ describe('Cardano asset tokens', function () {
 			//generate policy id
 			let scriptHash = Seed.getScriptHash(script);
 			let policyId = Seed.getPolicyId(scriptHash);
+
+			let data: any = {};
+			let tokenData: any = {}
+			tokenData[policyId] = {
+				Tango: {
+					arweaveId: "arweave-id",
+					ipfsId: "ipfs-id",
+					name: "Tango",
+					description: "Tango crypto coin",
+					type: "Coin"
+			 }
+			};
+			data[0] = tokenData;
 			
 			// asset
 			let asset = new AssetWallet(policyId, "Tango", 1000000);
@@ -1001,7 +1012,7 @@ describe('Cardano asset tokens', function () {
 			let ttl = info.node_tip.absolute_slot_number * 12000;
 
 			// get coin selection structure (without the assets)
-			let coinSelection = await wallet.getCoinSelection(addresses, amounts);
+			let coinSelection = await wallet.getCoinSelection(addresses, amounts, data);
 
 			// add signing keys
 			let rootKey = Seed.deriveRootKey(payeer.mnemonic_sentence); 
@@ -1013,7 +1024,7 @@ describe('Cardano asset tokens', function () {
 			// add policy signing keys
 			tokens.filter(t => t.scriptKeyPairs).forEach(t => signingKeys.push(...t.scriptKeyPairs.map(k => k.privateKey.to_raw_key())));
 
-			// let metadata = Seed.construcTransactionMetadata(data);
+			let metadata = Seed.buildTransactionMetadata(data);
 			let mint = Seed.buildTransactionMint(tokens);
 			
 			// the wallet currently doesn't support including tokens not previuosly minted
@@ -1039,16 +1050,19 @@ describe('Cardano asset tokens', function () {
 	
 			// we need to sing the tx and calculate the actual fee and the build again 
 			// since the coin selection doesnt calculate the fee with the asset tokens included
-			let txBody = Seed.buildTransaction(coinSelection, ttl, null, tokens);
+			let txBody = Seed.buildTransaction(coinSelection, ttl, metadata, tokens);
 			txBody.set_mint(mint);
-			let tx = Seed.sign(txBody, signingKeys, null, scripts);
+			let tx = Seed.sign(txBody, signingKeys, metadata, scripts);
 			let fee = Seed.getTransactionFee(tx);
 			coinSelection.change[0].amount.quantity = change - (parseInt(fee.to_str()) - currentFee);
+			
+			// after tx signed the metadata is cleaned, so we need to build it again.
+			metadata = Seed.buildTransactionMetadata(data);
 
 			// finally build the tx again and sing it
-			txBody = Seed.buildTransaction(coinSelection, ttl, null, tokens);
+			txBody = Seed.buildTransaction(coinSelection, ttl, metadata, tokens);
 			txBody.set_mint(mint);
-			tx = Seed.sign(txBody, signingKeys, null, scripts);
+			tx = Seed.sign(txBody, signingKeys, metadata, scripts);
 
 			// submit the tx
 			let signed = Buffer.from(tx.to_bytes()).toString('hex');
@@ -1108,7 +1122,7 @@ describe('Cardano asset tokens', function () {
 			// add policy signing key
 			tokens.filter(t => t.scriptKeyPairs).forEach(t => signingKeys.push(...t.scriptKeyPairs.map(k => k.privateKey.to_raw_key())));
 
-			// let metadata = Seed.construcTransactionMetadata(data);
+			// let metadata = Seed.buildTransactionMetadata(data);
 			let mint = Seed.buildTransactionMint(tokens);
 			
 			// the wallet currently doesn't support including tokens not previuosly minted
@@ -1203,7 +1217,7 @@ describe('Cardano asset tokens', function () {
 			// add policy signing key
 			tokens.filter(t => t.scriptKeyPairs).forEach(t => signingKeys.push(...t.scriptKeyPairs.map(k => k.privateKey.to_raw_key())));
 
-			// let metadata = Seed.construcTransactionMetadata(data);
+			// let metadata = Seed.buildTransactionMetadata(data);
 			let mint = Seed.buildTransactionMint(tokens);
 			
 			// the wallet currently doesn't support including tokens not previuosly minted
@@ -1298,7 +1312,7 @@ describe('Cardano asset tokens', function () {
 			// add policy signing key
 			tokens.filter(t => t.scriptKeyPairs).forEach(t => signingKeys.push(...t.scriptKeyPairs.map(k => k.privateKey.to_raw_key())));
 
-			// let metadata = Seed.construcTransactionMetadata(data);
+			// let metadata = Seed.buildTransactionMetadata(data);
 			let mint = Seed.buildTransactionMint(tokens);
 			
 			// the wallet currently doesn't support including tokens not previuosly minted
@@ -1394,7 +1408,7 @@ describe('Cardano asset tokens', function () {
 			// add policy signing keys
 			tokens.filter(t => t.scriptKeyPairs).forEach(t => signingKeys.push(...t.scriptKeyPairs.map(k => k.privateKey.to_raw_key())));
 
-			// let metadata = Seed.construcTransactionMetadata(data);
+			// let metadata = Seed.buildTransactionMetadata(data);
 			let mint = Seed.buildTransactionMint(tokens);
 			
 			// the wallet currently doesn't support including tokens not previuosly minted
@@ -1490,7 +1504,7 @@ describe('Cardano asset tokens', function () {
 			// add policy signing keys
 			tokens.filter(t => t.scriptKeyPairs).forEach(t => signingKeys.push(...t.scriptKeyPairs.map(k => k.privateKey.to_raw_key())));
 
-			// let metadata = Seed.construcTransactionMetadata(data);
+			// let metadata = Seed.buildTransactionMetadata(data);
 			let mint = Seed.buildTransactionMint(tokens);
 			
 			// the wallet currently doesn't support including tokens not previuosly minted

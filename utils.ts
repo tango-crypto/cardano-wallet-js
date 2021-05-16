@@ -243,7 +243,7 @@ export class Seed {
 		return result;
 	}
 
-	static construcTransactionMetadata(data: any): TransactionMetadata {
+	static buildTransactionMetadata(data: any): TransactionMetadata {
 		let metadata = Seed.constructMetadata(data);
 		let generalMetatada = GeneralTransactionMetadata.new();
 		for (const key in metadata) {
