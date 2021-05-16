@@ -6,18 +6,12 @@ const expect = chai.expect;
 
 import 'mocha';
 
-import { ApiTransactionDirectionEnum, ApiTransactionStatusEnum, WalletsAssetsAvailable, WalletsDelegationActiveStatusEnum, WalletswalletIdpaymentfeesAmountUnitEnum } from '../models';
+import {  WalletsAssetsAvailable, WalletswalletIdpaymentfeesAmountUnitEnum } from '../models';
 import { Seed } from '../utils';
-
 import { WalletServer } from '../wallet-server';
-import { KeyRoleEnum } from '../wallet/key-wallet';
-
 import * as dotenv from "dotenv";
-import { ShelleyWallet } from '../wallet/shelley-wallet';
 import { AssetWallet } from '../wallet/asset-wallet';
-import { BigNum, LinearFee, min_fee, NativeScripts, ScriptHash } from '@emurgo/cardano-serialization-lib-nodejs';
 import { CoinSelectionWallet } from '../wallet/coin-selection-wallet';
-import { Config } from '../config';
 import { TokenWallet } from '../wallet/token-wallet';
 dotenv.config();
 
@@ -993,7 +987,7 @@ describe('Cardano asset tokens', function () {
 			let asset = new AssetWallet(policyId, "Tango", 1000000);
 
 			// token
-			let tokens = [new TokenWallet(asset, keyPair, script)];
+			let tokens = [new TokenWallet(asset, script, [keyPair])];
 
 			//scripts
 			let scripts = tokens.map(t => t.script);
@@ -1016,8 +1010,8 @@ describe('Cardano asset tokens', function () {
 				return privateKey;
 			});
 
-			// add policy signing key
-			signingKeys.push(policySKey.to_raw_key());
+			// add policy signing keys
+			tokens.filter(t => t.scriptKeyPairs).forEach(t => signingKeys.push(...t.scriptKeyPairs.map(k => k.privateKey.to_raw_key())));
 
 			// let metadata = Seed.construcTransactionMetadata(data);
 			let mint = Seed.buildTransactionMint(tokens);
@@ -1078,7 +1072,7 @@ describe('Cardano asset tokens', function () {
 
 			// generate single issuer native script
 			let keyHash = Seed.getKeyHash(policyVKey);
-			let script = Seed.buildMultiIssuerAllScript([keyHash]);
+			let script = Seed.buildMultiIssuerAllScript([Seed.buildSingleIssuerScript(keyHash)]);
 
 			//generate policy id
 			let scriptHash = Seed.getScriptHash(script);
@@ -1088,7 +1082,7 @@ describe('Cardano asset tokens', function () {
 			let asset = new AssetWallet(policyId, "Tango1", 1000000);
 
 			// token
-			let tokens = [new TokenWallet(asset, keyPair, script)];
+			let tokens = [new TokenWallet(asset, script, [keyPair])];
 
 			//scripts
 			let scripts = tokens.map(t => t.script);
@@ -1112,7 +1106,7 @@ describe('Cardano asset tokens', function () {
 			});
 
 			// add policy signing key
-			signingKeys.push(policySKey.to_raw_key());
+			tokens.filter(t => t.scriptKeyPairs).forEach(t => signingKeys.push(...t.scriptKeyPairs.map(k => k.privateKey.to_raw_key())));
 
 			// let metadata = Seed.construcTransactionMetadata(data);
 			let mint = Seed.buildTransactionMint(tokens);
@@ -1173,7 +1167,7 @@ describe('Cardano asset tokens', function () {
 
 			// generate single issuer native script
 			let keyHash = Seed.getKeyHash(policyVKey);
-			let script = Seed.buildMultiIssuerAnyScript([keyHash]);
+			let script = Seed.buildMultiIssuerAnyScript([Seed.buildSingleIssuerScript(keyHash)]);
 
 			//generate policy id
 			let scriptHash = Seed.getScriptHash(script);
@@ -1183,7 +1177,7 @@ describe('Cardano asset tokens', function () {
 			let asset = new AssetWallet(policyId, "Tango2", 1000000);
 
 			// token
-			let tokens = [new TokenWallet(asset, keyPair, script)];
+			let tokens = [new TokenWallet(asset, script, [keyPair])];
 
 			//scripts
 			let scripts = tokens.map(t => t.script);
@@ -1207,7 +1201,7 @@ describe('Cardano asset tokens', function () {
 			});
 
 			// add policy signing key
-			signingKeys.push(policySKey.to_raw_key());
+			tokens.filter(t => t.scriptKeyPairs).forEach(t => signingKeys.push(...t.scriptKeyPairs.map(k => k.privateKey.to_raw_key())));
 
 			// let metadata = Seed.construcTransactionMetadata(data);
 			let mint = Seed.buildTransactionMint(tokens);
@@ -1268,7 +1262,7 @@ describe('Cardano asset tokens', function () {
 
 			// generate single issuer native script
 			let keyHash = Seed.getKeyHash(policyVKey);
-			let script = Seed.buildMultiIssuerAtLeastScript(1, [keyHash]);
+			let script = Seed.buildMultiIssuerAtLeastScript(1, [Seed.buildSingleIssuerScript(keyHash)]);
 
 			//generate policy id
 			let scriptHash = Seed.getScriptHash(script);
@@ -1278,7 +1272,7 @@ describe('Cardano asset tokens', function () {
 			let asset = new AssetWallet(policyId, "Tango3", 1000000);
 
 			// token
-			let tokens = [new TokenWallet(asset, keyPair, script)];
+			let tokens = [new TokenWallet(asset, script, [keyPair])];
 
 			//scripts
 			let scripts = tokens.map(t => t.script);
@@ -1302,7 +1296,7 @@ describe('Cardano asset tokens', function () {
 			});
 
 			// add policy signing key
-			signingKeys.push(policySKey.to_raw_key());
+			tokens.filter(t => t.scriptKeyPairs).forEach(t => signingKeys.push(...t.scriptKeyPairs.map(k => k.privateKey.to_raw_key())));
 
 			// let metadata = Seed.construcTransactionMetadata(data);
 			let mint = Seed.buildTransactionMint(tokens);
@@ -1365,9 +1359,10 @@ describe('Cardano asset tokens', function () {
 			let policyVKey = keyPair.publicKey;
 			let policySKey = keyPair.privateKey;
 
-			// generate single issuer native script
+			// generate after native script
 			let keyHash = Seed.getKeyHash(policyVKey);
-			let script = Seed.buildAfterScript(info.node_tip.absolute_slot_number - 1);
+			let script = Seed.buildMultiIssuerAllScript([Seed.buildAfterScript(info.node_tip.absolute_slot_number - 1), Seed.buildSingleIssuerScript(keyHash)]);
+
 
 			//generate policy id
 			let scriptHash = Seed.getScriptHash(script);
@@ -1377,7 +1372,7 @@ describe('Cardano asset tokens', function () {
 			let asset = new AssetWallet(policyId, "Tango4", 1000000);
 
 			// token
-			let tokens = [new TokenWallet(asset, keyPair, script)];
+			let tokens = [new TokenWallet(asset, script, [keyPair])];
 
 			//scripts
 			let scripts = tokens.map(t => t.script);
@@ -1396,8 +1391,8 @@ describe('Cardano asset tokens', function () {
 				return privateKey;
 			});
 
-			// add policy signing key
-			signingKeys.push(policySKey.to_raw_key());
+			// add policy signing keys
+			tokens.filter(t => t.scriptKeyPairs).forEach(t => signingKeys.push(...t.scriptKeyPairs.map(k => k.privateKey.to_raw_key())));
 
 			// let metadata = Seed.construcTransactionMetadata(data);
 			let mint = Seed.buildTransactionMint(tokens);
@@ -1463,7 +1458,7 @@ describe('Cardano asset tokens', function () {
 
 			// generate single issuer native script
 			let keyHash = Seed.getKeyHash(policyVKey);
-			let script = Seed.buildBeforeScript(ttl + 1);
+			let script = Seed.buildMultiIssuerAllScript([Seed.buildBeforeScript(ttl + 1), Seed.buildSingleIssuerScript(keyHash)]);
 
 			//generate policy id
 			let scriptHash = Seed.getScriptHash(script);
@@ -1473,7 +1468,7 @@ describe('Cardano asset tokens', function () {
 			let asset = new AssetWallet(policyId, "Tango5", 1000000);
 
 			// token
-			let tokens = [new TokenWallet(asset, keyPair, script)];
+			let tokens = [new TokenWallet(asset, script, [keyPair])];
 
 			//scripts
 			let scripts = tokens.map(t => t.script);
@@ -1492,8 +1487,8 @@ describe('Cardano asset tokens', function () {
 				return privateKey;
 			});
 
-			// add policy signing key
-			signingKeys.push(policySKey.to_raw_key());
+			// add policy signing keys
+			tokens.filter(t => t.scriptKeyPairs).forEach(t => signingKeys.push(...t.scriptKeyPairs.map(k => k.privateKey.to_raw_key())));
 
 			// let metadata = Seed.construcTransactionMetadata(data);
 			let mint = Seed.buildTransactionMint(tokens);
@@ -1538,6 +1533,4 @@ describe('Cardano asset tokens', function () {
 			expect(txId).not.undefined;
 		});
 	})
-
-
 });

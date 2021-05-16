@@ -308,32 +308,20 @@ export class Seed {
 		return NativeScript.new_script_pubkey(scriptPubKey);
 	}
 
-	static buildMultiIssuerAllScript(keyHashes: Ed25519KeyHash[]): NativeScript {
-		let nativeScripts = NativeScripts.new();
-		keyHashes.forEach(keyHash => {
-			let nativeScript = Seed.buildSingleIssuerScript(keyHash);
-			nativeScripts.add(nativeScript);
-		});
+	static buildMultiIssuerAllScript(scripts: NativeScript[]): NativeScript {
+		let nativeScripts = this.buildNativeScripts(scripts);
 		let scriptAll = ScriptAll.new(nativeScripts);
 		return NativeScript.new_script_all(scriptAll);
 	}
 
-	static buildMultiIssuerAnyScript(keyHashes: Ed25519KeyHash[]): NativeScript {
-		let nativeScripts = NativeScripts.new();
-		keyHashes.forEach(keyHash => {
-			let nativeScript = Seed.buildSingleIssuerScript(keyHash);
-			nativeScripts.add(nativeScript);
-		});
+	static buildMultiIssuerAnyScript(scripts: NativeScript[]): NativeScript {
+		let nativeScripts = this.buildNativeScripts(scripts);
 		let scriptAny = ScriptAny.new(nativeScripts);
 		return NativeScript.new_script_any(scriptAny);
 	}
 
-	static buildMultiIssuerAtLeastScript(n: number, keyHashes: Ed25519KeyHash[]): NativeScript {
-		let nativeScripts = NativeScripts.new();
-		keyHashes.forEach(keyHash => {
-			let nativeScript = Seed.buildSingleIssuerScript(keyHash);
-			nativeScripts.add(nativeScript);
-		});
+	static buildMultiIssuerAtLeastScript(n: number, scripts: NativeScript[]): NativeScript {
+		let nativeScripts = this.buildNativeScripts(scripts);
 		let scriptAtLeast = ScriptNOfK.new(n, nativeScripts);
 		return NativeScript.new_script_n_of_k(scriptAtLeast);
 	}
@@ -348,6 +336,14 @@ export class Seed {
 	static buildBeforeScript(slot: number): NativeScript {
 		let scriptBefore = TimelockExpiry.new(slot);
 		return NativeScript.new_timelock_expiry(scriptBefore);
+	}
+
+	private static buildNativeScripts(scripts: NativeScript[]): NativeScripts {
+		let nativeScripts = NativeScripts.new();
+		scripts.forEach(script => {
+			nativeScripts.add(script);
+		});
+		return nativeScripts;
 	}
 
 	static getScriptHash(script: NativeScript): ScriptHash {

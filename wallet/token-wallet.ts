@@ -5,11 +5,11 @@ import { AssetWallet } from "./asset-wallet";
 export class TokenWallet {
 	asset: AssetWallet;
 	script: NativeScript;
-	policy: Bip32KeyPair;
+	scriptKeyPairs?: Bip32KeyPair[];
 
-	constructor(asset: AssetWallet, policy: Bip32KeyPair, script: NativeScript) {
+	constructor(asset: AssetWallet, script: NativeScript, scriptKeyPairs?: Bip32KeyPair[]) {
 		this.asset = asset;
 		this.script = script;
-		this.policy = policy;
+		this.scriptKeyPairs = scriptKeyPairs;
 	}
 }

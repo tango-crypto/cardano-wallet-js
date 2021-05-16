@@ -610,7 +610,7 @@ You can create native tokens just creating a transaction with a couple of differ
 	let asset = new AssetWallet(policyId, "Tango", 1000000);
 
 	// token
-	let tokens = [new TokenWallet(asset, keyPair, script)];
+	let tokens = [new TokenWallet(asset, script, [keyPair])];
 
 	//scripts
 	let scripts = tokens.map(t => t.script);
@@ -633,8 +633,8 @@ You can create native tokens just creating a transaction with a couple of differ
 		return privateKey;
 	});
 
-	// add policy signing key
-	signingKeys.push(policySKey.to_raw_key());
+	// add policy signing keys
+	tokens.filter(t => t.scriptKeyPairs).forEach(t => signingKeys.push(...t.scriptKeyPairs.map(k => k.privateKey.to_raw_key())));
 
 	// let metadata = Seed.construcTransactionMetadata(data);
 	let mint = Seed.buildTransactionMint(tokens);
