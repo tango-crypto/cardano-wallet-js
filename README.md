@@ -605,7 +605,8 @@ You can create native tokens just creating a transaction with a couple of differ
 	//generate policy id
 	let scriptHash = Seed.getScriptHash(script);
 	let policyId = Seed.getPolicyId(scriptHash);
-
+	
+	// metadata
 	let data: any = {};
 	let tokenData: any = {}
 	tokenData[policyId] = {
