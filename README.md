@@ -33,7 +33,7 @@ clients to perform common tasks on the cardano-blockchain, such as:
  - listing transactions
  - listing wallets
 
-Our project aims to provide an easy to use SDK for programmers, instead of
+Our project aims to provide an easy to use Javascript SDK for programmers, instead of
 exposing the raw REST structure to you. 
 
 Finally, it helps you to build desktop wallet clients - like [Daedalus](https://daedaluswallet.io/) - with
