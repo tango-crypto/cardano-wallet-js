@@ -25,7 +25,7 @@
 
 
 ## Introduction
-The cardano-wallet exposes a REST api/CLI interface which allows
+The official cardano-wallet by IOHK exposes a REST api/CLI interface which allows
 clients to perform common tasks on the cardano-blockchain, such as:
  - creating or restoring a wallet
  - submitting a transaction with or without [metadata](https://github.com/input-output-hk/cardano-wallet/wiki/TxMetadata) 
@@ -33,7 +33,7 @@ clients to perform common tasks on the cardano-blockchain, such as:
  - listing transactions
  - listing wallets
 
-Our project aims to provide an easy to use API for programmers, instead of
+Our project aims to provide an easy to use SDK for programmers, instead of
 exposing the raw REST structure to you. 
 
 Finally, it helps you to build desktop wallet clients - like [Daedalus](https://daedaluswallet.io/) - with
@@ -188,9 +188,9 @@ This will print out something like this:
    
     Output:
     >> "hip dust material keen buddy fresh thank program stool ill regret honey multiply venture imitate"
-> **IMPORTANT:** The recovery phrase is the only way you can restore you wallet and you **SHOULD KEEP IT SECURE AND PRIVATE**. You'll get a complete different recovery phrase each time you execute the method. 
+> **IMPORTANT:** The recovery phrase is the only way you can restore you wallet and you **SHOULD KEEP IT SECURE AND PRIVATE**. You'll get a completeley different recovery phrase each time you execute the method. 
 
-For convinience you can convert the recovery phrase into an array using this:
+For convenience, you can convert the recovery phrase into an array using this:
 
     let words = Seed.toMnemonicList(recoveryPhrase);
     console.log(words);
