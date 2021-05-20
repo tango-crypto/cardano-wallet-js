@@ -1,5 +1,5 @@
 # cardano-wallet-js (powered by TANGO stake pool)
-`cardano-wallet-js` is a javascript/typescript client for the official [cardano-wallet](https://github.com/input-output-hk/cardano-wallet)
+`cardano-wallet-js` is a javascript/typescript SDK for Cardano with a several functionalities. You can use it as a client for the official [cardano-wallet](https://github.com/input-output-hk/cardano-wallet) and also to create Native Tokens and NFTs. 
 
 ## Table of Contents
 
