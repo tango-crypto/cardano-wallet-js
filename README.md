@@ -66,7 +66,7 @@ To begin, start with a `WalletServer`. It allows you to connect to some remote `
 ### Connecting to a cardano-wallet service
 
     const { WalletServer } = require('cardano-wallet-js');
-    let walletServer = WalletServer.init('http://you.server.com');
+    let walletServer = WalletServer.init('http://{your-server-host}:{port}/v2');
     
 ### Blockchain Information
 First you can try is getting some blockchain information like: (network parameters, information and clock)
