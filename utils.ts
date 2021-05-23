@@ -7,11 +7,13 @@ import { Config } from './config';
 import { TokenWallet } from './wallet/token-wallet';
 import * as os from 'os';
 
-const cardano_address_cmd = getCommand(os.platform() !== 'win32' ? 'cardano-address' : 'cardano-address.exe');
+const platform = os.platform();
+let options = platform === 'win32' ? { shell: true } : {};
+const cardano_address_cmd = getCommand(platform !== 'win32' ? 'cardano-address' : 'cardano-address.exe.cmd', options);
 export class Seed {
 	static generateRecoveryPhrase(size: number = 15): string {
-		const ls = spawnSync(cardano_address_cmd, ['recovery-phrase', 'generate', '--size', size.toString()], {});
-		return new TextDecoder().decode(ls.stdout).replace(/\n/, '');
+		const ls = spawnSync(cardano_address_cmd, ['recovery-phrase', 'generate', '--size', size.toString()], options);
+		return ls.stdout.toString().replace(/\n/, '');
 	}
 
 	static toMnemonicList(phrase: string): Array<string> {

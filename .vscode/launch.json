@@ -102,5 +102,11 @@
 			"internalConsoleOptions": "neverOpen",
 			"protocol": "inspector"
 		},
+		{
+			"type": "node",
+			"request": "launch",
+			"name": "Test Cardano Address ",
+			"program": "${workspaceFolder}/address-cli.js"
+	}
 	]
 }
