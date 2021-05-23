@@ -179,6 +179,9 @@ This will print out something like this:
 ## Useful operations
 
 ### Generate Recovery Phrases
+   The recovery phrase generation rely on [cardano-address](https://github.com/input-output-hk/cardano-addresses) which supported platforms are:
+   * Linux 64-bit
+   * Windows 64-bit
    
     const { Seed } = require('cardano-wallet-js');
     
