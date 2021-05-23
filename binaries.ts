@@ -3,7 +3,7 @@ import * as path from 'path';
 
 export const getCommand = function(command: string, options = {}): string {
 	const ls = spawnSync(command, ['--version'], options);
-	if (ls.stdout.toString() && !ls.stderr.toString()) {
+	if ((ls.stdout && ls.stdout.toString()) && (!ls.stderr || !ls.stderr.toString())) {
 		return command;
 	} 
 	else {
