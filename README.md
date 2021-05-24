@@ -509,7 +509,7 @@ offline as well. Here is an example put in all together:
     // get the signing keys (can be offline)
     let rootKey = Seed.deriveRootKey(recovery_phrase); 
     let signingKeys = coinSelection.inputs.map(i => {
-     let privateKey = Seed.deriveKey(rootKey, i.derivation_path);
+     let privateKey = Seed.deriveKey(rootKey, i.derivation_path).to_raw_key();
      return privateKey;
     });
     
