@@ -1,6 +1,6 @@
 {
     "name": "cardano-wallet-js",
-    "version": "1.1.20",
+    "version": "1.1.21",
     "description": " javascript/typescript client for the official cardano-wallet api",
     "author": "Leobel Izquierdo <leobelizquierdo@gmail.com>",
     "license": "ISC",

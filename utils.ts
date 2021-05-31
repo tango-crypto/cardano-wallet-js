@@ -9,7 +9,7 @@ import * as os from 'os';
 
 const platform = os.platform();
 let options = platform === 'win32' ? { shell: true } : {};
-const cardano_address_cmd = getCommand('cardano-address', options);
+const cardano_address_cmd = getCommand(platform !== 'win32' ? 'cardano-address' : 'cardano-address.exe.cmd', options);
 export class Seed {
 	static generateRecoveryPhrase(size: number = 15): string {
 		const ls = spawnSync(cardano_address_cmd, ['recovery-phrase', 'generate', '--size', size.toString()], options);
