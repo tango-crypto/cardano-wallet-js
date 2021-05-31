@@ -3,4 +3,3 @@ node_modules
 typings
 dist
 .env
-cli/*

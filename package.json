@@ -1,6 +1,6 @@
 {
     "name": "cardano-wallet-js",
-    "version": "1.1.22",
+    "version": "1.1.3",
     "description": " javascript/typescript client for the official cardano-wallet api",
     "author": "Leobel Izquierdo <leobelizquierdo@gmail.com>",
     "license": "ISC",
@@ -14,11 +14,13 @@
     "main": "./dist/index.js",
     "typings": "./dist/index.d.ts",
     "scripts": {
-        "postinstall": "node address-cli.js",
         "build": "tsc --outDir dist/",
         "prepublishOnly": "npm run build",
         "test": "mocha -r ts-node/register 'test/**/*.ts'"
     },
+		"directories": {
+			"bin": "cli"
+		},
     "repository": {
         "type": "git",
         "url": "https://github.com/tango-crypto/cardano-wallet-js.git"
