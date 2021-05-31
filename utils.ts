@@ -9,7 +9,7 @@ import * as os from 'os';
 
 const platform = os.platform();
 let options = platform === 'win32' ? { shell: true } : {};
-const cardano_address_cmd = getCommand(platform !== 'win32' ? 'cardano-address' : 'cardano-address.exe.cmd', options);
+const cardano_address_cmd = getCommand('cardano-address', options);
 export class Seed {
 	static generateRecoveryPhrase(size: number = 15): string {
 		const ls = spawnSync(cardano_address_cmd, ['recovery-phrase', 'generate', '--size', size.toString()], options);
@@ -83,7 +83,7 @@ export class Seed {
 			);
 
 			// add tx assets
-			if(output.assets){
+			if(output.assets && output.assets.length > 0){
 				let multiAsset = MultiAsset.new();
 				output.assets.forEach(a => {
 					let token = tokens.find(t => t.asset.policy_id === a.policy_id);
@@ -207,8 +207,8 @@ export class Seed {
 			let keys = Object.keys(data);
 			for (let i = 0; i < keys.length; i++) {
 				const key = keys[i];
-				let index = parseInt(key);
-				if(!isNaN(index)) {
+				if (this.isInteger(key)) {
+					let index = parseInt(key);
 					metadata[index] = Seed.getMetadataObject(data[key]);
 				}
 			}
@@ -235,7 +235,7 @@ export class Seed {
 			if (data) {
 				result[MetadateTypesEnum.Map] = Object.keys(data).map(k => {
 					return {
-						"k": isNaN(parseInt(k)) ? this.getMetadataObject(k) : this.getMetadataObject(parseInt(k)),
+						"k": this.getMetadataObject(k),
 						"v": this.getMetadataObject(data[k])
 					}
 				});
@@ -375,6 +375,10 @@ export class Seed {
 		assets.set_multiasset(multiAsset);
 		let min = min_ada_required(assets, BigNum.from_str(config.protocolParams.minUTxOValue.toString()));
 		return Number.parseInt(min.to_str());
+	}
+
+	private static isInteger(value: any) {
+		return Number.isInteger(Number(value));
 	}
 }
 

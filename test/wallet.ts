@@ -1541,7 +1541,7 @@ describe('Cardano wallet API', function () {
 			let payeer = wallets.find(w => w.id == "60bb5513e4e262e445cf203db9cf73ba925064d2");
 			let wallet = await walletServer.getShelleyWallet(payeer.id);
 			let addresses = (await (await walletServer.getShelleyWallet(receiver)).getUnusedAddresses()).slice(0, 1);
-			let amounts = [2000000];
+			let amounts = [1000000];
 			let info = await walletServer.getNetworkInformation();
 			let data: any = {0: 'hello', 1: Buffer.from('2512a00e9653fe49a44a5886202e24d77eeb998f', 'hex'), 4: [1, 2, {0: true}], 5: {'key': null, 'l': [3, true, {}]}, 6: undefined};
 			let coinSelection = await wallet.getCoinSelection(addresses, amounts, data);

@@ -1,6 +1,6 @@
 {
     "name": "cardano-wallet-js",
-    "version": "1.1.2",
+    "version": "1.1.20",
     "description": " javascript/typescript client for the official cardano-wallet api",
     "author": "Leobel Izquierdo <leobelizquierdo@gmail.com>",
     "license": "ISC",
@@ -14,7 +14,7 @@
     "main": "./dist/index.js",
     "typings": "./dist/index.d.ts",
     "scripts": {
-        "preinstall": "node address-cli.js",
+        "postinstall": "node address-cli.js",
         "build": "tsc --outDir dist/",
         "prepublishOnly": "npm run build",
         "test": "mocha -r ts-node/register 'test/**/*.ts'"
