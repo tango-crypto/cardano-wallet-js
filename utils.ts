@@ -91,7 +91,7 @@ export class Seed {
 						let asset = Assets.new();
 						// let scriptHash = Seed.getScriptHash(token.script);
 						let scriptHash = Seed.getScriptHashFromPolicy(token.asset.policy_id);
-						asset.insert(AssetName.new(Buffer.from(Buffer.from(a.asset_name).toString('hex'))), BigNum.from_str(a.quantity.toString()));
+						asset.insert(AssetName.new(Buffer.from(a.asset_name)), BigNum.from_str(a.quantity.toString()));
 						multiAsset.insert(scriptHash, asset);
 					}
 				});
@@ -147,7 +147,7 @@ export class Seed {
 			let mintAssets = MintAssets.new();
 			// let scriptHash = Seed.getScriptHash(t.script);
 			let scriptHash = Seed.getScriptHashFromPolicy(t.asset.policy_id);
-			mintAssets.insert(AssetName.new(Buffer.from(Buffer.from(t.asset.asset_name).toString('hex'))), Int.new_i32(t.asset.quantity));
+			mintAssets.insert(AssetName.new(Buffer.from(t.asset.asset_name)), Int.new_i32(t.asset.quantity));
 			mint.insert(scriptHash, mintAssets);
 		});
 
@@ -376,7 +376,7 @@ export class Seed {
 			let quantity = token.asset.quantity.toString();
 			// let scriptHash = Seed.getScriptHash(token.script);
 			let scriptHash = Seed.getScriptHashFromPolicy(token.asset.policy_id);
-			asset.insert(AssetName.new(Buffer.from(Buffer.from(assetName).toString('hex'))), BigNum.from_str(quantity));
+			asset.insert(AssetName.new(Buffer.from(assetName)), BigNum.from_str(quantity));
 			multiAsset.insert(scriptHash, asset);
 		});
 		assets.set_multiasset(multiAsset);
