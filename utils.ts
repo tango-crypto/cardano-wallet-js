@@ -89,7 +89,8 @@ export class Seed {
 					let token = tokens.find(t => t.asset.policy_id === a.policy_id);
 					if (token) {
 						let asset = Assets.new();
-						let scriptHash = Seed.getScriptHash(token.script);
+						// let scriptHash = Seed.getScriptHash(token.script);
+						let scriptHash = Seed.getScriptHashFromPolicy(token.asset.policy_id);
 						asset.insert(AssetName.new(Buffer.from(Buffer.from(a.asset_name).toString('hex'))), BigNum.from_str(a.quantity.toString()));
 						multiAsset.insert(scriptHash, asset);
 					}
@@ -144,7 +145,8 @@ export class Seed {
 		let mint = Mint.new();
 		tokens.forEach(t => {
 			let mintAssets = MintAssets.new();
-			let scriptHash = Seed.getScriptHash(t.script);
+			// let scriptHash = Seed.getScriptHash(t.script);
+			let scriptHash = Seed.getScriptHashFromPolicy(t.asset.policy_id);
 			mintAssets.insert(AssetName.new(Buffer.from(Buffer.from(t.asset.asset_name).toString('hex'))), Int.new_i32(t.asset.quantity));
 			mint.insert(scriptHash, mintAssets);
 		});
@@ -361,6 +363,10 @@ export class Seed {
 		return Buffer.from(scriptHash.to_bytes()).toString('hex');
 	}
 
+	static getScriptHashFromPolicy(policyId: string): ScriptHash {
+		return ScriptHash.from_bytes(Buffer.from(policyId, 'hex'));
+	}
+
 	static getMinUtxoValueWithAssets(tokens: TokenWallet[], config = Config.Mainnet): number {
 		let assets = Value.new(BigNum.from_str('1000000'));
 		let multiAsset = MultiAsset.new();
@@ -368,7 +374,8 @@ export class Seed {
 			let asset = Assets.new();
 			let assetName = token.asset.asset_name;
 			let quantity = token.asset.quantity.toString();
-			let scriptHash = Seed.getScriptHash(token.script);
+			// let scriptHash = Seed.getScriptHash(token.script);
+			let scriptHash = Seed.getScriptHashFromPolicy(token.asset.policy_id);
 			asset.insert(AssetName.new(Buffer.from(Buffer.from(assetName).toString('hex'))), BigNum.from_str(quantity));
 			multiAsset.insert(scriptHash, asset);
 		});

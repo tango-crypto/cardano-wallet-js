@@ -191,7 +191,7 @@ export class ShelleyWallet implements ApiWallet {
 			return FeeWallet.from(res.data);
 		}
 
-		async sendPayment(passphrase: any, addresses: AddressWallet[], amounts: number[], data?: any): Promise<TransactionWallet> { 
+		async sendPayment(passphrase: any, addresses: AddressWallet[], amounts: number[], data?: any, assets: {[key: string]: AssetWallet[]} = {}): Promise<TransactionWallet> { 
 			let metadata = data ? Seed.constructMetadata(data) : undefined;
 			let payload: ApiPostTransactionData = {
 				passphrase: passphrase,
@@ -199,7 +199,15 @@ export class ShelleyWallet implements ApiWallet {
 					let amount: WalletswalletIdpaymentfeesAmount = { unit: WalletswalletIdpaymentfeesAmountUnitEnum.Lovelace, quantity: amounts[i] };
 					let payment: WalletswalletIdpaymentfeesPayments = { 
 						address: addr.address, 
-						amount: amount
+						amount: amount,
+						assets: assets[addr.id]?.map(a => {
+							let asset: WalletsAssetsAvailable = {
+								 policy_id: a.policy_id,
+								 asset_name: Buffer.from(a.asset_name).toString('hex'),
+								 quantity: a.quantity
+							}
+							return asset;
+						})
 					};
 					return payment;
 				}),
@@ -251,7 +259,7 @@ export class ShelleyWallet implements ApiWallet {
 			let metadata = data ? Seed.constructMetadata(data) : undefined;
 			let payload: ApiPostTransactionFeeData = {
 				payments: addresses.map((addr, i) =>  {
-					let amount: WalletswalletIdpaymentfeesAmount = { unit: WalletswalletIdpaymentfeesAmountUnitEnum.Lovelace, quantity: amounts[i] };
+					let amount: WalletswalletIdpaymentfeesAmount = amounts[i] ? { unit: WalletswalletIdpaymentfeesAmountUnitEnum.Lovelace, quantity: amounts[i] } : undefined;
 					let payment: WalletswalletIdpaymentfeesPayments = { 
 						address: addr.address, 
 						amount: amount,
