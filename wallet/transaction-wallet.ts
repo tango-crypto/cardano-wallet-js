@@ -31,7 +31,8 @@ export class TransactionWallet implements ApiTransaction {
 		outputs: Array<WalletswalletIdpaymentfeesPayments>, 
 		withdrawals: WalletswalletIdtransactionsWithdrawals[], 
 		mint: WalletswalletIdtransactionsMint[], 
-		status: ApiTransactionStatusEnum) {
+		status: ApiTransactionStatusEnum,
+		metadata: any) {
 		this.id = id;
 		this.amount = amount;
 		this.fee = fee;
@@ -46,9 +47,10 @@ export class TransactionWallet implements ApiTransaction {
 		this.withdrawals = withdrawals;
 		this.mint = mint;
 		this.status = status;
+		this.metadata = metadata
 	}
 
 	static from(tx: ApiTransaction): TransactionWallet {
-		return new this(tx.id, tx.amount, tx.fee, tx.deposit, tx.inserted_at, tx.expires_at, tx.pending_since, tx.depth, tx.direction, tx.inputs, tx.outputs, tx.withdrawals, tx.mint, tx.status);
+		return new this(tx.id, tx.amount, tx.fee, tx.deposit, tx.inserted_at, tx.expires_at, tx.pending_since, tx.depth, tx.direction, tx.inputs, tx.outputs, tx.withdrawals, tx.mint, tx.status, tx.metadata);
 	}
 }

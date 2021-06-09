@@ -18,6 +18,7 @@ dotenv.config();
 describe('Cardano asset tokens', function () {
 	this.timeout(0);
 	let walletServer: WalletServer;
+	let tangoPolicyId = '';
 
 	let wallets = [
 		{
@@ -962,6 +963,7 @@ describe('Cardano asset tokens', function () {
 		});
 		
 		it("should mint single issuer 1000000 Tango token", async function(){
+			try{
 			let payeer = wallets.find(w => w.id == "2a793eb367d44a42f658eb02d1004f50c14612fd");
 			let wallet = await walletServer.getShelleyWallet(payeer.id);
 
@@ -979,23 +981,23 @@ describe('Cardano asset tokens', function () {
 
 			//generate policy id
 			let scriptHash = Seed.getScriptHash(script);
-			let policyId = Seed.getPolicyId(scriptHash);
+			tangoPolicyId = Seed.getPolicyId(scriptHash);
 
 			let data: any = {};
 			let tokenData: any = {}
-			tokenData[policyId] = {
+			tokenData[tangoPolicyId] = {
 				Tango: {
 					arweaveId: "arweave-id",
 					ipfsId: "ipfs-id",
 					name: "Tango",
 					description: "Tango crypto coin",
 					type: "Coin"
-			 }
+				}
 			};
 			data[0] = tokenData;
 			
 			// asset
-			let asset = new AssetWallet(policyId, "Tango", 1000000);
+			let asset = new AssetWallet(tangoPolicyId, "Tango", 1000000);
 
 			// token
 			let tokens = [new TokenWallet(asset, script, [keyPair])];
@@ -1033,9 +1035,9 @@ describe('Cardano asset tokens', function () {
 				if (output.address === addresses[0].address) {
 					output.assets = tokens.map(t => {
 						let asset: WalletsAssetsAvailable = {
-							 policy_id: t.asset.policy_id,
-							 asset_name: t.asset.asset_name,
-							 quantity: t.asset.quantity
+								policy_id: t.asset.policy_id,
+								asset_name: Buffer.from(t.asset.asset_name).toString('hex'), // to handle all assets as hex since the one comming from previous tx are in hex
+								quantity: t.asset.quantity
 						};
 						return asset;
 					});
@@ -1046,31 +1048,37 @@ describe('Cardano asset tokens', function () {
 			let currentFee = coinSelection.inputs.reduce((acc, c) => c.amount.quantity + acc, 0) 
 			- coinSelection.outputs.reduce((acc, c) => c.amount.quantity + acc, 0)
 			- coinSelection.change.reduce((acc, c) => c.amount.quantity + acc, 0);
-			let change = coinSelection.change.reduce((acc, c) => c.amount.quantity + acc, 0);
+			let change = coinSelection.change[0].amount.quantity;
 	
 			// we need to sing the tx and calculate the actual fee and the build again 
 			// since the coin selection doesnt calculate the fee with the asset tokens included
-			let txBody = Seed.buildTransaction(coinSelection, ttl, metadata, tokens);
+			let txBody = Seed.buildTransaction(coinSelection, ttl, metadata);
 			txBody.set_mint(mint);
 			let tx = Seed.sign(txBody, signingKeys, metadata, scripts);
 			let fee = Seed.getTransactionFee(tx);
-			coinSelection.change[0].amount.quantity = change - (parseInt(fee.to_str()) - currentFee);
+			// coinSelection.change[0].amount.quantity = change - (parseInt(fee.to_str()) - parseInt(txBody.fee().to_str()));
+			coinSelection.change[0].amount.quantity = change - (parseInt(fee.to_str()) - parseInt(txBody.fee().to_str()));
 			
 			// after tx signed the metadata is cleaned, so we need to build it again.
 			metadata = Seed.buildTransactionMetadata(data);
 
 			// finally build the tx again and sing it
-			txBody = Seed.buildTransaction(coinSelection, ttl, metadata, tokens);
-			txBody.set_mint(mint);
-			tx = Seed.sign(txBody, signingKeys, metadata, scripts);
-
+			let txBody1 = Seed.buildTransaction(coinSelection, ttl, metadata);
+			txBody1.set_mint(mint);
+			let tx1 = Seed.sign(txBody1, signingKeys, metadata, scripts);
+			let otherFee = Seed.getTransactionFee(tx1);
 			// submit the tx
-			let signed = Buffer.from(tx.to_bytes()).toString('hex');
+			let signed = Buffer.from(tx1.to_bytes()).toString('hex');
 			let txId = await walletServer.submitTx(signed);
 			expect(txId).not.undefined;
+		} catch(err){
+			let error = err;
+			throw error;
+		}
 		});
 
 		it("should mint multi issuer all 1000000 Tango1 token", async function(){
+			try{
 			let payeer = wallets.find(w => w.id == "2a793eb367d44a42f658eb02d1004f50c14612fd");
 			let wallet = await walletServer.getShelleyWallet(payeer.id);
 
@@ -1132,7 +1140,7 @@ describe('Cardano asset tokens', function () {
 					output.assets = tokens.map(t => {
 						let asset: WalletsAssetsAvailable = {
 							 policy_id: t.asset.policy_id,
-							 asset_name: t.asset.asset_name,
+							 asset_name: Buffer.from(t.asset.asset_name).toString('hex'),
 							 quantity: t.asset.quantity
 						};
 						return asset;
@@ -1148,14 +1156,14 @@ describe('Cardano asset tokens', function () {
 	
 			// we need to sing the tx and calculate the actual fee and the build again 
 			// since the coin selection doesnt calculate the fee with the asset tokens included
-			let txBody = Seed.buildTransaction(coinSelection, ttl, null, tokens);
+			let txBody = Seed.buildTransaction(coinSelection, ttl);
 			txBody.set_mint(mint);
 			let tx = Seed.sign(txBody, signingKeys, null, scripts);
 			let fee = Seed.getTransactionFee(tx);
 			coinSelection.change[0].amount.quantity = change - (parseInt(fee.to_str()) - currentFee);
 
 			// finally build the tx again and sing it
-			txBody = Seed.buildTransaction(coinSelection, ttl, null, tokens);
+			txBody = Seed.buildTransaction(coinSelection, ttl);
 			txBody.set_mint(mint);
 			tx = Seed.sign(txBody, signingKeys, null, scripts);
 
@@ -1163,9 +1171,14 @@ describe('Cardano asset tokens', function () {
 			let signed = Buffer.from(tx.to_bytes()).toString('hex');
 			let txId = await walletServer.submitTx(signed);
 			expect(txId).not.undefined;
+		}catch(err){
+			let error = err;
+			throw error;
+		}
 		});
 
 		it("should mint multi issuer any 1000000 Tango2 token", async function(){
+			try{
 			let payeer = wallets.find(w => w.id == "2a793eb367d44a42f658eb02d1004f50c14612fd");
 			let wallet = await walletServer.getShelleyWallet(payeer.id);
 
@@ -1227,7 +1240,7 @@ describe('Cardano asset tokens', function () {
 					output.assets = tokens.map(t => {
 						let asset: WalletsAssetsAvailable = {
 							 policy_id: t.asset.policy_id,
-							 asset_name: t.asset.asset_name,
+							 asset_name: Buffer.from(t.asset.asset_name).toString('hex'),
 							 quantity: t.asset.quantity
 						};
 						return asset;
@@ -1243,14 +1256,14 @@ describe('Cardano asset tokens', function () {
 	
 			// we need to sing the tx and calculate the actual fee and the build again 
 			// since the coin selection doesnt calculate the fee with the asset tokens included
-			let txBody = Seed.buildTransaction(coinSelection, ttl, null, tokens);
+			let txBody = Seed.buildTransaction(coinSelection, ttl);
 			txBody.set_mint(mint);
 			let tx = Seed.sign(txBody, signingKeys, null, scripts);
 			let fee = Seed.getTransactionFee(tx);
 			coinSelection.change[0].amount.quantity = change - (parseInt(fee.to_str()) - currentFee);
 
 			// finally build the tx again and sing it
-			txBody = Seed.buildTransaction(coinSelection, ttl, null, tokens);
+			txBody = Seed.buildTransaction(coinSelection, ttl);
 			txBody.set_mint(mint);
 			tx = Seed.sign(txBody, signingKeys, null, scripts);
 
@@ -1258,9 +1271,14 @@ describe('Cardano asset tokens', function () {
 			let signed = Buffer.from(tx.to_bytes()).toString('hex');
 			let txId = await walletServer.submitTx(signed);
 			expect(txId).not.undefined;
+		}catch(err){
+			let error = err;
+			throw error;
+		}
 		});
 
 		it("should mint multi issuer at least 1000000 Tango3 token", async function(){
+			try{
 			let payeer = wallets.find(w => w.id == "2a793eb367d44a42f658eb02d1004f50c14612fd");
 			let wallet = await walletServer.getShelleyWallet(payeer.id);
 
@@ -1322,7 +1340,7 @@ describe('Cardano asset tokens', function () {
 					output.assets = tokens.map(t => {
 						let asset: WalletsAssetsAvailable = {
 							 policy_id: t.asset.policy_id,
-							 asset_name: t.asset.asset_name,
+							 asset_name: Buffer.from(t.asset.asset_name).toString('hex'),
 							 quantity: t.asset.quantity
 						};
 						return asset;
@@ -1338,14 +1356,14 @@ describe('Cardano asset tokens', function () {
 	
 			// we need to sing the tx and calculate the actual fee and the build again 
 			// since the coin selection doesnt calculate the fee with the asset tokens included
-			let txBody = Seed.buildTransaction(coinSelection, ttl, null, tokens);
+			let txBody = Seed.buildTransaction(coinSelection, ttl);
 			txBody.set_mint(mint);
 			let tx = Seed.sign(txBody, signingKeys, null, scripts);
 			let fee = Seed.getTransactionFee(tx);
 			coinSelection.change[0].amount.quantity = change - (parseInt(fee.to_str()) - currentFee);
 
 			// finally build the tx again and sing it
-			txBody = Seed.buildTransaction(coinSelection, ttl, null, tokens);
+			txBody = Seed.buildTransaction(coinSelection, ttl);
 			txBody.set_mint(mint);
 			tx = Seed.sign(txBody, signingKeys, null, scripts);
 
@@ -1353,9 +1371,14 @@ describe('Cardano asset tokens', function () {
 			let signed = Buffer.from(tx.to_bytes()).toString('hex');
 			let txId = await walletServer.submitTx(signed);
 			expect(txId).not.undefined;
+		}catch(err){
+			let error = err;
+			throw error;
+		}
 		});
 
 		it("should mint after 1000000 Tango4 token", async function(){
+			try{
 			let payeer = wallets.find(w => w.id == "2a793eb367d44a42f658eb02d1004f50c14612fd");
 			let wallet = await walletServer.getShelleyWallet(payeer.id);
 
@@ -1418,7 +1441,7 @@ describe('Cardano asset tokens', function () {
 					output.assets = tokens.map(t => {
 						let asset: WalletsAssetsAvailable = {
 							 policy_id: t.asset.policy_id,
-							 asset_name: t.asset.asset_name,
+							 asset_name: Buffer.from(t.asset.asset_name).toString('hex'),
 							 quantity: t.asset.quantity
 						};
 						return asset;
@@ -1434,14 +1457,14 @@ describe('Cardano asset tokens', function () {
 	
 			// we need to sing the tx and calculate the actual fee and the build again 
 			// since the coin selection doesnt calculate the fee with the asset tokens included
-			let txBody = Seed.buildTransaction(coinSelection, ttl, null, tokens, info.node_tip.absolute_slot_number);
+			let txBody = Seed.buildTransaction(coinSelection, ttl, null, info.node_tip.absolute_slot_number);
 			txBody.set_mint(mint);
 			let tx = Seed.sign(txBody, signingKeys, null, scripts);
 			let fee = Seed.getTransactionFee(tx);
 			coinSelection.change[0].amount.quantity = change - (parseInt(fee.to_str()) - currentFee);
 
 			// finally build the tx again and sing it
-			txBody = Seed.buildTransaction(coinSelection, ttl, null, tokens, info.node_tip.absolute_slot_number);
+			txBody = Seed.buildTransaction(coinSelection, ttl, null, info.node_tip.absolute_slot_number);
 			txBody.set_mint(mint);
 			tx = Seed.sign(txBody, signingKeys, null, scripts);
 
@@ -1449,10 +1472,14 @@ describe('Cardano asset tokens', function () {
 			let signed = Buffer.from(tx.to_bytes()).toString('hex');
 			let txId = await walletServer.submitTx(signed);
 			expect(txId).not.undefined;
-	
+		}catch(err){
+			let error = err;
+			throw error;
+		}
 		});
 
 		it("should mint before 1000000 Tango5 token", async function(){
+			try{
 			let payeer = wallets.find(w => w.id == "2a793eb367d44a42f658eb02d1004f50c14612fd");
 			let wallet = await walletServer.getShelleyWallet(payeer.id);
 
@@ -1514,7 +1541,7 @@ describe('Cardano asset tokens', function () {
 					output.assets = tokens.map(t => {
 						let asset: WalletsAssetsAvailable = {
 							 policy_id: t.asset.policy_id,
-							 asset_name: t.asset.asset_name,
+							 asset_name: Buffer.from(t.asset.asset_name).toString('hex'),
 							 quantity: t.asset.quantity
 						};
 						return asset;
@@ -1530,14 +1557,14 @@ describe('Cardano asset tokens', function () {
 	
 			// we need to sing the tx and calculate the actual fee and the build again 
 			// since the coin selection doesnt calculate the fee with the asset tokens included
-			let txBody = Seed.buildTransaction(coinSelection, ttl, null, tokens);
+			let txBody = Seed.buildTransaction(coinSelection, ttl);
 			txBody.set_mint(mint);
 			let tx = Seed.sign(txBody, signingKeys, null, scripts);
 			let fee = Seed.getTransactionFee(tx);
 			coinSelection.change[0].amount.quantity = change - (parseInt(fee.to_str()) - currentFee);
 
 			// finally build the tx again and sing it
-			txBody = Seed.buildTransaction(coinSelection, ttl, null, tokens);
+			txBody = Seed.buildTransaction(coinSelection, ttl);
 			txBody.set_mint(mint);
 			tx = Seed.sign(txBody, signingKeys, null, scripts);
 
@@ -1545,6 +1572,73 @@ describe('Cardano asset tokens', function () {
 			let signed = Buffer.from(tx.to_bytes()).toString('hex');
 			let txId = await walletServer.submitTx(signed);
 			expect(txId).not.undefined;
+		}catch(err){
+			let error = err;
+			throw error;
+		}
+		});
+
+		it("should send 100 Tango tokens", async function () {
+			try{
+			let payeer = wallets.find(w => w.id == "2a793eb367d44a42f658eb02d1004f50c14612fd");
+			let wallet = await walletServer.getShelleyWallet(payeer.id);
+
+			let receiver = wallets.find(w => w.id == "60bb5513e4e262e445cf203db9cf73ba925064d2");
+			let rWallet = await walletServer.getShelleyWallet(receiver.id);
+
+			// address to send the minted tokens
+			let addresses = [(await rWallet.getAddresses())[0]];
+
+			let asset = new AssetWallet(tangoPolicyId, "Tango", 100);
+			let assets: {[key: string]: AssetWallet[]} = {}; 
+			assets[addresses[0].id] = [asset];
+			let tokens = [new TokenWallet(asset)];
+			let minUtxo = Seed.getMinUtxoValueWithAssets(tokens);
+			let tx = await wallet.sendPayment(payeer.passphrase, addresses, [minUtxo], ['send 100 Tango tokens'], assets);
+			expect(tx).not.undefined;
+		}catch(err){
+			let error = err;
+			throw error;
+		}
+		});
+
+		it("should construct tx to send 100 Tango tokens ", async function () {
+			try{
+			let payeer = wallets.find(w => w.id == "2a793eb367d44a42f658eb02d1004f50c14612fd");
+			let wallet = await walletServer.getShelleyWallet(payeer.id);
+
+			let receiver = wallets.find(w => w.id == "60bb5513e4e262e445cf203db9cf73ba925064d2");
+			let rWallet = await walletServer.getShelleyWallet(receiver.id);
+
+			// address to send the minted tokens
+			let addresses = [(await rWallet.getAddresses())[10]];
+
+			let asset = new AssetWallet(tangoPolicyId, "Tango", 100);
+			let assets: {[key: string]: AssetWallet[]} = {}; 
+			assets[addresses[0].id] = [asset];
+			let tokens = [new TokenWallet(asset)];
+			let minUtxo = Seed.getMinUtxoValueWithAssets(tokens);
+			let data =  ['send 100 Tango tokens'];
+			let coinSelection = await wallet.getCoinSelection(addresses, [minUtxo], data, assets);
+			let info = await walletServer.getNetworkInformation();
+
+			//build and sign tx
+			let rootKey = Seed.deriveRootKey(payeer.mnemonic_sentence); 
+			let signingKeys = coinSelection.inputs.map(i => {
+				let privateKey = Seed.deriveKey(rootKey, i.derivation_path).to_raw_key();
+				return privateKey;
+			});
+
+			let metadata = Seed.buildTransactionMetadata(data);
+			let txBuild = Seed.buildTransaction(coinSelection, info.node_tip.absolute_slot_number * 12000, metadata);
+			let txBody = Seed.sign(txBuild, signingKeys, metadata);
+			let signed = Buffer.from(txBody.to_bytes()).toString('hex');
+			let txId = await walletServer.submitTx(signed);
+			expect(txId).not.undefined;
+		} catch(err) {
+			let error = err;
+			throw error;
+		}
 		});
 	})
 });

@@ -663,7 +663,7 @@ You can create native tokens just creating a transaction with a couple of differ
 			output.assets = tokens.map(t => {
 				let asset: WalletsAssetsAvailable = {
 					 policy_id: t.asset.policy_id,
-					 asset_name: t.asset.asset_name,
+					 asset_name: Buffer.from(t.asset.asset_name).toString('hex'),
 					 quantity: t.asset.quantity
 				};
 				return asset;
@@ -672,24 +672,21 @@ You can create native tokens just creating a transaction with a couple of differ
 		return output;
 	});
 
-	let currentFee = coinSelection.inputs.reduce((acc, c) => c.amount.quantity + acc, 0) 
-	- coinSelection.outputs.reduce((acc, c) => c.amount.quantity + acc, 0)
-	- coinSelection.change.reduce((acc, c) => c.amount.quantity + acc, 0);
-	let change = coinSelection.change.reduce((acc, c) => c.amount.quantity + acc, 0);
+	let change = coinSelection.change[0].amount.quantity;
 
 	// we need to sing the tx and calculate the actual fee and the build again 
 	// since the coin selection doesnt calculate the fee with the asset tokens included
-	let txBody = Seed.buildTransaction(coinSelection, ttl, metadata, tokens);
+	let txBody = Seed.buildTransaction(coinSelection, ttl, metadata);
 	txBody.set_mint(mint);
 	let tx = Seed.sign(txBody, signingKeys, metadata, scripts);
 	let fee = Seed.getTransactionFee(tx);
-	coinSelection.change[0].amount.quantity = change - (parseInt(fee.to_str()) - currentFee);
+	coinSelection.change[0].amount.quantity = change - (parseInt(fee.to_str()) - parseInt(txBody.fee().to_str()));
 
 	// after tx signed the metadata is cleaned, so we need to build it again.
 	metadata = Seed.buildTransactionMetadata(data);
 
 	// finally build the tx again and sing it
-	txBody = Seed.buildTransaction(coinSelection, ttl, metadata, tokens);
+	txBody = Seed.buildTransaction(coinSelection, ttl, metadata);
 	txBody.set_mint(mint);
 	tx = Seed.sign(txBody, signingKeys, metadata, scripts);
 
@@ -704,12 +701,63 @@ You can create native tokens just creating a transaction with a couple of differ
 	  "keyHash": "e09d36c79dec9bd1b3d9e152247701cd0bb860b5ebfd1de8abb6735a"
 	} 
 
+
+### Send Native Tokens on Transaction
+Here you have two options, either rely on cardano-wallet directly or build the tx by yourself. 
+#### Using Cardano Wallet
+
+	// passphrase
+	let passphrase = "your passphrase";
+	let policyId = "your policyId";
+	// address to send the minted tokens
+	let addresses = [new AddressWallet("addr......")];
+	let asset = new AssetWallet(policyId, "AssetName", 100);
+	// bind the asset to the address
+	let assets = {}; 
+	assets[addresses[0].id] = [asset];
+	// calculate the min ADA to send in the tx
+	let tokens = [new TokenWallet(asset)];
+	let minUtxo = Seed.getMinUtxoValueWithAssets(tokens);
+	// just send it using the wallet
+	let tx = await wallet.sendPayment(passphrase, addresses, [minUtxo], ['send 100 Tango tokens'], assets);	
+
+#### Building the tx
+
+	// passphrase
+	let passphrase = "your passphrase";
+	let policyId = "your policyId";
+	// address to send the minted tokens
+	let addresses = [new AddressWallet("addr......")];
+	let asset = new AssetWallet(policyId, "AssetName", 100);
+	// bind the asset to the address
+	let assets = {}; 
+	assets[addresses[0].id] = [asset];
+	// calculate the min ADA to send in the tx
+	let tokens = [new TokenWallet(asset)];
+	let minUtxo = Seed.getMinUtxoValueWithAssets(tokens)
+	// you can include metadata as well
+	let data =  ['send 100 Tango tokens'];
+	let coinSelection = await wallet.getCoinSelection(addresses, [minUtxo], data, assets);
+	let info = await walletServer.getNetworkInformation();
+	//build and sign tx
+	let rootKey = Seed.deriveRootKey(payeer.mnemonic_sentence); 
+	let signingKeys = coinSelection.inputs.map(i => {
+		let privateKey = Seed.deriveKey(rootKey, i.derivation_path).to_raw_key();
+		return privateKey;
+	});
+	let metadata = Seed.buildTransactionMetadata(data);
+	let txBuild = Seed.buildTransaction(coinSelection, info.node_tip.absolute_slot_number * 12000, metadata);
+	let txBody = Seed.sign(txBuild, signingKeys, metadata);
+	let signed = Buffer.from(txBody.to_bytes()).toString('hex');
+	let txId = await walletServer.submitTx(signed);
 # Test
 
 ### Stack
 you'll need to install stak >= 1.9.3
-you can find it here: https://docs.haskellstack.org/en/stable/README/
+you can find it here: https://docs.haskellstack.org/en/stable/README/.
 You may need to install the libsodium-dev, libghc-hsopenssl-dev, gmp, sqlite and systemd development libraries for the build to succeed.
+
+Also you will need `cardano-node` and `cardano-cli` binaries availables on your PATH.
 
 The setup steps are quite simple:
 clone: `cardano-wallet`

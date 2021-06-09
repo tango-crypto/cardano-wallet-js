@@ -6,6 +6,7 @@ import { Address, AssetName, Assets, BigNum, Bip32PrivateKey, Bip32PublicKey, Ed
 import { Config } from './config';
 import { TokenWallet } from './wallet/token-wallet';
 import * as os from 'os';
+import { WalletsAssetsAvailable } from './models';
 
 const platform = os.platform();
 let options = platform === 'win32' ? { shell: true } : {};
@@ -48,7 +49,7 @@ export class Seed {
 		return result;
 	}
 
-	static buildTransaction(coinSelection: CoinSelectionWallet, ttl: number, data?: TransactionMetadata, tokens: TokenWallet[] = [], startSlot = 0, config = Config.Mainnet): TransactionBody {
+	static buildTransaction(coinSelection: CoinSelectionWallet, ttl: number, metadata?: TransactionMetadata, startSlot = 0, config = Config.Mainnet): TransactionBody {
 		const protocolParams = config.protocolParams;
 		let txBuilder = TransactionBuilder.new(
 			// all of these are taken from the mainnet genesis settings
@@ -72,6 +73,7 @@ export class Seed {
 			let amount = Value.new(
 				BigNum.from_str(input.amount.quantity.toString())
 			);
+
 			txBuilder.add_input(address, txInput, amount);
 		});
 
@@ -84,17 +86,7 @@ export class Seed {
 
 			// add tx assets
 			if(output.assets && output.assets.length > 0){
-				let multiAsset = MultiAsset.new();
-				output.assets.forEach(a => {
-					let token = tokens.find(t => t.asset.policy_id === a.policy_id);
-					if (token) {
-						let asset = Assets.new();
-						// let scriptHash = Seed.getScriptHash(token.script);
-						let scriptHash = Seed.getScriptHashFromPolicy(token.asset.policy_id);
-						asset.insert(AssetName.new(Buffer.from(a.asset_name)), BigNum.from_str(a.quantity.toString()));
-						multiAsset.insert(scriptHash, asset);
-					}
-				});
+				let multiAsset = Seed.buildMultiAssets(output.assets);
 				amount.set_multiasset(multiAsset);
 			}
 
@@ -111,6 +103,13 @@ export class Seed {
 			let amount = Value.new(
 				BigNum.from_str(change.amount.quantity.toString())
 			);
+
+			// add tx assets
+			if(change.assets && change.assets.length > 0){
+				let multiAsset = Seed.buildMultiAssets(change.assets);
+				amount.set_multiasset(multiAsset);
+			}
+
 			let txOutput = TransactionOutput.new(
 				address,
 				amount
@@ -119,8 +118,8 @@ export class Seed {
 		});
 
 		// add tx metadata
-		if (data) {
-			txBuilder.set_metadata(data);
+		if (metadata) {
+			txBuilder.set_metadata(metadata);
 		}
 
 		// set tx validity start interval
@@ -129,23 +128,32 @@ export class Seed {
 		// set tx ttl
 		txBuilder.set_ttl(ttl);
 
+
 		// calculate fee
 		let fee = coinSelection.inputs.reduce((acc, c) => c.amount.quantity + acc, 0) 
 		- coinSelection.outputs.reduce((acc, c) => c.amount.quantity + acc, 0) 
 		- coinSelection.change.reduce((acc, c) => c.amount.quantity + acc, 0);
 		
-		// set tx fee
 		txBuilder.set_fee(BigNum.from_str(fee.toString()));
-
 		let txBody = txBuilder.build();
 		return txBody;
+	}
+
+	static buildMultiAssets(assets: WalletsAssetsAvailable[]): MultiAsset {
+		let multiAsset = MultiAsset.new();
+		assets.forEach(a => {
+				let asset = Assets.new();
+				let scriptHash = Seed.getScriptHashFromPolicy(a.policy_id);
+				asset.insert(AssetName.new(Buffer.from(a.asset_name, 'hex')), BigNum.from_str(a.quantity.toString()));
+				multiAsset.insert(scriptHash, asset);
+		});
+		return multiAsset;
 	}
 
 	static buildTransactionMint(tokens: TokenWallet[]): Mint {
 		let mint = Mint.new();
 		tokens.forEach(t => {
 			let mintAssets = MintAssets.new();
-			// let scriptHash = Seed.getScriptHash(t.script);
 			let scriptHash = Seed.getScriptHashFromPolicy(t.asset.policy_id);
 			mintAssets.insert(AssetName.new(Buffer.from(t.asset.asset_name)), Int.new_i32(t.asset.quantity));
 			mint.insert(scriptHash, mintAssets);
@@ -246,6 +254,49 @@ export class Seed {
 			}
 		}
 		return result;
+	}
+
+	static reverseMetadata(data: any, type = "object"): any {
+		if (!data) {
+			return null;
+		}
+		let metadata: any = type == "object" ? {} : [];
+		let keys = Object.keys(data);
+		for (let i = 0; i < keys.length; i++) {
+			const key = keys[i];
+			let index = parseInt(key);
+			metadata[index] = Seed.reverseMetadataObject(data[key]);
+		}
+		return metadata;
+	}
+
+	static reverseMetadataObject(data: any): any {
+		let result = [];
+		let keys = Object.keys(data);
+		for (let i = 0; i < keys.length; i++) {
+			const key = keys[i];
+			let value = data[key];
+			if (key == "string") {
+				result.push(value);
+			} else if (key == "int") {
+				result.push(new Number(value));
+			} else if (key == "bytes") {
+				result.push(Buffer.from(value, 'hex'));
+			} else if (key == "list") {
+				result.push(value.map((d: any) => Seed.reverseMetadataObject(d)))
+			} else if (key == "map") {
+				let map = value.reduce((acc: any, obj: any) => {
+					let k = Seed.reverseMetadataObject(obj["k"]);
+					let v = Seed.reverseMetadataObject(obj["v"]);
+					acc[k] = v;
+					return acc;
+				}, {});
+				result.push(map);
+			} else {
+				result.push(null);
+			}
+		}
+		return result.length == 1 ? result[0] : result;
 	}
 
 	static buildTransactionMetadata(data: any): TransactionMetadata {
@@ -387,6 +438,7 @@ export class Seed {
 	private static isInteger(value: any) {
 		return Number.isInteger(Number(value));
 	}
+
 }
 
 export class Bip32KeyPair{

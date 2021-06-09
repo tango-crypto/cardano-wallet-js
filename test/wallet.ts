@@ -14,6 +14,7 @@ import { KeyRoleEnum } from '../wallet/key-wallet';
 
 import * as dotenv from "dotenv";
 import { ShelleyWallet } from '../wallet/shelley-wallet';
+import { TransactionWallet } from '../wallet/transaction-wallet';
 dotenv.config();
 
 describe('Cardano wallet API', function () {
@@ -1422,19 +1423,23 @@ describe('Cardano wallet API', function () {
 	});
 
 	describe('transaction', function () {
+		let tx: TransactionWallet = null;
 		it('should get tx list', async function(){
 			let w = wallets.find(w => w.id == '2a793eb367d44a42f658eb02d1004f50c14612fd');
 			let wallet = await walletServer.getShelleyWallet(w.id);
 			let start = new Date(2021, 0, 1); // January 1st 2021;
 			let end = new Date(Date.now());
 			let transactions = await wallet.getTransactions(start, end);
-
+			tx = transactions[0];
+			transactions.filter(tx => tx.metadata).forEach(t => {
+				let metadata = Seed.reverseMetadata(t.metadata, "array");
+				expect(metadata).not.empty;
+			})
 			expect(transactions).be.an('array');
 		});
 
 		it('should get tx details', async function () {
 			let w = wallets.find(w => w.id == '2a793eb367d44a42f658eb02d1004f50c14612fd');
-			let tx = w.txs.find(t => t.id == '1d9025cddb72f9e15510dff6e67d1d7718704f19d6b66f1f4232dc5847f921d4');
 
 			let wallet = await walletServer.getShelleyWallet(w.id);
 			let transaction = await wallet.getTransaction(tx.id);
@@ -1484,9 +1489,6 @@ describe('Cardano wallet API', function () {
 			let spent = output.amount.quantity + fee;
 			let paid = amounts.reduce((a, b) => a + b);
 
-
-			expect(tx.status).equal(transaction.status);
-			expect(tx.direction).equal(transaction.direction);
 			expect(output).to.not.undefined;
 			expect(output.amount.quantity).equal(paid);
 			expect(spent).equal(transaction.amount.quantity);
@@ -1512,9 +1514,6 @@ describe('Cardano wallet API', function () {
 			let spent = output.amount.quantity + fee;
 			let paid = amounts.reduce((a, b) => a + b);
 
-
-			expect(tx.status).equal(transaction.status);
-			expect(tx.direction).equal(transaction.direction);
 			expect(output).to.not.undefined;
 			expect(output.amount.quantity).equal(paid);
 			expect(spent).equal(transaction.amount.quantity);
