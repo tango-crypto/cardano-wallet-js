@@ -20,6 +20,7 @@
     + [Submit external transaction](#submit-external-transaction)
     + [Key handling](#key-handling)
     + [Native Tokens](#native-tokens)
+		+ [Send Native Tokens](#send-native-tokens)
 - [Test](#test)
 - [Support our project](#support-our-project)
 
@@ -702,7 +703,7 @@ You can create native tokens just creating a transaction with a couple of differ
 	} 
 
 
-### Send Native Tokens on Transaction
+### Send Native Tokens
 Here you have two options, either rely on cardano-wallet directly or build the tx by yourself. 
 #### Using Cardano Wallet
 
