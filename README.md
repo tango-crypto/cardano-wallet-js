@@ -492,6 +492,11 @@ offline as well. Here is an example put in all together:
    
     // recovery phrase, this should be the same you use to create the wallet (see Wallet section)
     let recovery_phrase = [...];
+
+		// blockchain config, this is where you can find protocol params, slotsPerKESPeriod etc.
+	  // This lib comes with  Mainnet, Testnet and LocalCluster config, but you should pass your own to make sure they are up to date.
+	  // You can find the latest config files here: https://hydra.iohk.io/build/6498473/download/1/index.html
+	  let config = { ..., "protocolParams": {... "minFeeA": 44, ..., "minFeeB": 155381, ...} }
     
     // get first unused wallet's address
     let addresses = (await wallet.getUnusedAddresses()).slice(0, 1);
@@ -517,7 +522,7 @@ offline as well. Here is an example put in all together:
     // build and sign tx (can be offline)
     // include the metadata in the build and sign process
     let metadata = Seed.buildTransactionMetadata(data);
-    let txBuild = Seed.buildTransaction(coinSelection, ttl, metadata);
+    let txBuild = Seed.buildTransaction(coinSelection, ttl, {metadata: metadata, config: config});
     let txBody = Seed.sign(txBuild, signingKeys, metadata);
     
     // submit the tx into the blockchain
@@ -596,6 +601,11 @@ You can create native tokens just creating a transaction with a couple of differ
 
 	// address to hold the minted tokens. You can use which you want.
 	let addresses = [(await wallet.getAddresses())[0]];
+
+	// blockchain config, this is where you can find protocol params, slotsPerKESPeriod etc.
+	// This lib comes with  Mainnet, Testnet and LocalCluster config, but you should pass your own to make sure they are up to date.
+	// You can find the latest config files here: https://hydra.iohk.io/build/6498473/download/1/index.html
+	let config = { ..., "protocolParams": {... "minFeeA": 44, ..., "minFeeB": 155381, ...} }
 			
 	// policy public/private keypair
 	let keyPair= Seed.generateKeyPair();
@@ -634,7 +644,7 @@ You can create native tokens just creating a transaction with a couple of differ
 	let scripts = tokens.map(t => t.script);
 
 	// get min ada for address holding tokens
-	let minAda = Seed.getMinUtxoValueWithAssets(tokens);
+	let minAda = Seed.getMinUtxoValueWithAssets([asset]);
 	let amounts = [minAda];
 
 	// get ttl info
@@ -655,7 +665,6 @@ You can create native tokens just creating a transaction with a couple of differ
 	tokens.filter(t => t.scriptKeyPairs).forEach(t => signingKeys.push(...t.scriptKeyPairs.map(k => k.privateKey.to_raw_key())));
 
 	let metadata = Seed.buildTransactionMetadata(data);
-	let mint = Seed.buildTransactionMint(tokens);
 
 	// the wallet currently doesn't support including tokens not previuosly minted
 	// so we need to include it manually.
@@ -673,25 +682,12 @@ You can create native tokens just creating a transaction with a couple of differ
 		return output;
 	});
 
-	let change = coinSelection.change[0].amount.quantity;
-
 	// we need to sing the tx and calculate the actual fee and the build again 
 	// since the coin selection doesnt calculate the fee with the asset tokens included
-	let txBody = Seed.buildTransaction(coinSelection, ttl, metadata);
-	txBody.set_mint(mint);
+	let txBody = Seed.buildTransactionWithToken(coinSelection, ttl, tokens, signingKeys, {data: data, config: config});
 	let tx = Seed.sign(txBody, signingKeys, metadata, scripts);
-	let fee = Seed.getTransactionFee(tx);
-	coinSelection.change[0].amount.quantity = change - (parseInt(fee.to_str()) - parseInt(txBody.fee().to_str()));
 
-	// after tx signed the metadata is cleaned, so we need to build it again.
-	metadata = Seed.buildTransactionMetadata(data);
-
-	// finally build the tx again and sing it
-	txBody = Seed.buildTransaction(coinSelection, ttl, metadata);
-	txBody.set_mint(mint);
-	tx = Seed.sign(txBody, signingKeys, metadata, scripts);
-
-	// submit the tx
+	// submit the tx	
 	let signed = Buffer.from(tx.to_bytes()).toString('hex');
 	let txId = await walletServer.submitTx(signed);
 
@@ -710,36 +706,48 @@ Here you have two options, either rely on cardano-wallet directly or build the t
 	// passphrase
 	let passphrase = "your passphrase";
 	let policyId = "your policyId";
+
 	// address to send the minted tokens
 	let addresses = [new AddressWallet("addr......")];
-	let asset = new AssetWallet(policyId, "AssetName", 100);
+	let asset = new AssetWallet(policyId, "Tango", 100);
+
 	// bind the asset to the address
 	let assets = {}; 
 	assets[addresses[0].id] = [asset];
+
 	// calculate the min ADA to send in the tx
-	let tokens = [new TokenWallet(asset)];
-	let minUtxo = Seed.getMinUtxoValueWithAssets(tokens);
-	// just send it using the wallet
-	let tx = await wallet.sendPayment(passphrase, addresses, [minUtxo], ['send 100 Tango tokens'], assets);	
+	let minAda = Seed.getMinUtxoValueWithAssets([asset]);
+
+	// send it using the wallet
+	let tx = await wallet.sendPayment(passphrase, addresses, [minAda], ['send 100 Tango tokens'], assets);	
 
 #### Building the tx
 
 	// passphrase
 	let passphrase = "your passphrase";
 	let policyId = "your policyId";
+
 	// address to send the minted tokens
 	let addresses = [new AddressWallet("addr......")];
-	let asset = new AssetWallet(policyId, "AssetName", 100);
+	let asset = new AssetWallet(policyId, "Tango", 100);
+
+	// blockchain config, this is where you can find protocol params, slotsPerKESPeriod etc.
+	// This lib comes with  Mainnet, Testnet and LocalCluster config, but you should pass your own to make sure they are up to date.
+	// You can find the latest config files here: https://hydra.iohk.io/build/6498473/download/1/index.html
+	let config = { ..., "protocolParams": {... "minFeeA": 44, ..., "minFeeB": 155381, ...} }
+
 	// bind the asset to the address
 	let assets = {}; 
 	assets[addresses[0].id] = [asset];
+
 	// calculate the min ADA to send in the tx
-	let tokens = [new TokenWallet(asset)];
-	let minUtxo = Seed.getMinUtxoValueWithAssets(tokens)
+	let minUtxo = Seed.getMinUtxoValueWithAssets([asset])
+
 	// you can include metadata as well
 	let data =  ['send 100 Tango tokens'];
 	let coinSelection = await wallet.getCoinSelection(addresses, [minUtxo], data, assets);
 	let info = await walletServer.getNetworkInformation();
+
 	//build and sign tx
 	let rootKey = Seed.deriveRootKey(payeer.mnemonic_sentence); 
 	let signingKeys = coinSelection.inputs.map(i => {
@@ -747,7 +755,7 @@ Here you have two options, either rely on cardano-wallet directly or build the t
 		return privateKey;
 	});
 	let metadata = Seed.buildTransactionMetadata(data);
-	let txBuild = Seed.buildTransaction(coinSelection, info.node_tip.absolute_slot_number * 12000, metadata);
+	let txBuild = Seed.buildTransaction(coinSelection, info.node_tip.absolute_slot_number * 12000, {metadata: metadata, config: config});
 	let txBody = Seed.sign(txBuild, signingKeys, metadata);
 	let signed = Buffer.from(txBody.to_bytes()).toString('hex');
 	let txId = await walletServer.submitTx(signed);
