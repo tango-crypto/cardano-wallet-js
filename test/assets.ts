@@ -13,6 +13,7 @@ import * as dotenv from "dotenv";
 import { AssetWallet } from '../wallet/asset-wallet';
 import { CoinSelectionWallet } from '../wallet/coin-selection-wallet';
 import { TokenWallet } from '../wallet/token-wallet';
+import { Config } from '../config';
 dotenv.config();
 
 describe('Cardano asset tokens', function () {
@@ -1006,7 +1007,7 @@ describe('Cardano asset tokens', function () {
 			let scripts = tokens.map(t => t.script);
 
 			// get min ada for address holding tokens
-			let minAda = Seed.getMinUtxoValueWithAssets(tokens);
+			let minAda = Seed.getMinUtxoValueWithAssets([asset]);
 			let amounts = [minAda];
 
 			// get ttl info
@@ -1027,7 +1028,6 @@ describe('Cardano asset tokens', function () {
 			tokens.filter(t => t.scriptKeyPairs).forEach(t => signingKeys.push(...t.scriptKeyPairs.map(k => k.privateKey.to_raw_key())));
 
 			let metadata = Seed.buildTransactionMetadata(data);
-			let mint = Seed.buildTransactionMint(tokens);
 			
 			// the wallet currently doesn't support including tokens not previuosly minted
 			// so we need to include it manually.
@@ -1045,30 +1045,13 @@ describe('Cardano asset tokens', function () {
 				return output;
 			});
 
-			let currentFee = coinSelection.inputs.reduce((acc, c) => c.amount.quantity + acc, 0) 
-			- coinSelection.outputs.reduce((acc, c) => c.amount.quantity + acc, 0)
-			- coinSelection.change.reduce((acc, c) => c.amount.quantity + acc, 0);
-			let change = coinSelection.change[0].amount.quantity;
-	
 			// we need to sing the tx and calculate the actual fee and the build again 
 			// since the coin selection doesnt calculate the fee with the asset tokens included
-			let txBody = Seed.buildTransaction(coinSelection, ttl, metadata);
-			txBody.set_mint(mint);
+			let txBody = Seed.buildTransactionWithToken(coinSelection, ttl, tokens, signingKeys, {data: data, config: Config.LocalCluster});
 			let tx = Seed.sign(txBody, signingKeys, metadata, scripts);
-			let fee = Seed.getTransactionFee(tx);
-			// coinSelection.change[0].amount.quantity = change - (parseInt(fee.to_str()) - parseInt(txBody.fee().to_str()));
-			coinSelection.change[0].amount.quantity = change - (parseInt(fee.to_str()) - parseInt(txBody.fee().to_str()));
-			
-			// after tx signed the metadata is cleaned, so we need to build it again.
-			metadata = Seed.buildTransactionMetadata(data);
-
-			// finally build the tx again and sing it
-			let txBody1 = Seed.buildTransaction(coinSelection, ttl, metadata);
-			txBody1.set_mint(mint);
-			let tx1 = Seed.sign(txBody1, signingKeys, metadata, scripts);
-			let otherFee = Seed.getTransactionFee(tx1);
-			// submit the tx
-			let signed = Buffer.from(tx1.to_bytes()).toString('hex');
+		
+			// submit the tx	
+			let signed = Buffer.from(tx.to_bytes()).toString('hex');
 			let txId = await walletServer.submitTx(signed);
 			expect(txId).not.undefined;
 		} catch(err){
@@ -1085,8 +1068,6 @@ describe('Cardano asset tokens', function () {
 			// address to hold the minted tokens
 			let addresses = [(await wallet.getAddresses())[0]];
 
-			// let data: any = {0: 'hello', 1: Buffer.from('2512a00e9653fe49a44a5886202e24d77eeb998f', 'hex'), 4: [1, 2, {0: true}], 5: {'key': null, 'l': [3, true, {}]}, 6: undefined};
-			
 			// policy public/private keypair
 			let keyPair= Seed.generateKeyPair();
 			let policyVKey = keyPair.publicKey;
@@ -1110,7 +1091,7 @@ describe('Cardano asset tokens', function () {
 			let scripts = tokens.map(t => t.script);
 
 			// get min ada for address holding tokens
-			let minAda = Seed.getMinUtxoValueWithAssets(tokens);
+			let minAda = Seed.getMinUtxoValueWithAssets([asset]);
 			let amounts = [minAda];
 
 			// get ttl info
@@ -1130,9 +1111,6 @@ describe('Cardano asset tokens', function () {
 			// add policy signing key
 			tokens.filter(t => t.scriptKeyPairs).forEach(t => signingKeys.push(...t.scriptKeyPairs.map(k => k.privateKey.to_raw_key())));
 
-			// let metadata = Seed.buildTransactionMetadata(data);
-			let mint = Seed.buildTransactionMint(tokens);
-			
 			// the wallet currently doesn't support including tokens not previuosly minted
 			// so we need to include it manually.
 			coinSelection.outputs = coinSelection.outputs.map(output => {
@@ -1149,23 +1127,10 @@ describe('Cardano asset tokens', function () {
 				return output;
 			});
 
-			let currentFee = coinSelection.inputs.reduce((acc, c) => c.amount.quantity + acc, 0) 
-			- coinSelection.outputs.reduce((acc, c) => c.amount.quantity + acc, 0)
-			- coinSelection.change.reduce((acc, c) => c.amount.quantity + acc, 0);
-			let change = coinSelection.change.reduce((acc, c) => c.amount.quantity + acc, 0);
-	
 			// we need to sing the tx and calculate the actual fee and the build again 
 			// since the coin selection doesnt calculate the fee with the asset tokens included
-			let txBody = Seed.buildTransaction(coinSelection, ttl);
-			txBody.set_mint(mint);
+			let txBody = Seed.buildTransactionWithToken(coinSelection, ttl, tokens, signingKeys, {config: Config.LocalCluster});
 			let tx = Seed.sign(txBody, signingKeys, null, scripts);
-			let fee = Seed.getTransactionFee(tx);
-			coinSelection.change[0].amount.quantity = change - (parseInt(fee.to_str()) - currentFee);
-
-			// finally build the tx again and sing it
-			txBody = Seed.buildTransaction(coinSelection, ttl);
-			txBody.set_mint(mint);
-			tx = Seed.sign(txBody, signingKeys, null, scripts);
 
 			// submit the tx
 			let signed = Buffer.from(tx.to_bytes()).toString('hex');
@@ -1185,8 +1150,6 @@ describe('Cardano asset tokens', function () {
 			// address to hold the minted tokens
 			let addresses = [(await wallet.getAddresses())[0]];
 
-			// let data: any = {0: 'hello', 1: Buffer.from('2512a00e9653fe49a44a5886202e24d77eeb998f', 'hex'), 4: [1, 2, {0: true}], 5: {'key': null, 'l': [3, true, {}]}, 6: undefined};
-			
 			// policy public/private keypair
 			let keyPair= Seed.generateKeyPair();
 			let policyVKey = keyPair.publicKey;
@@ -1210,7 +1173,7 @@ describe('Cardano asset tokens', function () {
 			let scripts = tokens.map(t => t.script);
 
 			// get min ada for address holding tokens
-			let minAda = Seed.getMinUtxoValueWithAssets(tokens);
+			let minAda = Seed.getMinUtxoValueWithAssets([asset]);
 			let amounts = [minAda];
 
 			// get ttl info
@@ -1230,9 +1193,6 @@ describe('Cardano asset tokens', function () {
 			// add policy signing key
 			tokens.filter(t => t.scriptKeyPairs).forEach(t => signingKeys.push(...t.scriptKeyPairs.map(k => k.privateKey.to_raw_key())));
 
-			// let metadata = Seed.buildTransactionMetadata(data);
-			let mint = Seed.buildTransactionMint(tokens);
-			
 			// the wallet currently doesn't support including tokens not previuosly minted
 			// so we need to include it manually.
 			coinSelection.outputs = coinSelection.outputs.map(output => {
@@ -1249,23 +1209,10 @@ describe('Cardano asset tokens', function () {
 				return output;
 			});
 
-			let currentFee = coinSelection.inputs.reduce((acc, c) => c.amount.quantity + acc, 0) 
-			- coinSelection.outputs.reduce((acc, c) => c.amount.quantity + acc, 0)
-			- coinSelection.change.reduce((acc, c) => c.amount.quantity + acc, 0);
-			let change = coinSelection.change.reduce((acc, c) => c.amount.quantity + acc, 0);
-	
 			// we need to sing the tx and calculate the actual fee and the build again 
 			// since the coin selection doesnt calculate the fee with the asset tokens included
-			let txBody = Seed.buildTransaction(coinSelection, ttl);
-			txBody.set_mint(mint);
+			let txBody = Seed.buildTransactionWithToken(coinSelection, ttl, tokens, signingKeys, {config: Config.LocalCluster});
 			let tx = Seed.sign(txBody, signingKeys, null, scripts);
-			let fee = Seed.getTransactionFee(tx);
-			coinSelection.change[0].amount.quantity = change - (parseInt(fee.to_str()) - currentFee);
-
-			// finally build the tx again and sing it
-			txBody = Seed.buildTransaction(coinSelection, ttl);
-			txBody.set_mint(mint);
-			tx = Seed.sign(txBody, signingKeys, null, scripts);
 
 			// submit the tx
 			let signed = Buffer.from(tx.to_bytes()).toString('hex');
@@ -1285,8 +1232,6 @@ describe('Cardano asset tokens', function () {
 			// address to hold the minted tokens
 			let addresses = [(await wallet.getAddresses())[0]];
 
-			// let data: any = {0: 'hello', 1: Buffer.from('2512a00e9653fe49a44a5886202e24d77eeb998f', 'hex'), 4: [1, 2, {0: true}], 5: {'key': null, 'l': [3, true, {}]}, 6: undefined};
-			
 			// policy public/private keypair
 			let keyPair= Seed.generateKeyPair();
 			let policyVKey = keyPair.publicKey;
@@ -1310,7 +1255,7 @@ describe('Cardano asset tokens', function () {
 			let scripts = tokens.map(t => t.script);
 
 			// get min ada for address holding tokens
-			let minAda = Seed.getMinUtxoValueWithAssets(tokens);
+			let minAda = Seed.getMinUtxoValueWithAssets([asset]);
 			let amounts = [minAda];
 
 			// get ttl info
@@ -1330,9 +1275,6 @@ describe('Cardano asset tokens', function () {
 			// add policy signing key
 			tokens.filter(t => t.scriptKeyPairs).forEach(t => signingKeys.push(...t.scriptKeyPairs.map(k => k.privateKey.to_raw_key())));
 
-			// let metadata = Seed.buildTransactionMetadata(data);
-			let mint = Seed.buildTransactionMint(tokens);
-			
 			// the wallet currently doesn't support including tokens not previuosly minted
 			// so we need to include it manually.
 			coinSelection.outputs = coinSelection.outputs.map(output => {
@@ -1349,23 +1291,10 @@ describe('Cardano asset tokens', function () {
 				return output;
 			});
 
-			let currentFee = coinSelection.inputs.reduce((acc, c) => c.amount.quantity + acc, 0) 
-			- coinSelection.outputs.reduce((acc, c) => c.amount.quantity + acc, 0)
-			- coinSelection.change.reduce((acc, c) => c.amount.quantity + acc, 0);
-			let change = coinSelection.change.reduce((acc, c) => c.amount.quantity + acc, 0);
-	
 			// we need to sing the tx and calculate the actual fee and the build again 
-			// since the coin selection doesnt calculate the fee with the asset tokens included
-			let txBody = Seed.buildTransaction(coinSelection, ttl);
-			txBody.set_mint(mint);
+			// since the coin selection doesnt calculate the fee with the asset tokens 
+			let txBody = Seed.buildTransactionWithToken(coinSelection, ttl, tokens, signingKeys, {config: Config.LocalCluster});
 			let tx = Seed.sign(txBody, signingKeys, null, scripts);
-			let fee = Seed.getTransactionFee(tx);
-			coinSelection.change[0].amount.quantity = change - (parseInt(fee.to_str()) - currentFee);
-
-			// finally build the tx again and sing it
-			txBody = Seed.buildTransaction(coinSelection, ttl);
-			txBody.set_mint(mint);
-			tx = Seed.sign(txBody, signingKeys, null, scripts);
 
 			// submit the tx
 			let signed = Buffer.from(tx.to_bytes()).toString('hex');
@@ -1389,8 +1318,6 @@ describe('Cardano asset tokens', function () {
 			let info = await walletServer.getNetworkInformation();
 			let ttl = info.node_tip.absolute_slot_number * 12000;
 
-			// let data: any = {0: 'hello', 1: Buffer.from('2512a00e9653fe49a44a5886202e24d77eeb998f', 'hex'), 4: [1, 2, {0: true}], 5: {'key': null, 'l': [3, true, {}]}, 6: undefined};
-			
 			// policy public/private keypair
 			let keyPair= Seed.generateKeyPair();
 			let policyVKey = keyPair.publicKey;
@@ -1415,7 +1342,7 @@ describe('Cardano asset tokens', function () {
 			let scripts = tokens.map(t => t.script);
 
 			// get min ada for address holding tokens
-			let minAda = Seed.getMinUtxoValueWithAssets(tokens);
+			let minAda = Seed.getMinUtxoValueWithAssets([asset]);
 			let amounts = [minAda];
 
 			// get coin selection structure (without the assets)
@@ -1431,9 +1358,6 @@ describe('Cardano asset tokens', function () {
 			// add policy signing keys
 			tokens.filter(t => t.scriptKeyPairs).forEach(t => signingKeys.push(...t.scriptKeyPairs.map(k => k.privateKey.to_raw_key())));
 
-			// let metadata = Seed.buildTransactionMetadata(data);
-			let mint = Seed.buildTransactionMint(tokens);
-			
 			// the wallet currently doesn't support including tokens not previuosly minted
 			// so we need to include it manually.
 			coinSelection.outputs = coinSelection.outputs.map(output => {
@@ -1450,23 +1374,10 @@ describe('Cardano asset tokens', function () {
 				return output;
 			});
 
-			let currentFee = coinSelection.inputs.reduce((acc, c) => c.amount.quantity + acc, 0) 
-			- coinSelection.outputs.reduce((acc, c) => c.amount.quantity + acc, 0)
-			- coinSelection.change.reduce((acc, c) => c.amount.quantity + acc, 0);
-			let change = coinSelection.change.reduce((acc, c) => c.amount.quantity + acc, 0);
-	
 			// we need to sing the tx and calculate the actual fee and the build again 
 			// since the coin selection doesnt calculate the fee with the asset tokens included
-			let txBody = Seed.buildTransaction(coinSelection, ttl, null, info.node_tip.absolute_slot_number);
-			txBody.set_mint(mint);
+			let txBody = Seed.buildTransactionWithToken(coinSelection, ttl, tokens, signingKeys, {startSlot: info.node_tip.absolute_slot_number, config: Config.LocalCluster});
 			let tx = Seed.sign(txBody, signingKeys, null, scripts);
-			let fee = Seed.getTransactionFee(tx);
-			coinSelection.change[0].amount.quantity = change - (parseInt(fee.to_str()) - currentFee);
-
-			// finally build the tx again and sing it
-			txBody = Seed.buildTransaction(coinSelection, ttl, null, info.node_tip.absolute_slot_number);
-			txBody.set_mint(mint);
-			tx = Seed.sign(txBody, signingKeys, null, scripts);
 
 			// submit the tx
 			let signed = Buffer.from(tx.to_bytes()).toString('hex');
@@ -1490,8 +1401,6 @@ describe('Cardano asset tokens', function () {
 			let info = await walletServer.getNetworkInformation();
 			let ttl = info.node_tip.absolute_slot_number * 12000;
 
-			// let data: any = {0: 'hello', 1: Buffer.from('2512a00e9653fe49a44a5886202e24d77eeb998f', 'hex'), 4: [1, 2, {0: true}], 5: {'key': null, 'l': [3, true, {}]}, 6: undefined};
-			
 			// policy public/private keypair
 			let keyPair= Seed.generateKeyPair();
 			let policyVKey = keyPair.publicKey;
@@ -1515,7 +1424,7 @@ describe('Cardano asset tokens', function () {
 			let scripts = tokens.map(t => t.script);
 
 			// get min ada for address holding tokens
-			let minAda = Seed.getMinUtxoValueWithAssets(tokens);
+			let minAda = Seed.getMinUtxoValueWithAssets([asset]);
 			let amounts = [minAda];
 
 			// get coin selection structure (without the assets)
@@ -1531,9 +1440,6 @@ describe('Cardano asset tokens', function () {
 			// add policy signing keys
 			tokens.filter(t => t.scriptKeyPairs).forEach(t => signingKeys.push(...t.scriptKeyPairs.map(k => k.privateKey.to_raw_key())));
 
-			// let metadata = Seed.buildTransactionMetadata(data);
-			let mint = Seed.buildTransactionMint(tokens);
-			
 			// the wallet currently doesn't support including tokens not previuosly minted
 			// so we need to include it manually.
 			coinSelection.outputs = coinSelection.outputs.map(output => {
@@ -1550,23 +1456,10 @@ describe('Cardano asset tokens', function () {
 				return output;
 			});
 
-			let currentFee = coinSelection.inputs.reduce((acc, c) => c.amount.quantity + acc, 0) 
-			- coinSelection.outputs.reduce((acc, c) => c.amount.quantity + acc, 0)
-			- coinSelection.change.reduce((acc, c) => c.amount.quantity + acc, 0);
-			let change = coinSelection.change.reduce((acc, c) => c.amount.quantity + acc, 0);
-	
 			// we need to sing the tx and calculate the actual fee and the build again 
 			// since the coin selection doesnt calculate the fee with the asset tokens included
-			let txBody = Seed.buildTransaction(coinSelection, ttl);
-			txBody.set_mint(mint);
+			let txBody = Seed.buildTransactionWithToken(coinSelection, ttl, tokens, signingKeys, {config: Config.LocalCluster});
 			let tx = Seed.sign(txBody, signingKeys, null, scripts);
-			let fee = Seed.getTransactionFee(tx);
-			coinSelection.change[0].amount.quantity = change - (parseInt(fee.to_str()) - currentFee);
-
-			// finally build the tx again and sing it
-			txBody = Seed.buildTransaction(coinSelection, ttl);
-			txBody.set_mint(mint);
-			tx = Seed.sign(txBody, signingKeys, null, scripts);
 
 			// submit the tx
 			let signed = Buffer.from(tx.to_bytes()).toString('hex');
@@ -1592,8 +1485,7 @@ describe('Cardano asset tokens', function () {
 			let asset = new AssetWallet(tangoPolicyId, "Tango", 100);
 			let assets: {[key: string]: AssetWallet[]} = {}; 
 			assets[addresses[0].id] = [asset];
-			let tokens = [new TokenWallet(asset)];
-			let minUtxo = Seed.getMinUtxoValueWithAssets(tokens);
+			let minUtxo = Seed.getMinUtxoValueWithAssets([asset]);
 			let tx = await wallet.sendPayment(payeer.passphrase, addresses, [minUtxo], ['send 100 Tango tokens'], assets);
 			expect(tx).not.undefined;
 		}catch(err){
@@ -1616,8 +1508,7 @@ describe('Cardano asset tokens', function () {
 			let asset = new AssetWallet(tangoPolicyId, "Tango", 100);
 			let assets: {[key: string]: AssetWallet[]} = {}; 
 			assets[addresses[0].id] = [asset];
-			let tokens = [new TokenWallet(asset)];
-			let minUtxo = Seed.getMinUtxoValueWithAssets(tokens);
+			let minUtxo = Seed.getMinUtxoValueWithAssets([asset]);
 			let data =  ['send 100 Tango tokens'];
 			let coinSelection = await wallet.getCoinSelection(addresses, [minUtxo], data, assets);
 			let info = await walletServer.getNetworkInformation();
@@ -1630,7 +1521,7 @@ describe('Cardano asset tokens', function () {
 			});
 
 			let metadata = Seed.buildTransactionMetadata(data);
-			let txBuild = Seed.buildTransaction(coinSelection, info.node_tip.absolute_slot_number * 12000, metadata);
+			let txBuild = Seed.buildTransaction(coinSelection, info.node_tip.absolute_slot_number * 12000, {metadata: metadata});
 			let txBody = Seed.sign(txBuild, signingKeys, metadata);
 			let signed = Buffer.from(txBody.to_bytes()).toString('hex');
 			let txId = await walletServer.submitTx(signed);

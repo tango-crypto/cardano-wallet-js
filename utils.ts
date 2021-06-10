@@ -3,7 +3,9 @@ import { generateMnemonic, mnemonicToEntropy } from 'bip39';
 import { Address, AssetName, Assets, BigNum, Bip32PrivateKey, Bip32PublicKey, Ed25519KeyHash, Ed25519Signature, EnterpriseAddress, GeneralTransactionMetadata, hash_metadata, hash_transaction, Int, LinearFee, make_vkey_witness, MetadataList, MetadataMap, Mint, MintAssets, min_ada_required, min_fee, MultiAsset, NativeScript, NativeScripts, NetworkInfo, PrivateKey, PublicKey, ScriptAll, ScriptAny, ScriptHash, ScriptHashNamespace, ScriptNOfK, ScriptPubkey, StakeCredential, TimelockExpiry, TimelockStart, Transaction, TransactionBody, TransactionBuilder, TransactionHash, TransactionInput, TransactionMetadata, TransactionMetadatum, TransactionOutput, TransactionWitnessSet, Value, Vkeywitnesses } from '@emurgo/cardano-serialization-lib-nodejs';
 import { Config } from './config';
 import { TokenWallet } from './wallet/token-wallet';
-import { WalletsAssetsAvailable } from './models';
+import { ApiCoinSelectionChange, WalletsAssetsAvailable } from './models';
+import { AssetWallet } from './wallet/asset-wallet';
+import { exception } from 'node:console';
 
 const phrasesLengthMap: {[key: number]: number} = {
 	12: 128,
@@ -50,19 +52,22 @@ export class Seed {
 		return result;
 	}
 
-	static buildTransaction(coinSelection: CoinSelectionWallet, ttl: number, metadata?: TransactionMetadata, startSlot = 0, config = Config.Mainnet): TransactionBody {
-		const protocolParams = config.protocolParams;
+	static buildTransaction(coinSelection: CoinSelectionWallet, ttl: number, opts: {[key: string]:  any} = {changeAddress: "", metadata: null as any, startSlot: 0, config: Config.Mainnet}): TransactionBody {
+		let config = opts.config || Config.Mainnet;
+		let metadata = opts.metadata;
+		let startSlot = opts.startSlot || 0;
 		let txBuilder = TransactionBuilder.new(
 			// all of these are taken from the mainnet genesis settings
 			// linear fee parameters (a*size + b)
-			LinearFee.new(BigNum.from_str(protocolParams.minFeeA.toString()), BigNum.from_str(protocolParams.minFeeB.toString())),
+			LinearFee.new(BigNum.from_str(config.protocolParams.minFeeA.toString()), BigNum.from_str(config.protocolParams.minFeeB.toString())),
 			// minimum utxo value
-			BigNum.from_str(protocolParams.minUTxOValue.toString()),
+			BigNum.from_str(config.protocolParams.minUTxOValue.toString()),
 			// pool deposit
-			BigNum.from_str(protocolParams.poolDeposit.toString()),
+			BigNum.from_str(config.protocolParams.poolDeposit.toString()),
 			// key deposit
-			BigNum.from_str(protocolParams.keyDeposit.toString())
+			BigNum.from_str(config.protocolParams.keyDeposit.toString())
 		);
+
 
 		// add tx inputs
 		coinSelection.inputs.forEach((input, i) => {
@@ -130,12 +135,65 @@ export class Seed {
 		txBuilder.set_ttl(ttl);
 
 		// calculate fee
-		let fee = coinSelection.inputs.reduce((acc, c) => c.amount.quantity + acc, 0) 
-		- coinSelection.outputs.reduce((acc, c) => c.amount.quantity + acc, 0) 
-		- coinSelection.change.reduce((acc, c) => c.amount.quantity + acc, 0);
-		
-		txBuilder.set_fee(BigNum.from_str(fee.toString()));
+		if (opts.changeAddress) { // don't take the implicit fee
+			let address = Address.from_bech32(opts.changeAddress);
+			txBuilder.add_change_if_needed(address);
+		} else {
+			let fee = coinSelection.inputs.reduce((acc, c) => c.amount.quantity + acc, 0) 
+			+ (coinSelection.withdrawals?.reduce((acc, c) => c.amount.quantity + acc, 0) || 0)
+			- coinSelection.outputs.reduce((acc, c) => c.amount.quantity + acc, 0) 
+			- coinSelection.change.reduce((acc, c) => c.amount.quantity + acc, 0)
+			- (coinSelection.deposits?.reduce((acc, c) => c.quantity + acc, 0) || 0);
+			txBuilder.set_fee(BigNum.from_str(fee.toString()));
+		}
 		let txBody = txBuilder.build();
+		return txBody;
+	}
+
+	static buildTransactionWithToken(coinSelection: CoinSelectionWallet, ttl: number, tokens: TokenWallet[], signingKeys: PrivateKey[], opts: {[key: string]: any} = {changeAddress: "", data: null as any, startSlot: 0, config: Config.Mainnet}): TransactionBody {
+		let metadata = opts.data ? Seed.buildTransactionMetadata(opts.data) : null;
+		let buildOpts = Object.assign({}, { metadata: metadata, ...opts });
+
+		// create mint token data
+		let mint = Seed.buildTransactionMint(tokens);
+
+		// get token's scripts 
+		let scripts = tokens.map(t => t.script);
+
+		// set mint into tx
+		let txBody = Seed.buildTransaction(coinSelection, ttl, buildOpts);
+		txBody.set_mint(mint);
+
+		// tx field fee
+		let fieldFee = parseInt(txBody.fee().to_str());
+
+		// sign to calculate the real tx fee;
+		let tx = Seed.sign(txBody, signingKeys, metadata, scripts);
+
+		// NOTE: new fee should be equal to txFee after changed since we're only rearranging the tx bytes 
+		// the marginFee value between the change utxo and the fee field;
+		let txFee = parseInt(Seed.getTransactionFee(tx, opts.config).to_str());
+		let marginFee = txFee - fieldFee; // if < 0 the current fee is enough, so we won't burn the dust!
+
+		// get the change UTXO from where adjust the quantity
+		let index = marginFee <= 0 ? 0 : coinSelection.change.findIndex(c => {
+			let minAda = Seed.getMinUtxoValueWithAssets(c.assets);
+			return c.amount.quantity - marginFee >= minAda;
+		});
+
+		if (index < 0) {
+			throw new Error("Not enough money for minting :(");
+		}
+		let quantity = coinSelection.change[index].amount.quantity;
+		coinSelection.change[index].amount.quantity = quantity - marginFee;
+		
+		// after signing the metadata is cleaned so we need to create it again
+		metadata = opts.data ? Seed.buildTransactionMetadata(opts.data) : null;
+		buildOpts = Object.assign({}, { metadata: metadata, ...opts });
+
+		txBody = Seed.buildTransaction(coinSelection, ttl, buildOpts);
+		txBody.set_mint(mint);
+
 		return txBody;
 	}
 
@@ -418,15 +476,14 @@ export class Seed {
 		return ScriptHash.from_bytes(Buffer.from(policyId, 'hex'));
 	}
 
-	static getMinUtxoValueWithAssets(tokens: TokenWallet[], config = Config.Mainnet): number {
+	static getMinUtxoValueWithAssets(tokenAssets: AssetWallet[], config = Config.Mainnet): number {
 		let assets = Value.new(BigNum.from_str('1000000'));
 		let multiAsset = MultiAsset.new();
-		tokens.forEach(token => {
+		tokenAssets.forEach(a => {
 			let asset = Assets.new();
-			let assetName = token.asset.asset_name;
-			let quantity = token.asset.quantity.toString();
-			// let scriptHash = Seed.getScriptHash(token.script);
-			let scriptHash = Seed.getScriptHashFromPolicy(token.asset.policy_id);
+			let assetName = a.asset_name;
+			let quantity = a.quantity.toString();
+			let scriptHash = Seed.getScriptHashFromPolicy(a.policy_id);
 			asset.insert(AssetName.new(Buffer.from(assetName)), BigNum.from_str(quantity));
 			multiAsset.insert(scriptHash, asset);
 		});

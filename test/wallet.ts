@@ -15,6 +15,7 @@ import { KeyRoleEnum } from '../wallet/key-wallet';
 import * as dotenv from "dotenv";
 import { ShelleyWallet } from '../wallet/shelley-wallet';
 import { TransactionWallet } from '../wallet/transaction-wallet';
+import { Config } from '../config';
 dotenv.config();
 
 describe('Cardano wallet API', function () {
@@ -1553,7 +1554,7 @@ describe('Cardano wallet API', function () {
 			});
 
 			let metadata = Seed.buildTransactionMetadata(data);
-			let txBuild = Seed.buildTransaction(coinSelection, info.node_tip.absolute_slot_number * 12000, metadata);
+			let txBuild = Seed.buildTransaction(coinSelection, info.node_tip.absolute_slot_number * 12000, {metadata: metadata, config: Config.LocalCluster});
 			let txBody = Seed.sign(txBuild, signingKeys, metadata);
 			let signed = Buffer.from(txBody.to_bytes()).toString('hex');
 			let txId = await walletServer.submitTx(signed);

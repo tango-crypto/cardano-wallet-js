@@ -22,7 +22,7 @@ export interface WalletswalletIdpaymentfeesAmount {
      * @type {number}
      * @memberof WalletswalletIdpaymentfeesAmount
      */
-    quantity: any;
+    quantity: number;
     /**
      * 
      * @type {string}
