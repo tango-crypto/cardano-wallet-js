@@ -1,24 +1,25 @@
-import { spawnSync } from 'child_process';
 import { CoinSelectionWallet } from './wallet/coin-selection-wallet';
-import { getCommand } from './binaries';
-import { mnemonicToEntropy } from 'bip39';
+import { generateMnemonic, mnemonicToEntropy } from 'bip39';
 import { Address, AssetName, Assets, BigNum, Bip32PrivateKey, Bip32PublicKey, Ed25519KeyHash, Ed25519Signature, EnterpriseAddress, GeneralTransactionMetadata, hash_metadata, hash_transaction, Int, LinearFee, make_vkey_witness, MetadataList, MetadataMap, Mint, MintAssets, min_ada_required, min_fee, MultiAsset, NativeScript, NativeScripts, NetworkInfo, PrivateKey, PublicKey, ScriptAll, ScriptAny, ScriptHash, ScriptHashNamespace, ScriptNOfK, ScriptPubkey, StakeCredential, TimelockExpiry, TimelockStart, Transaction, TransactionBody, TransactionBuilder, TransactionHash, TransactionInput, TransactionMetadata, TransactionMetadatum, TransactionOutput, TransactionWitnessSet, Value, Vkeywitnesses } from '@emurgo/cardano-serialization-lib-nodejs';
 import { Config } from './config';
 import { TokenWallet } from './wallet/token-wallet';
-import * as os from 'os';
 import { WalletsAssetsAvailable } from './models';
 
-const platform = os.platform();
-let options = platform === 'win32' ? { shell: true } : {};
-const cardano_address_cmd = getCommand(platform !== 'win32' ? 'cardano-address' : 'cardano-address.exe.cmd', options);
+const phrasesLengthMap: {[key: number]: number} = {
+	12: 128,
+	15: 160,
+	18: 192,
+	21: 224,
+	24: 256
+}
 export class Seed {
 	static generateRecoveryPhrase(size: number = 15): string {
-		const ls = spawnSync(cardano_address_cmd, ['recovery-phrase', 'generate', '--size', size.toString()], options);
-		return ls.stdout.toString().replace(/\n/, '');
+		let strength = phrasesLengthMap[size] || phrasesLengthMap[15];
+		return generateMnemonic(strength).trim();
 	}
 
 	static toMnemonicList(phrase: string): Array<string> {
-		return phrase.split(/\s+/);
+		return phrase.trim().split(/\s+/g);
 	}
 
 	static deriveRootKey(phrase: string | string[]): Bip32PrivateKey {
@@ -127,7 +128,6 @@ export class Seed {
 
 		// set tx ttl
 		txBuilder.set_ttl(ttl);
-
 
 		// calculate fee
 		let fee = coinSelection.inputs.reduce((acc, c) => c.amount.quantity + acc, 0) 

@@ -87,9 +87,14 @@ describe('Wallet utilities', function(){
 		expect(recoveryPhrase).be.a('string');
 	});
 
-	it('should generate a recovery phrase string', function(){
+	it('should generate a recovery phrase array of size 15', function(){
 		let words = Seed.toMnemonicList(Seed.generateRecoveryPhrase());
 		expect(words).lengthOf(15);
+	});
+
+	it('should generate a recovery phrase array of size 24', function(){
+		let words = Seed.toMnemonicList(Seed.generateRecoveryPhrase(24));
+		expect(words).lengthOf(24);
 	});
 
 	it('should return root key from recovery phrase', function(){

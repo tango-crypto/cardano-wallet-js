@@ -18,9 +18,9 @@
         "prepublishOnly": "npm run build",
         "test": "mocha -r ts-node/register 'test/**/*.ts'"
     },
-		"directories": {
-			"bin": "cli"
-		},
+    "directories": {
+        "bin": "cli"
+    },
     "repository": {
         "type": "git",
         "url": "https://github.com/tango-crypto/cardano-wallet-js.git"
@@ -30,7 +30,6 @@
         "axios": "^0.21.1",
         "bip39": "^3.0.4",
         "chai": "^4.3.4",
-        "child_process": "^1.0.2",
         "mocha": "^8.3.2"
     },
     "devDependencies": {
