@@ -964,7 +964,6 @@ describe('Cardano asset tokens', function () {
 		});
 		
 		it("should mint single issuer 1000000 Tango token", async function(){
-			try{
 			let payeer = wallets.find(w => w.id == "2a793eb367d44a42f658eb02d1004f50c14612fd");
 			let wallet = await walletServer.getShelleyWallet(payeer.id);
 
@@ -1054,14 +1053,9 @@ describe('Cardano asset tokens', function () {
 			let signed = Buffer.from(tx.to_bytes()).toString('hex');
 			let txId = await walletServer.submitTx(signed);
 			expect(txId).not.undefined;
-		} catch(err){
-			let error = err;
-			throw error;
-		}
 		});
 
 		it("should mint multi issuer all 1000000 Tango1 token", async function(){
-			try{
 			let payeer = wallets.find(w => w.id == "2a793eb367d44a42f658eb02d1004f50c14612fd");
 			let wallet = await walletServer.getShelleyWallet(payeer.id);
 
@@ -1136,14 +1130,9 @@ describe('Cardano asset tokens', function () {
 			let signed = Buffer.from(tx.to_bytes()).toString('hex');
 			let txId = await walletServer.submitTx(signed);
 			expect(txId).not.undefined;
-		}catch(err){
-			let error = err;
-			throw error;
-		}
 		});
 
 		it("should mint multi issuer any 1000000 Tango2 token", async function(){
-			try{
 			let payeer = wallets.find(w => w.id == "2a793eb367d44a42f658eb02d1004f50c14612fd");
 			let wallet = await walletServer.getShelleyWallet(payeer.id);
 
@@ -1218,14 +1207,9 @@ describe('Cardano asset tokens', function () {
 			let signed = Buffer.from(tx.to_bytes()).toString('hex');
 			let txId = await walletServer.submitTx(signed);
 			expect(txId).not.undefined;
-		}catch(err){
-			let error = err;
-			throw error;
-		}
 		});
 
 		it("should mint multi issuer at least 1000000 Tango3 token", async function(){
-			try{
 			let payeer = wallets.find(w => w.id == "2a793eb367d44a42f658eb02d1004f50c14612fd");
 			let wallet = await walletServer.getShelleyWallet(payeer.id);
 
@@ -1300,14 +1284,9 @@ describe('Cardano asset tokens', function () {
 			let signed = Buffer.from(tx.to_bytes()).toString('hex');
 			let txId = await walletServer.submitTx(signed);
 			expect(txId).not.undefined;
-		}catch(err){
-			let error = err;
-			throw error;
-		}
 		});
 
 		it("should mint after 1000000 Tango4 token", async function(){
-			try{
 			let payeer = wallets.find(w => w.id == "2a793eb367d44a42f658eb02d1004f50c14612fd");
 			let wallet = await walletServer.getShelleyWallet(payeer.id);
 
@@ -1383,14 +1362,9 @@ describe('Cardano asset tokens', function () {
 			let signed = Buffer.from(tx.to_bytes()).toString('hex');
 			let txId = await walletServer.submitTx(signed);
 			expect(txId).not.undefined;
-		}catch(err){
-			let error = err;
-			throw error;
-		}
 		});
 
 		it("should mint before 1000000 Tango5 token", async function(){
-			try{
 			let payeer = wallets.find(w => w.id == "2a793eb367d44a42f658eb02d1004f50c14612fd");
 			let wallet = await walletServer.getShelleyWallet(payeer.id);
 
@@ -1465,14 +1439,9 @@ describe('Cardano asset tokens', function () {
 			let signed = Buffer.from(tx.to_bytes()).toString('hex');
 			let txId = await walletServer.submitTx(signed);
 			expect(txId).not.undefined;
-		}catch(err){
-			let error = err;
-			throw error;
-		}
 		});
 
 		it("should send 100 Tango tokens", async function () {
-			try{
 			let payeer = wallets.find(w => w.id == "2a793eb367d44a42f658eb02d1004f50c14612fd");
 			let wallet = await walletServer.getShelleyWallet(payeer.id);
 
@@ -1488,14 +1457,9 @@ describe('Cardano asset tokens', function () {
 			let minUtxo = Seed.getMinUtxoValueWithAssets([asset]);
 			let tx = await wallet.sendPayment(payeer.passphrase, addresses, [minUtxo], ['send 100 Tango tokens'], assets);
 			expect(tx).not.undefined;
-		}catch(err){
-			let error = err;
-			throw error;
-		}
 		});
 
 		it("should construct tx to send 100 Tango tokens ", async function () {
-			try{
 			let payeer = wallets.find(w => w.id == "2a793eb367d44a42f658eb02d1004f50c14612fd");
 			let wallet = await walletServer.getShelleyWallet(payeer.id);
 
@@ -1526,10 +1490,6 @@ describe('Cardano asset tokens', function () {
 			let signed = Buffer.from(txBody.to_bytes()).toString('hex');
 			let txId = await walletServer.submitTx(signed);
 			expect(txId).not.undefined;
-		} catch(err) {
-			let error = err;
-			throw error;
-		}
 		});
 	})
 });
