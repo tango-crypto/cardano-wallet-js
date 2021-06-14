@@ -2,7 +2,7 @@
 import { Seed } from '../utils';
 import { AddressesApi, KeysApi, TransactionsApi, WalletsApi, StakePoolsApi, CoinSelectionsApi } from '../api';
 import { Configuration } from '../configuration';
-import { ApiAddressData, ApiAddressStateEnum, ApiPostTransactionData, ApiPostTransactionDataWithdrawalEnum, ApiPostTransactionFeeData, ApiWallet, ApiWalletPassphrase, ApiWalletPutData, ApiWalletPutPassphraseData, WalletsAssets, WalletsAssetsAvailable, WalletsBalance, WalletsDelegation, WalletsPassphrase, WalletsState, WalletsTip, WalletswalletIdpaymentfeesAmount, WalletswalletIdpaymentfeesAmountUnitEnum, WalletswalletIdpaymentfeesPayments } from '../models';
+import { ApiAddressData, ApiAddressStateEnum, ApiPostTransactionData, ApiPostTransactionDataWithdrawalEnum, ApiPostTransactionFeeData, ApiWallet, ApiWalletPassphrase, ApiWalletPutData, ApiWalletPutPassphraseData, WalletsAssets, WalletsAssetsAvailable, WalletsBalance, WalletsDelegation, WalletsPassphrase, WalletsState, WalletsTip, WalletswalletIdpaymentfeesAmount, WalletswalletIdpaymentfeesAmountUnitEnum, WalletswalletIdpaymentfeesPayments, WalletswalletIdpaymentfeesTimeToLive, WalletswalletIdpaymentfeesTimeToLiveUnitEnum } from '../models';
 import { AddressWallet } from './address-wallet';
 import { CoinSelectionWallet } from './coin-selection-wallet';
 import { FeeWallet } from './fee-wallet';
@@ -166,6 +166,11 @@ export class ShelleyWallet implements ApiWallet {
 			return TransactionWallet.from(res.data);
 		}
 
+		async forgetTransaction(txId: string) {
+			let res = await this.transactionsApi.deleteTransaction(this.id, txId);
+			return res.status == 204;
+		}
+
 		async estimateFee(addresses: AddressWallet[], amounts: number[], data?: any, assets: {[key: string]: AssetWallet[]} = {}): Promise<FeeWallet> { 
 			let metadata = data ? Seed.constructMetadata(data) : undefined;
 			let payload: ApiPostTransactionFeeData = {
@@ -191,8 +196,9 @@ export class ShelleyWallet implements ApiWallet {
 			return FeeWallet.from(res.data);
 		}
 
-		async sendPayment(passphrase: any, addresses: AddressWallet[], amounts: number[], data?: any, assets: {[key: string]: AssetWallet[]} = {}): Promise<TransactionWallet> { 
+		async sendPayment(passphrase: any, addresses: AddressWallet[], amounts: number[], data?: any, assets: {[key: string]: AssetWallet[]} = {}, ttl?: number): Promise<TransactionWallet> { 
 			let metadata = data ? Seed.constructMetadata(data) : undefined;
+			let time_to_leave: WalletswalletIdpaymentfeesTimeToLive = ttl ?  { quantity: ttl, unit: WalletswalletIdpaymentfeesTimeToLiveUnitEnum.Second } : undefined;
 			let payload: ApiPostTransactionData = {
 				passphrase: passphrase,
 				payments: addresses.map((addr, i) =>  {
@@ -211,7 +217,8 @@ export class ShelleyWallet implements ApiWallet {
 					};
 					return payment;
 				}),
-				metadata: metadata
+				metadata: metadata,
+				time_to_live: time_to_leave
 			};
 			let res = await this.transactionsApi.postTransaction(payload, this.id);
 			return TransactionWallet.from(res.data);
