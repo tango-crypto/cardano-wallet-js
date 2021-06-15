@@ -390,13 +390,13 @@ let transaction = await wallet.withdraw(passphrase, [address], [rewardBalance]);
 > **NOTE**: You can send the rewards to multiple addresses splitting up the rewardBalance for each one. Also you can send it to any valid address whether it's in your wallet or not.
 
 Stop delegating:
-
-    let transaction = await wallet.stopDelegation(passphrase);
-
+```js
+let transaction = await wallet.stopDelegation(passphrase);
+```
 Stake pool maintenance actions:
-
+```js
     let maintenanceActions = await walletServer.stakePoolMaintenanceActions();
-    
+```    
     Possible values are:
 
      - not_applicable -> we're currently not querying a SMASH server for metadata
