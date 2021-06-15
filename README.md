@@ -381,7 +381,6 @@ let passphrase = 'tangocrypto';
 
 // select the address to receive the rewards
 let address = (await wallet.getUsedAddresses())[0];
-
 // get the reward balance available to withdraw
 let rewardBalance = wallet.getRewardBalance();
 
@@ -558,10 +557,10 @@ Derive account key from root
 let rootKey = Seed.deriveRootKey(phrase);
 let accountKey = Seed.deriveAccountKey(rootKey, 0);
 console.log(accountKey.to_bech32());
-
+```
 Output:
 >> "xprv..."
-```       
+       
 All the method mentioned above return a `Bip32PrivateKey` which you can use to keep deriving and generating keys and addresses check [here](https://docs.cardano.org/projects/cardano-serialization-lib/en/latest/) for more info. For example, assuming you have `cardano-serialization-lib` installed, 
 you can get a stake address like this:
 ```js
