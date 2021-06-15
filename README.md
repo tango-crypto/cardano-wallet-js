@@ -194,7 +194,7 @@ let recoveryPhrase = Seed.generateRecoveryPhrase();
 console.log(recoveryPhrase);
 ```
 Output:
->> "hip dust material keen buddy fresh thank program stool ill regret honey multiply venture imitate"
+> "hip dust material keen buddy fresh thank program stool ill regret honey multiply venture imitate"
 
 > **IMPORTANT:** The recovery phrase is the only way you can restore you wallet and you **SHOULD KEEP IT SECURE AND PRIVATE**. You'll get a completeley different recovery phrase each time you execute the method. 
 
@@ -204,7 +204,7 @@ let words = Seed.toMnemonicList(recoveryPhrase);
 console.log(words);
 ```
 Output:
->> ['hip', 'dust', 'material', 'keen', 'buddy', 'fresh', 'thank', 'program', 'stool', 'ill', 'regret', 'honey', 'multiply', 'venture', 'imitate']
+> ['hip', 'dust', 'material', 'keen', 'buddy', 'fresh', 'thank', 'program', 'stool', 'ill', 'regret', 'honey', 'multiply', 'venture', 'imitate']
 
 ### Wallet
 
@@ -342,13 +342,13 @@ let delegation = wallet.getDelegation();
 console.log(delegation);
 ```
 Output:
->>	{
-			next: [],
-			active: {
-				status: 'delegating',
-				target: 'pool1as50x0wtumtyqzs7tceeh5ry0syh8jnvpnuu9wlxswxuv48sw4w'
-			}
+>	{
+		next: [],
+		active: {
+			status: 'delegating',
+			target: 'pool1as50x0wtumtyqzs7tceeh5ry0syh8jnvpnuu9wlxswxuv48sw4w'
 		}
+	}
 ### Stake Pool
 
 Get stake pool ranking list by member rewards:
@@ -540,7 +540,7 @@ let rootKey = Seed.deriveRootKey(phrase);
 console.log(rootKey.to_bech32());
 ```
 Output:
->> "xprv..."
+> "xprv..."
 
 Derive private/signing key (also known as spending key) from root key
 ```js
@@ -549,7 +549,7 @@ let privateKey = Seed.deriveKey(rootKey, ['1852H','1815H','0H','0','0']).to_raw_
 console.log(privateKey.to_bech32());
  ```  
 Output:
->> "ed25519e_sk1..."
+> "ed25519e_sk1..."
 
 Derive account key from root
 ```js
@@ -558,7 +558,7 @@ let accountKey = Seed.deriveAccountKey(rootKey, 0);
 console.log(accountKey.to_bech32());
 ```
 Output:
->> "xprv..."
+> "xprv..."
        
 All the method mentioned above return a `Bip32PrivateKey` which you can use to keep deriving and generating keys and addresses check [here](https://docs.cardano.org/projects/cardano-serialization-lib/en/latest/) for more info. For example, assuming you have `cardano-serialization-lib` installed, 
 you can get a stake address like this:
@@ -575,7 +575,7 @@ StakeCredential.from_keyhash(stakePubKey.hash())
 console.log(rewardAddr.to_bech32());
 ```  
 Output:
->> "stake..."
+> "stake..."
 
 Sign and verify a message using a private/public key pair.
 ```js
@@ -596,7 +596,7 @@ const signed = Seed.signMessage(privateKey, message);
 const verify_result = Seed.verifyMessage(publicKey, message, signed);
 ```
 Output:
->> True
+> True
    
 ### Native Tokens
 You can create native tokens just creating a transaction with a couple of differences, here is an example:
