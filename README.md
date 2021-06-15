@@ -59,26 +59,26 @@ download the `docker-composer.yml` they provide and start it using `docker-compo
 ## Installation
 Using npm:
 ```
-    npm i cardano-wallet-js
+npm i cardano-wallet-js
 ```
 ## Usage
 To begin, start with a `WalletServer`. It allows you to connect to some remote `cardano-wallet` service.
 
 ### Connecting to a cardano-wallet service
-```
-    const { WalletServer } = require('cardano-wallet-js');
-    let walletServer = WalletServer.init('http://{your-server-host}:{port}/v2');
+```js
+const { WalletServer } = require('cardano-wallet-js');
+let walletServer = WalletServer.init('http://{your-server-host}:{port}/v2');
 ```   
 ### Blockchain Information
 First you can try is getting some blockchain information like: (network parameters, information and clock)
 
 Get network information
-```
-    let information = await walletServer.getNetworkInformation();
-    console.log(information);
+```js
+let information = await walletServer.getNetworkInformation();
+console.log(information);
 ```
 This will print out something like this:
-```
+```js
     {
         "network_tip": {
             "time": "2021-04-12T21:59:25Z",
@@ -111,12 +111,12 @@ This will print out something like this:
     }
 ```
 Get network parameters
-```
-    let parameters = await walletServer.getNetworkParameters();
-    console.log(parameters);
+```js
+let parameters = await walletServer.getNetworkParameters();
+console.log(parameters);
 ```
 This will print out something like this:
-    
+```js    
     {
         "slot_length": {
             "quantity": 1,
@@ -164,13 +164,14 @@ This will print out something like this:
             "unit": "lovelace"
         }
     }
-    
+```    
 Get network clock
-
-    let clock = await walletServer.getNetworkClock();
-    console.log(clock);
+```js
+let clock = await walletServer.getNetworkClock();
+console.log(clock);
+```
 This will print out something like this:
-
+```js
     {
         "status": "available",
         "offset": {
@@ -178,60 +179,60 @@ This will print out something like this:
             "unit": "microsecond"
         }
     }
-
+```
 ## Useful operations
 
 ### Generate Recovery Phrases
    The recovery phrase generation rely on [cardano-address](https://github.com/input-output-hk/cardano-addresses) which supported platforms are:
    * Linux 64-bit
    * Windows 64-bit
-   
-    const { Seed } = require('cardano-wallet-js');
+```js   
+const { Seed } = require('cardano-wallet-js');
     
-    // generate a recovery phrase of 15 words (default)
-    let recoveryPhrase = Seed.generateRecoveryPhrase();
-    console.log(recoveryPhrase);
-   
+// generate a recovery phrase of 15 words (default)
+let recoveryPhrase = Seed.generateRecoveryPhrase();
+console.log(recoveryPhrase);
+```   
     Output:
     >> "hip dust material keen buddy fresh thank program stool ill regret honey multiply venture imitate"
 > **IMPORTANT:** The recovery phrase is the only way you can restore you wallet and you **SHOULD KEEP IT SECURE AND PRIVATE**. You'll get a completeley different recovery phrase each time you execute the method. 
 
 For convenience, you can convert the recovery phrase into an array using this:
-
-    let words = Seed.toMnemonicList(recoveryPhrase);
-    console.log(words);
-    
+```js
+let words = Seed.toMnemonicList(recoveryPhrase);
+console.log(words);
+```    
     Output:
     >> ['hip', 'dust', 'material', 'keen', 'buddy', 'fresh', 'thank', 'program', 'stool', 'ill', 'regret', 'honey', 'multiply', 'venture', 'imitate']
 
 ### Wallet
 
 Create/restore a wallet:
-
-    const { Seed, WalletServer } = require('cardano-wallet-js');
+```js
+const { Seed, WalletServer } = require('cardano-wallet-js');
     
-    let walletServer = WalletServer.init('http://you.server.com');
-    let recoveryPhrase = Seed.generateRecoveryPhrase();
-    let mnemonic_sentence = Seed.toMnemonicList(recoveryPhrase);
-    let passphrase = 'tangocrypto';
-    let name = 'tangocrypto-wallet';
+let walletServer = WalletServer.init('http://you.server.com');
+let recoveryPhrase = Seed.generateRecoveryPhrase();
+let mnemonic_sentence = Seed.toMnemonicList(recoveryPhrase);
+let passphrase = 'tangocrypto';
+let name = 'tangocrypto-wallet';
     
-    let wallet = await walletServer.createOrRestoreShelleyWallet(name, mnemonic_sentence, passphrase);
-    
+let wallet = await walletServer.createOrRestoreShelleyWallet(name, mnemonic_sentence, passphrase);
+```    
 List wallets:
-    
-    let wallets = await walletServer.wallets();
-    
+```js    
+let wallets = await walletServer.wallets();
+```    
 Get wallet by Id:
-
+```js
     let wallets = await walletServer.wallets();
     let id = wallets[0].id;
     let wallet = await walletServer.getShelleyWallet(id);
-
+```
 Get wallet's utxo statistics:
-
-    let statistics = await wallet.getUtxoStatistics();
-    
+```js
+let statistics = await wallet.getUtxoStatistics();
+```    
 Statistics will contain the UTxOs distribution across the whole wallet, in the form of a histogram similar to the one below.
 <pre><code>     │
  <span class="token number">100</span> ─
