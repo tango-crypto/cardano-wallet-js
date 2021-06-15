@@ -603,7 +603,7 @@ You can create native tokens just creating a transaction with a couple of differ
 	let addresses = [(await wallet.getAddresses())[0]];
 
 	// blockchain config, this is where you can find protocol params, slotsPerKESPeriod etc.
-	// This lib comes with  Mainnet, Testnet and LocalCluster config, but you should pass your own to make sure they are up to date.
+	// This lib comes with  Mainnet, Testnet and LocalCluster config (Config.Mainnet, Config.Testnet and Config.LocalCluster), but you should pass your own to make sure they are up to date.
 	// You can find the latest config files here: https://hydra.iohk.io/build/6498473/download/1/index.html
 	let config = { ..., "protocolParams": {... "minFeeA": 44, ..., "minFeeB": 155381, ...} }
 			
@@ -644,7 +644,7 @@ You can create native tokens just creating a transaction with a couple of differ
 	let scripts = tokens.map(t => t.script);
 
 	// get min ada for address holding tokens
-	let minAda = Seed.getMinUtxoValueWithAssets([asset]);
+	let minAda = Seed.getMinUtxoValueWithAssets([asset], config);
 	let amounts = [minAda];
 
 	// get ttl info
@@ -707,6 +707,11 @@ Here you have two options, either rely on cardano-wallet directly or build the t
 	let passphrase = "your passphrase";
 	let policyId = "your policyId";
 
+	// blockchain config, this is where you can find protocol params, slotsPerKESPeriod etc.
+	// This lib comes with  Mainnet, Testnet and LocalCluster config (Config.Mainnet, Config.Testnet and Config.LocalCluster), but you should pass your own to make sure they are up to date.
+	// You can find the latest config files here: https://hydra.iohk.io/build/6498473/download/1/index.html
+	let config = { ..., "protocolParams": {... "minFeeA": 44, ..., "minFeeB": 155381, ...} }
+
 	// address to send the minted tokens
 	let addresses = [new AddressWallet("addr......")];
 	let asset = new AssetWallet(policyId, "Tango", 100);
@@ -716,7 +721,7 @@ Here you have two options, either rely on cardano-wallet directly or build the t
 	assets[addresses[0].id] = [asset];
 
 	// calculate the min ADA to send in the tx
-	let minAda = Seed.getMinUtxoValueWithAssets([asset]);
+	let minAda = Seed.getMinUtxoValueWithAssets([asset], config);
 
 	// send it using the wallet
 	let tx = await wallet.sendPayment(passphrase, addresses, [minAda], ['send 100 Tango tokens'], assets);	
@@ -732,7 +737,7 @@ Here you have two options, either rely on cardano-wallet directly or build the t
 	let asset = new AssetWallet(policyId, "Tango", 100);
 
 	// blockchain config, this is where you can find protocol params, slotsPerKESPeriod etc.
-	// This lib comes with  Mainnet, Testnet and LocalCluster config, but you should pass your own to make sure they are up to date.
+	// This lib comes with  Mainnet, Testnet and LocalCluster config (Config.Mainnet, Config.Testnet and Config.LocalCluster), but you should pass your own to make sure they are up to date.
 	// You can find the latest config files here: https://hydra.iohk.io/build/6498473/download/1/index.html
 	let config = { ..., "protocolParams": {... "minFeeA": 44, ..., "minFeeB": 155381, ...} }
 
@@ -741,7 +746,7 @@ Here you have two options, either rely on cardano-wallet directly or build the t
 	assets[addresses[0].id] = [asset];
 
 	// calculate the min ADA to send in the tx
-	let minUtxo = Seed.getMinUtxoValueWithAssets([asset])
+	let minUtxo = Seed.getMinUtxoValueWithAssets([asset], config)
 
 	// you can include metadata as well
 	let data =  ['send 100 Tango tokens'];

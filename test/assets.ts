@@ -949,7 +949,6 @@ describe('Cardano asset tokens', function () {
 	});
 
 	describe('asset tokens', function(){
-
 		it("should create a policy Id", function(){
 			let keyPair= Seed.generateKeyPair();
 			let policyVKey = keyPair.publicKey;
@@ -1006,7 +1005,7 @@ describe('Cardano asset tokens', function () {
 			let scripts = tokens.map(t => t.script);
 
 			// get min ada for address holding tokens
-			let minAda = Seed.getMinUtxoValueWithAssets([asset]);
+			let minAda = Seed.getMinUtxoValueWithAssets([asset], Config.LocalCluster);
 			let amounts = [minAda];
 
 			// get ttl info
@@ -1085,7 +1084,7 @@ describe('Cardano asset tokens', function () {
 			let scripts = tokens.map(t => t.script);
 
 			// get min ada for address holding tokens
-			let minAda = Seed.getMinUtxoValueWithAssets([asset]);
+			let minAda = Seed.getMinUtxoValueWithAssets([asset], Config.LocalCluster);
 			let amounts = [minAda];
 
 			// get ttl info
@@ -1162,7 +1161,7 @@ describe('Cardano asset tokens', function () {
 			let scripts = tokens.map(t => t.script);
 
 			// get min ada for address holding tokens
-			let minAda = Seed.getMinUtxoValueWithAssets([asset]);
+			let minAda = Seed.getMinUtxoValueWithAssets([asset], Config.LocalCluster);
 			let amounts = [minAda];
 
 			// get ttl info
@@ -1239,7 +1238,7 @@ describe('Cardano asset tokens', function () {
 			let scripts = tokens.map(t => t.script);
 
 			// get min ada for address holding tokens
-			let minAda = Seed.getMinUtxoValueWithAssets([asset]);
+			let minAda = Seed.getMinUtxoValueWithAssets([asset], Config.LocalCluster);
 			let amounts = [minAda];
 
 			// get ttl info
@@ -1321,7 +1320,7 @@ describe('Cardano asset tokens', function () {
 			let scripts = tokens.map(t => t.script);
 
 			// get min ada for address holding tokens
-			let minAda = Seed.getMinUtxoValueWithAssets([asset]);
+			let minAda = Seed.getMinUtxoValueWithAssets([asset], Config.LocalCluster);
 			let amounts = [minAda];
 
 			// get coin selection structure (without the assets)
@@ -1398,7 +1397,7 @@ describe('Cardano asset tokens', function () {
 			let scripts = tokens.map(t => t.script);
 
 			// get min ada for address holding tokens
-			let minAda = Seed.getMinUtxoValueWithAssets([asset]);
+			let minAda = Seed.getMinUtxoValueWithAssets([asset], Config.LocalCluster);
 			let amounts = [minAda];
 
 			// get coin selection structure (without the assets)
@@ -1454,7 +1453,7 @@ describe('Cardano asset tokens', function () {
 			let asset = new AssetWallet(tangoPolicyId, "Tango", 100);
 			let assets: {[key: string]: AssetWallet[]} = {}; 
 			assets[addresses[0].id] = [asset];
-			let minUtxo = Seed.getMinUtxoValueWithAssets([asset]);
+			let minUtxo = Seed.getMinUtxoValueWithAssets([asset], Config.LocalCluster);
 			let tx = await wallet.sendPayment(payeer.passphrase, addresses, [minUtxo], ['send 100 Tango tokens'], assets);
 			expect(tx).not.undefined;
 		});
@@ -1472,7 +1471,7 @@ describe('Cardano asset tokens', function () {
 			let asset = new AssetWallet(tangoPolicyId, "Tango", 100);
 			let assets: {[key: string]: AssetWallet[]} = {}; 
 			assets[addresses[0].id] = [asset];
-			let minUtxo = Seed.getMinUtxoValueWithAssets([asset]);
+			let minUtxo = Seed.getMinUtxoValueWithAssets([asset], Config.LocalCluster);
 			let data =  ['send 100 Tango tokens'];
 			let coinSelection = await wallet.getCoinSelection(addresses, [minUtxo], data, assets);
 			let info = await walletServer.getNetworkInformation();

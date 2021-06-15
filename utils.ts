@@ -152,6 +152,7 @@ export class Seed {
 
 	static buildTransactionWithToken(coinSelection: CoinSelectionWallet, ttl: number, tokens: TokenWallet[], signingKeys: PrivateKey[], opts: {[key: string]: any} = {changeAddress: "", data: null as any, startSlot: 0, config: Config.Mainnet}): TransactionBody {
 		let metadata = opts.data ? Seed.buildTransactionMetadata(opts.data) : null;
+		opts.config = opts.config || Config.Mainnet;
 		let buildOpts = Object.assign({}, { metadata: metadata, ...opts });
 
 		// create mint token data
@@ -177,7 +178,7 @@ export class Seed {
 
 		// get the change UTXO from where adjust the quantity
 		let index = marginFee <= 0 ? 0 : coinSelection.change.findIndex(c => {
-			let minAda = Seed.getMinUtxoValueWithAssets(c.assets);
+			let minAda = Seed.getMinUtxoValueWithAssets(c.assets, opts.config, 'hex');
 			return c.amount.quantity - marginFee >= minAda;
 		});
 
@@ -476,7 +477,7 @@ export class Seed {
 		return ScriptHash.from_bytes(Buffer.from(policyId, 'hex'));
 	}
 
-	static getMinUtxoValueWithAssets(tokenAssets: AssetWallet[], config = Config.Mainnet): number {
+	static getMinUtxoValueWithAssets(tokenAssets: AssetWallet[], config: {[key: string]: any} = Config.Mainnet, encoding: BufferEncoding = 'utf8'): number {
 		let assets = Value.new(BigNum.from_str('1000000'));
 		let multiAsset = MultiAsset.new();
 		tokenAssets.forEach(a => {
@@ -484,7 +485,7 @@ export class Seed {
 			let assetName = a.asset_name;
 			let quantity = a.quantity.toString();
 			let scriptHash = Seed.getScriptHashFromPolicy(a.policy_id);
-			asset.insert(AssetName.new(Buffer.from(assetName)), BigNum.from_str(quantity));
+			asset.insert(AssetName.new(Buffer.from(assetName, encoding)), BigNum.from_str(quantity));
 			multiAsset.insert(scriptHash, asset);
 		});
 		assets.set_multiasset(multiAsset);

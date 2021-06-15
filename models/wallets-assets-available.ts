@@ -22,13 +22,13 @@ export interface WalletsAssetsAvailable {
      * @type {string}
      * @memberof WalletsAssetsAvailable
      */
-    policy_id: any;
+    policy_id: string;
     /**
      * The asset on-chain type which acts as a sub-identifier within a policy. Although we call it \"asset name\", the value needn't be text, and it could even be empty.  For policies with a single fungible asset item, asset name is typically an empty string.  This value can be up to 32 bytes of arbitrary data (which is 64 hexadecimal digits). 
      * @type {string}
      * @memberof WalletsAssetsAvailable
      */
-    asset_name: any;
+    asset_name: string;
     /**
      * Number of assets for the given `policy_id` and `asset_name`. 
      * @type {number}
