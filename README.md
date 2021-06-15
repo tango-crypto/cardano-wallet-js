@@ -587,8 +587,8 @@ const accountKey = Seed.deriveAccountKey(rootKey);
 ```js
 // we'll use the stake private/public key at 0 in this case but you can use whatever private/public key pair.
 const stakePrvKey = accountKey
-.derive(CARDANO_CHIMERIC) // chimeric
-.derive(0);
+	.derive(CARDANO_CHIMERIC) // chimeric
+	.derive(0);
 
 const privateKey = stakePrvKey.to_raw_key();
 const publicKey = privateKey.to_public();
