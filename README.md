@@ -723,7 +723,7 @@ let passphrase = "your passphrase";
 let policyId = "your policyId";
 
 // blockchain config, this is where you can find protocol params, slotsPerKESPeriod etc.
-// This lib comes with  Mainnet, Testnet and LocalCluster config (Config.Mainnet, Config.Testnet and Config.LocalCluster), but you should pass your own to make sure they are up to date.
+// This lib comes with  Mainnet, Testnet and LocalCluster config (Config.Mainnet, Config.Testnet and Config.LocalCluster), but you may consider provide your own to make sure they are up to date.
 // You can find the latest config files here: https://hydra.iohk.io/build/6498473/download/1/index.html
 let config = { ..., "protocolParams": {... "minFeeA": 44, ..., "minFeeB": 155381, ...} }
 
@@ -757,7 +757,7 @@ let addresses = [new AddressWallet("addr......")];
 let asset = new AssetWallet(policyId, "Tango", 100);
 
 // blockchain config, this is where you can find protocol params, slotsPerKESPeriod etc.
-// This lib comes with  Mainnet, Testnet and LocalCluster config, but you should pass your own to make sure they are up to date.
+// This lib comes with  Mainnet, Testnet and LocalCluster config, but you may consider provide your own to make sure they are up to date.
 // You can find the latest config files here: https://hydra.iohk.io/build/6498473/download/1/index.html
 let config = { ..., "protocolParams": {... "minFeeA": 44, ..., "minFeeB": 155381, ...} }
 
