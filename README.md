@@ -258,7 +258,6 @@ wallet = await wallet.rename(newName);
 ```
 ```js
 Change wallet passphrase:
-```js
 let oldPassphrase = 'tangocrypto';
 let newPassphrase = 'new-passphrase';
 wallet = await wallet.updatePassphrase(oldPassphrase, newPassphrase);
