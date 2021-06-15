@@ -395,7 +395,7 @@ let transaction = await wallet.stopDelegation(passphrase);
 ```
 Stake pool maintenance actions:
 ```js
-    let maintenanceActions = await walletServer.stakePoolMaintenanceActions();
+let maintenanceActions = await walletServer.stakePoolMaintenanceActions();
 ```    
     Possible values are:
 
@@ -496,14 +496,14 @@ offline as well. Here is an example put in all together:
 // recovery phrase, this should be the same you use to create the wallet (see Wallet section)
 let recovery_phrase = [...];
 
-	// blockchain config, this is where you can find protocol params, slotsPerKESPeriod etc.
-  // This lib comes with  Mainnet, Testnet and LocalCluster config, but you should pass your own to make sure they are up to date.
-  // You can find the latest config files here: https://hydra.iohk.io/build/6498473/download/1/index.html
-  let config = { ..., "protocolParams": {... "minFeeA": 44, ..., "minFeeB": 155381, ...} }
+// blockchain config, this is where you can find protocol params, slotsPerKESPeriod etc.
+// This lib comes with  Mainnet, Testnet and LocalCluster config, but you should pass your own to make sure they are up to date.
+// You can find the latest config files here: https://hydra.iohk.io/build/6498473/download/1/index.html
+let config = { ..., "protocolParams": {... "minFeeA": 44, ..., "minFeeB": 155381, ...} }
 
 // get first unused wallet's address
 let addresses = (await wallet.getUnusedAddresses()).slice(0, 1);
-		 let amounts = [1000000];
+let amounts = [1000000];
 
 // get ttl 
 let info = await walletServer.getNetworkInformation();
@@ -523,14 +523,14 @@ return privateKey;
 });
 
 // build and sign tx (can be offline)
-    // include the metadata in the build and sign process
-    let metadata = Seed.buildTransactionMetadata(data);
-    let txBuild = Seed.buildTransaction(coinSelection, ttl, {metadata: metadata, config: config});
-    let txBody = Seed.sign(txBuild, signingKeys, metadata);
+// include the metadata in the build and sign process
+let metadata = Seed.buildTransactionMetadata(data);
+let txBuild = Seed.buildTransaction(coinSelection, ttl, {metadata: metadata, config: config});
+let txBody = Seed.sign(txBuild, signingKeys, metadata);
 
-    // submit the tx into the blockchain
-    let signed = Buffer.from(txBody.to_bytes()).toString('hex');
-    let txId = await walletServer.submitTx(signed);
+// submit the tx into the blockchain
+let signed = Buffer.from(txBody.to_bytes()).toString('hex');
+let txId = await walletServer.submitTx(signed);
 ```    
 ### Key handling
 There ara a couple of methods you can use to derive and get private/public key pairs. For more info check [here](https://docs.cardano.org/projects/cardano-wallet/en/latest/About-Address-Derivation.html).
@@ -558,10 +558,10 @@ Derive account key from root
 let rootKey = Seed.deriveRootKey(phrase);
 let accountKey = Seed.deriveAccountKey(rootKey, 0);
 console.log(accountKey.to_bech32());
-```    
+
 Output:
 >> "xprv..."
-   
+```       
 All the method mentioned above return a `Bip32PrivateKey` which you can use to keep deriving and generating keys and addresses check [here](https://docs.cardano.org/projects/cardano-serialization-lib/en/latest/) for more info. For example, assuming you have `cardano-serialization-lib` installed, 
 you can get a stake address like this:
 ```js
