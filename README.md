@@ -225,9 +225,9 @@ let wallets = await walletServer.wallets();
 ```    
 Get wallet by Id:
 ```js
-    let wallets = await walletServer.wallets();
-    let id = wallets[0].id;
-    let wallet = await walletServer.getShelleyWallet(id);
+let wallets = await walletServer.wallets();
+let id = wallets[0].id;
+let wallet = await walletServer.getShelleyWallet(id);
 ```
 Get wallet's utxo statistics:
 ```js
@@ -248,19 +248,21 @@ Statistics will contain the UTxOs distribution across the whole wallet, in the f
            <span class="token number">10</span>μ₳    <span class="token number">100</span>μ₳   <span class="token number">1000</span>μ₳   <span class="token number">0.1</span>₳    <span class="token number">1</span>₳      <span class="token number">10</span>₳     <span class="token number">100</span>₳</code></pre>
            
 Remove wallet:
-
-    await wallet.delete();
-    
+```js
+await wallet.delete();
+```    
 Rename wallet:
-
-    let newName = 'new-name';
-    wallet = await wallet.rename(newName);
-
+```js
+let newName = 'new-name';
+wallet = await wallet.rename(newName);
+```
+```js
 Change wallet passphrase:
-
-    let oldPassphrase = 'tangocrypto';
-    let newPassphrase = 'new-passphrase';
-    wallet = await wallet.updatePassphrase(oldPassphrase, newPassphrase);
+```js
+let oldPassphrase = 'tangocrypto';
+let newPassphrase = 'new-passphrase';
+wallet = await wallet.updatePassphrase(oldPassphrase, newPassphrase);
+```
 > **NOTE**: the wallet itself doesn't hold the passphrase, you can check it's correctly updated trying to call a method needing the passphrase e.g: `sendPayment`
 
 ### Wallet addresses
@@ -601,7 +603,7 @@ Sign and verify a message using a private/public key pair.
    
 ### Native Tokens
 You can create native tokens just creating a transaction with a couple of differences, here is an example:
-
+```js
 	// address to hold the minted tokens. You can use which you want.
 	let addresses = [(await wallet.getAddresses())[0]];
 
@@ -693,7 +695,7 @@ You can create native tokens just creating a transaction with a couple of differ
 	// submit the tx	
 	let signed = Buffer.from(tx.to_bytes()).toString('hex');
 	let txId = await walletServer.submitTx(signed);
-
+```
 > **NOTE**: You can check more scripts on `test/assets.ts`, this example is the equivalent to "RequireSignature" you can create with JSON:
 	
 	{
@@ -705,7 +707,7 @@ You can create native tokens just creating a transaction with a couple of differ
 ### Send Native Tokens
 Here you have two options, either rely on cardano-wallet directly or build the tx by yourself. 
 #### Using Cardano Wallet
-
+```js
 	// passphrase
 	let passphrase = "your passphrase";
 	let policyId = "your policyId";
@@ -762,6 +764,7 @@ Here you have two options, either rely on cardano-wallet directly or build the t
 	let txBody = Seed.sign(txBuild, signingKeys, metadata);
 	let signed = Buffer.from(txBody.to_bytes()).toString('hex');
 	let txId = await walletServer.submitTx(signed);
+```
 # Test
 
 ### Stack
