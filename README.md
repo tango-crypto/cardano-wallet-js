@@ -15,7 +15,7 @@
     + [Wallet addresses](#wallet-addresses)
     + [Wallet balances](#wallet-balances)
     + [Wallet delegation](#wallet-delegation)
-    + [Stake Pool Operations with the wallet](#stake-pool-operations-with-the-wallet)
+    + [Stake pool operations with the wallet](#stake-pool-operations-with-the-wallet)
     + [Wallet transactions](#wallet-transactions)
     + [Submit external transaction](#submit-external-transaction)
     + [Key handling](#key-handling)
@@ -315,7 +315,7 @@ It the wallet is not delegate to any stake pool the output should be something s
     }
 }
 ```
-If you start delegating (see [Stake pool section](#stake-pool)) the action will not take effect inmediatelly but the `next` property will indicate when the delegation will finally take effect. 
+If you start delegating (see [Stake pool section](#stake-pool-operations-with-the-wallet) the action will not take effect inmediatelly but the `next` property will indicate when the delegation will finally take effect. 
 The delegation meanwhile should look like this:
 ```js
 {
@@ -354,7 +354,7 @@ Output:
    }	
 ```
 
-### Stake Pool Operations with the wallet
+### Stake pool operations with the wallet
 
 Get stake pool ranking list by member rewards:
 ```js
