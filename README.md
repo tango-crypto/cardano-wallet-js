@@ -449,7 +449,7 @@ let transaction = await senderWallet.sendPayment(passphrase, receiverAddress, am
 Send payment transfer with metadata:
 
 Metadata can be expressed as a JSON object with some restrictions:
-- All top-level keys must be integers between 0 and 2^64 - 1.
+- All top-level keys must be integers between 0 and 2<sup>64</sup> - 1
 - Each metadata value is tagged with its type.
 - Strings must be at most 64 bytes when UTF-8 encoded.
 - Bytestrings are hex-encoded, with a maximum length of 64 bytes.
@@ -471,11 +471,11 @@ Send a more complex metadata object:
 let passphrase = 'tangocrypto';
 
 // receiver address
-let addresses = [new AddressWallet('addr1q99q78gt2898zgu2dcswf2yuxj6vujcqece38rycc7wsncl5lx8y....')];
+let receiverAddress = [new AddressWallet('addr1q99q78gt2898zgu2dcswf2yuxj6vujcqece38rycc7wsncl5lx8y....')];
 let amounts = [5000000]; // 5 ADA
 
 let metadata: any = {0: 'hello', 1: Buffer.from('2512a00e9653fe49a44a5886202e24d77eeb998f', 'hex'), 4: [1, 2, {0: true}], 5: {'key': null, 'l': [3, true, {}]}, 6: undefined};
-let transaction = await wallet.sendPayment(passphrase, addresses, amounts, metadata);
+let transaction = await senderWallet.sendPayment(passphrase, receiverAddress, amounts, metadata);
 ```
 > **NOTE**: Values like boolean, null and undefined are passed as string (e.g "true", "null", "undefined").
  
