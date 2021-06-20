@@ -208,9 +208,9 @@ Output:
 > ['hip', 'dust', 'material', 'keen', 'buddy', 'fresh', 'thank', 'program', 'stool', 'ill', 'regret', 'honey', 'multiply', 'venture', 'imitate']
 ```
 
-### Wallet
+### Create or restore a wallet
 
-Create/restore a wallet:
+In this example we are going to create a new wallet. Have in mind that the method `createOrRestoreShelleyWallet` creates a new wallet if it doesn't exist or restore an existent wallet:
 ```js
 const { Seed, WalletServer } = require('cardano-wallet-js');
     
@@ -259,8 +259,8 @@ Rename wallet:
 let newName = 'new-name';
 wallet = await wallet.rename(newName);
 ```
-```js
 Change wallet passphrase:
+```js
 let oldPassphrase = 'tangocrypto';
 let newPassphrase = 'new-passphrase';
 wallet = await wallet.updatePassphrase(oldPassphrase, newPassphrase);
