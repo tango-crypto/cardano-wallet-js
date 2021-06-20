@@ -118,51 +118,51 @@ console.log(parameters);
 This will print out something like this:
 ```js
 {
-	"slot_length": {
-			"quantity": 1,
-			"unit": "second"
-	},
-	"decentralization_level": {
-			"quantity": 100,
-			"unit": "percent"
-	},
-	"genesis_block_hash": "96fceff972c2c06bd3bb5243c39215333be6d56aaf4823073dca31afe5038471",
-	"blockchain_start_time": "2019-07-24T20:20:16Z",
-	"desired_pool_number": 500,
-	"epoch_length": {
-			"quantity": 432000,
-			"unit": "slot"
-	},
-	"eras": {
-			"shelley": {
-					"epoch_start_time": "2020-07-28T20:20:16Z",
-					"epoch_number": 74
-			},
-			"mary": {
-					"epoch_start_time": "2021-02-03T20:20:16Z",
-					"epoch_number": 112
-			},
-			"byron": {
-					"epoch_start_time": "2019-07-24T20:20:16Z",
-					"epoch_number": 0
-			},
-			"allegra": {
-					"epoch_start_time": "2020-12-15T20:20:16Z",
-					"epoch_number": 102
-			}
-	},
-	"active_slot_coefficient": {
-			"quantity": 5,
-			"unit": "percent"
-	},
-	"security_parameter": {
-			"quantity": 2160,
-			"unit": "block"
-	},
-	"minimum_utxo_value": {
-			"quantity": 1000000,
-			"unit": "lovelace"
-	}
+    "slot_length": {
+        "quantity": 1,
+        "unit": "second"
+    },
+    "decentralization_level": {
+        "quantity": 100,
+        "unit": "percent"
+    },
+    "genesis_block_hash": "96fceff972c2c06bd3bb5243c39215333be6d56aaf4823073dca31afe5038471",
+    "blockchain_start_time": "2019-07-24T20:20:16Z",
+    "desired_pool_number": 500,
+    "epoch_length": {
+        "quantity": 432000,
+        "unit": "slot"
+    },
+    "eras": {
+        "shelley": {
+            "epoch_start_time": "2020-07-28T20:20:16Z",
+            "epoch_number": 74
+        },
+        "mary": {
+            "epoch_start_time": "2021-02-03T20:20:16Z",
+            "epoch_number": 112
+        },
+        "byron": {
+            "epoch_start_time": "2019-07-24T20:20:16Z",
+            "epoch_number": 0
+        },
+        "allegra": {
+            "epoch_start_time": "2020-12-15T20:20:16Z",
+            "epoch_number": 102
+        }
+    },
+    "active_slot_coefficient": {
+        "quantity": 5,
+        "unit": "percent"
+    },
+    "security_parameter": {
+        "quantity": 2160,
+        "unit": "block"
+    },
+    "minimum_utxo_value": {
+        "quantity": 1000000,
+        "unit": "lovelace"
+    }
 }
 ```
 Get network clock
