@@ -15,7 +15,7 @@
     + [Wallet addresses](#wallet-addresses)
     + [Wallet balances](#wallet-balances)
     + [Wallet delegation](#wallet-delegation)
-    + [Stake Pool](#stake-pool)
+    + [Stake Pool Operations with the wallet](#stake-pool-operations-with-the-wallet)
     + [Wallet transactions](#wallet-transactions)
     + [Submit external transaction](#submit-external-transaction)
     + [Key handling](#key-handling)
@@ -289,6 +289,7 @@ let address = await wallet.getNextAddress();
 let address = await wallet.getAddressAt(45);  
 ``` 
 ### Wallet balances
+When you create a wallet the initial balance is 0. If you are in the mainnet you can transfer Ada to this address. If you are on the testnet you can request test tokens from the [Faucet](https://developers.cardano.org/en/testnets/cardano/tools/faucet/), just input one of the addresses of your wallet and request funds. 
 ```js
 // get available balance. The balance you can expend
 let availableBalance = wallet.getAvailableBalance();
@@ -353,7 +354,7 @@ Output:
    }	
 ```
 
-### Stake Pool
+### Stake Pool Operations with the wallet
 
 Get stake pool ranking list by member rewards:
 ```js
