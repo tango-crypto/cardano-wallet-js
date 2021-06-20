@@ -443,7 +443,7 @@ let passphrase = 'tangocrypto';
 // receiver address
 let addresses = [new AddressWallet('addr1q99q78gt2898zgu2dcswf2yuxj6vujcqece38rycc7wsncl5lx8y....')];
 let amounts = [5000000]; // 5 ADA
-
+// sender wallet
 let transaction = await wallet.sendPayment(passphrase, addresses, amounts);
 ```
 > **NOTE**: You can pass a list of address and amount. We expect both list have the same length where elemetns on each list is index related to the other. 
