@@ -419,7 +419,7 @@ await walletServer.triggerStakePoolGarbageCollection();
 Get wallet transactions:
 ```js
 // get all wallet transactions
-let transactions = await wallet.getTransactions(start, end);
+let transactions = await wallet.getTransactions();
 
 // filter by start and end date
 let start = new Date(2021, 0, 1); // January 1st 2021;
