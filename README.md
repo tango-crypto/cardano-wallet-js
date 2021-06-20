@@ -432,9 +432,9 @@ let transaction = await wallet.getTransaction(tx.id);
 Get payment fees:
 ```js
 // receiver address
-let address = new AddressWallet('addr1q99q78gt2898zgu2dcswf2yuxj6vujcqece38rycc7wsncl5lx8y....');
+let receiverAddress = new AddressWallet('addr1q99q78gt2898zgu2dcswf2yuxj6vujcqece38rycc7wsncl5lx8y....');
 let amount = 5000000; // 5 ADA
-let estimatedFees = await wallet.estimateFee([address], [amount]);
+let estimatedFees = await senderWallet.estimateFee([receiverAddress], [amount]);
 ```
 Send payment transfer:
 ```js
