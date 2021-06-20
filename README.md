@@ -607,7 +607,7 @@ const verify_result = Seed.verifyMessage(publicKey, message, signed);
 Output:
 > True
 ```
-   
+
 ### Native Tokens
 You can create native tokens just creating a transaction with a couple of differences, here is an example:
 ```js
