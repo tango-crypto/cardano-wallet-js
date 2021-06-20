@@ -11,7 +11,7 @@
     + [Blockchain Information](#blockchain-information)
   * [Useful operations](#useful-operations)
     + [Generate Recovery Phrases](#generate-recovery-phrases)
-    + [Wallet](#wallet)
+    + [Create or restore a wallet](#create-or-restore-a-wallet)
     + [Wallet addresses](#wallet-addresses)
     + [Wallet balances](#wallet-balances)
     + [Wallet delegation](#wallet-delegation)
