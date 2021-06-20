@@ -319,19 +319,17 @@ If you start delegating (see [Stake pool section](#stake-pool-operations-with-th
 The delegation meanwhile should look like this:
 ```js
 {
-	"next": [
-	{
-		"status": "delegating",
-		"changes_at": {
-		"epoch_start_time": "2021-04-15T15:03:27Z",
-		"epoch_number": 10
-		},
-		"target": "pool1as50x0wtumtyqzs7tceeh5ry0syh8jnvpnuu9wlxswxuv48sw4w"
-	}
-	],
-	"active": {
-	"status": "not_delegating"
-	}
+    "next": [{
+        "status": "delegating",
+        "changes_at": {
+            "epoch_start_time": "2021-04-15T15:03:27Z",
+            "epoch_number": 10
+        },
+        "target": "pool1as50x0wtumtyqzs7tceeh5ry0syh8jnvpnuu9wlxswxuv48sw4w"
+    }],
+    "active": {
+        "status": "not_delegating"
+    }
 }
 ```
 > **NOTE**: Property `changes_at` will indicate the epoch at the delegation will take effect
