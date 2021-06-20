@@ -435,13 +435,12 @@ let receiverAddress = new AddressWallet('addr1q99q78gt2898zgu2dcswf2yuxj6vujcqec
 let amount = 5000000; // 5 ADA
 let estimatedFees = await senderWallet.estimateFee([receiverAddress], [amount]);
 ```
-Send payment transfer. Notice that you don't have to calculate the minimum fee, the sdk does that for you:
+Send payment transfer. Notice that you don't have to calculate the minimum fee, the SDK does that for you:
 ```js
 let passphrase = 'tangocrypto';
 
 let receiverAddress = [new AddressWallet('addr1q99q78gt2898zgu2dcswf2yuxj6vujcqece38rycc7wsncl5lx8y....')];
 let amounts = [5000000]; // 5 ADA
-// sender wallet
 let transaction = await senderWallet.sendPayment(passphrase, receiverAddress, amounts);
 ```
 > **NOTE**: You can pass a list of address and amount. We expect both list have the same length where elemetns on each list is index related to the other. 
@@ -459,12 +458,11 @@ For more information check [here](https://github.com/input-output-hk/cardano-wal
 ```js
 let passphrase = 'tangocrypto';
 
-// receiver address
-let addresses = [new AddressWallet('addr1q99q78gt2898zgu2dcswf2yuxj6vujcqece38rycc7wsncl5lx8y....')];
+let receiverAddress = [new AddressWallet('addr1q99q78gt2898zgu2dcswf2yuxj6vujcqece38rycc7wsncl5lx8y....')];
 let amounts = [5000000]; // 5 ADA
 
 let metadata = ['abc', '2512a00e9653fe49a44a5886202e24d77eeb998f', 123];
-let transaction = await wallet.sendPayment(passphrase, addresses, amounts, metadata);
+let transaction = await senderWallet.sendPayment(passphrase, receiverAddress, amounts, metadata);
 ``` 
 > **WARNING**: Please note that metadata provided in a transaction will be stored on the blockchain forever. Make sure not to include any sensitive data, in particular personally identifiable information (PII).
 
