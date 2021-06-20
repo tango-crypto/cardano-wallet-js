@@ -291,7 +291,7 @@ let address = await wallet.getAddressAt(45);
 ### Wallet balances
 ```js
 // get available balance. The balance you can expend
-let totalBalance = wallet.getAvailableBalance();
+let availableBalance = wallet.getAvailableBalance();
 
 // get rewards balance. The balance available to withdraw
 let rewardBalance = wallet.getRewardBalance();
@@ -308,10 +308,10 @@ console.log(delegation);
 It the wallet is not delegate to any stake pool the output should be something similar to this:
 ```js
 {
-	"next": [],
-	"active": {
-			"status": "not_delegating"
-	}
+    "next": [],
+    "active": {
+        "status": "not_delegating"
+    }
 }
 ```
 If you start delegating (see [Stake pool section](#stake-pool)) the action will not take effect inmediatelly but the `next` property will indicate when the delegation will finally take effect. 
