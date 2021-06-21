@@ -487,8 +487,8 @@ wallet.forgetTransaction(transaction.id)
 > **Importantly**: A transaction, when sent, cannot be cancelled. One can only request forgetting about it in order to try spending (concurrently) the same UTxO in another transaction. But, the transaction may still show up later in a block and therefore, appear in the wallet.
 
 ### Submit external transaction
-You can pass in a transaction created externally (by other tools or not) and submit it into the blockchain. You can use this library to create the transaction
-offline as well. Here is an example put in all together:
+You can pass in a transaction created externally (by other tools) and submit it into the blockchain. You can use this library to create the transaction
+offline as well. Here is an example:
 ```js   
 // recovery phrase, this should be the same you use to create the wallet (see Wallet section)
 let recovery_phrase = [...];
@@ -515,8 +515,8 @@ let coinSelection = await wallet.getCoinSelection(addresses, amounts, data);
 // get the signing keys (can be offline)
 let rootKey = Seed.deriveRootKey(recovery_phrase); 
 let signingKeys = coinSelection.inputs.map(i => {
-let privateKey = Seed.deriveKey(rootKey, i.derivation_path).to_raw_key();
-return privateKey;
+    let privateKey = Seed.deriveKey(rootKey, i.derivation_path).to_raw_key();
+    return privateKey;
 });
 
 // build and sign tx (can be offline)
