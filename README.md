@@ -37,16 +37,6 @@ clients to perform common tasks on the cardano-blockchain, such as:
 Our project aims to provide an easy to use Javascript SDK for programmers, instead of
 exposing the raw REST structure to you. 
 
-Finally, it helps you to build desktop wallet clients - like [Daedalus](https://daedaluswallet.io/) - with
-embedded cardano-wallet binaries, so you don't necessarily have to 
-connect to a remote cardano-wallet server.
-
-## Warning
-The `cardano-wallet` backend was not designed to be exposed as a 
-public web service. The use case for it is close to 1 server <-> 1 client 
-(or a few clients). Don't try creating and 
-managing wallets if it's not running locally.
-
 # Requirements
 Before start using the library you will need a `cardano-wallet` server running. If you have docker available you can just
 download the `docker-composer.yml` they provide and start it using `docker-compose`:
@@ -173,19 +163,17 @@ console.log(clock);
 This will print out something like this:
 ```js
 {
-	"status": "available",
-	"offset": {
-			"quantity": 405623,
-			"unit": "microsecond"
-	}
+    "status": "available",
+    "offset": {
+        "quantity": 405623,
+        "unit": "microsecond"
+    }
 }
 ```
 ## Useful operations
 
 ### Generate Recovery Phrases
-   The recovery phrase generation relies on [cardano-address](https://github.com/input-output-hk/cardano-addresses). The supported platforms for cardano-addresss are:
-   * Linux 64-bit
-   * Windows 64-bit
+   The recovery phrase generation relies on [bip39](https://github.com/bitcoinjs/bip39).
 ```js   
 const { Seed } = require('cardano-wallet-js');
     
