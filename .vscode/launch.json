@@ -52,7 +52,7 @@
 			"protocol": "inspector"
 		},
 		{
-			"type": "node",
+			"type": "legacy-node",
 			"request": "launch",
 			"name": "Mocha Seed",
 			"program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",

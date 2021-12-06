@@ -1,11 +1,13 @@
 {
   "compilerOptions": {
+    "resolveJsonModule": true,
     "declaration": true,
     "target": "es5",
     "module": "commonjs",
     "noImplicitAny": true,
     "outDir": "dist",
     "rootDir": ".",
+    "sourceMap": true,
 		"experimentalDecorators": true,
     "lib": [
       "es6",

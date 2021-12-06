@@ -12,48 +12,48 @@
  * Do not edit the class manually.
  */
 
-import { WalletsAssetsAvailable, WalletswalletIdpaymentfeesAmount } from ".";
+import { ApiCoinSelectionInputs, WalletsAssetsAvailable, WalletswalletIdpaymentfeesAmount } from ".";
 
 /**
  * 
  * @export
  * @interface ApiCoinSelectionInputs
  */
-export interface ApiCoinSelectionInputs {
+export interface ApiCoinSelectionInputScripts {
     /**
      * 
      * @type {string}
-     * @memberof ApiCoinSelectionInputs
+     * @memberof ApiCoinSelectionInputScripts
      */
-    address: any;
+    script: any;
     /**
      * 
      * @type {WalletswalletIdpaymentfeesAmount}
-     * @memberof ApiCoinSelectionInputs
+     * @memberof ApiCoinSelectionInputScripts
      */
     amount: WalletswalletIdpaymentfeesAmount;
     /**
      * A flat list of assets.
      * @type {Array&lt;WalletsAssetsAvailable&gt;}
-     * @memberof ApiCoinSelectionInputs
+     * @memberof ApiCoinSelectionInputScripts
      */
     assets?: WalletsAssetsAvailable[];
     /**
      * A unique identifier for this transaction
      * @type {string}
-     * @memberof ApiCoinSelectionInputs
+     * @memberof ApiCoinSelectionInputScripts
      */
     id: any;
     /**
      * A path for deriving a child key from a parent key.
      * @type {Array&lt;string&gt;}
-     * @memberof ApiCoinSelectionInputs
+     * @memberof ApiCoinSelectionInputScripts
      */
     derivation_path?: string[];
     /**
      * 
      * @type {number}
-     * @memberof ApiCoinSelectionInputs
+     * @memberof ApiCoinSelectionInputScripts
      */
     index: any;
 }

@@ -43,5 +43,5 @@ export interface ApiCoinSelectionChange {
      * @type {Array&lt;string&gt;}
      * @memberof ApiCoinSelectionChange
      */
-    derivation_path: string[];
+    derivation_path?: string[];
 }

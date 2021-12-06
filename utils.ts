@@ -1,11 +1,12 @@
 import { CoinSelectionWallet } from './wallet/coin-selection-wallet';
 import { generateMnemonic, mnemonicToEntropy } from 'bip39';
-import { Address, AssetName, Assets, BigNum, Bip32PrivateKey, Bip32PublicKey, Ed25519KeyHash, Ed25519Signature, EnterpriseAddress, GeneralTransactionMetadata, hash_metadata, hash_transaction, Int, LinearFee, make_vkey_witness, MetadataList, MetadataMap, Mint, MintAssets, min_ada_required, min_fee, MultiAsset, NativeScript, NativeScripts, NetworkInfo, PrivateKey, PublicKey, ScriptAll, ScriptAny, ScriptHash, ScriptHashNamespace, ScriptNOfK, ScriptPubkey, StakeCredential, TimelockExpiry, TimelockStart, Transaction, TransactionBody, TransactionBuilder, TransactionHash, TransactionInput, TransactionMetadata, TransactionMetadatum, TransactionOutput, TransactionWitnessSet, Value, Vkeywitnesses } from '@emurgo/cardano-serialization-lib-nodejs';
-import { Config } from './config';
+import { Address, AssetName, Assets, AuxiliaryData, BaseAddress, BigNum, Bip32PrivateKey, Bip32PublicKey, Ed25519KeyHash, Ed25519Signature, EnterpriseAddress, GeneralTransactionMetadata, hash_transaction, Int, LinearFee, make_vkey_witness, MetadataList, MetadataMap, Mint, MintAssets, min_ada_required, min_fee, MultiAsset, NativeScript, NativeScripts, NetworkInfo, PrivateKey, PublicKey, ScriptAll, ScriptAny, ScriptHash, ScriptHashNamespace, ScriptNOfK, ScriptPubkey, StakeCredential, TimelockExpiry, TimelockStart, Transaction, TransactionBody, TransactionBuilder, TransactionHash, TransactionInput, TransactionMetadatum, TransactionOutput, TransactionWitnessSet, Value, Vkeywitnesses } from '@emurgo/cardano-serialization-lib-nodejs';
+import { Mainnet, Testnet } from './config/network.config';
 import { TokenWallet } from './wallet/token-wallet';
 import { ApiCoinSelectionChange, WalletsAssetsAvailable } from './models';
 import { AssetWallet } from './wallet/asset-wallet';
-import { exception } from 'node:console';
+import { Script } from './models/script.model';
+import { JsonScript, ScriptTypeEnum, scriptTypes } from './models/json-script.model';
 
 const phrasesLengthMap: {[key: number]: number} = {
 	12: 128,
@@ -52,20 +53,22 @@ export class Seed {
 		return result;
 	}
 
-	static buildTransaction(coinSelection: CoinSelectionWallet, ttl: number, opts: {[key: string]:  any} = {changeAddress: "", metadata: null as any, startSlot: 0, config: Config.Mainnet}): TransactionBody {
-		let config = opts.config || Config.Mainnet;
+	static buildTransaction(coinSelection: CoinSelectionWallet, ttl: number, opts: {[key: string]:  any} = {changeAddress: "", metadata: null as any, startSlot: 0, config: Mainnet}): TransactionBody {
+		let config = opts.config || Mainnet;
 		let metadata = opts.metadata;
 		let startSlot = opts.startSlot || 0;
 		let txBuilder = TransactionBuilder.new(
 			// all of these are taken from the mainnet genesis settings
 			// linear fee parameters (a*size + b)
-			LinearFee.new(BigNum.from_str(config.protocolParams.minFeeA.toString()), BigNum.from_str(config.protocolParams.minFeeB.toString())),
+			LinearFee.new(BigNum.from_str(config.protocols.txFeePerByte.toString()), BigNum.from_str(config.protocols.txFeeFixed.toString())),
 			// minimum utxo value
-			BigNum.from_str(config.protocolParams.minUTxOValue.toString()),
+			BigNum.from_str(config.protocols.minUTxOValue.toString()),
 			// pool deposit
-			BigNum.from_str(config.protocolParams.poolDeposit.toString()),
+			BigNum.from_str(config.protocols.stakePoolDeposit.toString()),
 			// key deposit
-			BigNum.from_str(config.protocolParams.keyDeposit.toString())
+			BigNum.from_str(config.protocols.stakeAddressDeposit.toString()),
+            config.protocols.maxValueSize,
+            config.protocols.maxTxSize
 		);
 
 
@@ -82,6 +85,22 @@ export class Seed {
 
 			txBuilder.add_input(address, txInput, amount);
 		});
+
+		// add script inputs
+		if (coinSelection.scripts) {
+			coinSelection.scripts.forEach((input, i) => {
+				const hash = ScriptHash.from_bytes(Buffer.from(input.script, 'hex'));
+				let txInput = TransactionInput.new(
+					TransactionHash.from_bytes(Buffer.from(input.id, 'hex')),
+					input.index
+				);
+				let amount = Value.new(
+					BigNum.from_str(input.amount.quantity.toString())
+				);
+	
+				txBuilder.add_script_input(hash, txInput, amount);
+			});
+		}
 
 		// add tx outputs
 		coinSelection.outputs.forEach(output => {
@@ -125,7 +144,7 @@ export class Seed {
 
 		// add tx metadata
 		if (metadata) {
-			txBuilder.set_metadata(metadata);
+			txBuilder.set_auxiliary_data(metadata);
 		}
 
 		// set tx validity start interval
@@ -139,7 +158,7 @@ export class Seed {
 			let address = Address.from_bech32(opts.changeAddress);
 			txBuilder.add_change_if_needed(address);
 		} else {
-			let fee = coinSelection.inputs.reduce((acc, c) => c.amount.quantity + acc, 0) 
+			let fee =  opts.fee || coinSelection.inputs.reduce((acc, c) => c.amount.quantity + acc, 0) 
 			+ (coinSelection.withdrawals?.reduce((acc, c) => c.amount.quantity + acc, 0) || 0)
 			- coinSelection.outputs.reduce((acc, c) => c.amount.quantity + acc, 0) 
 			- coinSelection.change.reduce((acc, c) => c.amount.quantity + acc, 0)
@@ -150,9 +169,9 @@ export class Seed {
 		return txBody;
 	}
 
-	static buildTransactionWithToken(coinSelection: CoinSelectionWallet, ttl: number, tokens: TokenWallet[], signingKeys: PrivateKey[], opts: {[key: string]: any} = {changeAddress: "", data: null as any, startSlot: 0, config: Config.Mainnet}): TransactionBody {
+	static buildTransactionWithToken(coinSelection: CoinSelectionWallet, ttl: number, tokens: TokenWallet[], signingKeys: PrivateKey[], opts: {[key: string]: any} = {changeAddress: "", data: null as any, startSlot: 0, config: Mainnet}): TransactionBody {
 		let metadata = opts.data ? Seed.buildTransactionMetadata(opts.data) : null;
-		opts.config = opts.config || Config.Mainnet;
+		opts.config = opts.config || Mainnet;
 		let buildOpts = Object.assign({}, { metadata: metadata, ...opts });
 
 		// create mint token data
@@ -198,34 +217,57 @@ export class Seed {
 		return txBody;
 	}
 
-	static buildMultiAssets(assets: WalletsAssetsAvailable[]): MultiAsset {
+	static buildMultiAssets(assets: WalletsAssetsAvailable[], encoding: BufferEncoding = 'hex'): MultiAsset {
 		let multiAsset = MultiAsset.new();
-		assets.forEach(a => {
-				let asset = Assets.new();
-				let scriptHash = Seed.getScriptHashFromPolicy(a.policy_id);
-				asset.insert(AssetName.new(Buffer.from(a.asset_name, 'hex')), BigNum.from_str(a.quantity.toString()));
-				multiAsset.insert(scriptHash, asset);
-		});
+		const groups = assets.reduce((dict: {[key: string]: WalletsAssetsAvailable[]}, asset: WalletsAssetsAvailable) => {
+			(dict[asset.policy_id] = dict[asset.policy_id] || []).push(asset);
+			return dict;
+		}, {});
+		for (const policy_id in groups) {
+			const scriptHash = Seed.getScriptHashFromPolicy(policy_id);
+			let asset = Assets.new();
+			const assetGroups = groups[policy_id].reduce((dict: {[key: string]: number}, asset: WalletsAssetsAvailable) => {
+				dict[asset.asset_name] = (dict[asset.asset_name] || 0) + +asset.quantity;
+				return dict;
+			}, {});
+			for (const asset_name in assetGroups) {
+				const quantity = assetGroups[asset_name];
+			 	const assetName = AssetName.new(Buffer.from(asset_name, encoding));
+				asset.insert(assetName, BigNum.from_str(quantity.toString()));
+			}
+			multiAsset.insert(scriptHash, asset);
+		}
 		return multiAsset;
 	}
 
-	static buildTransactionMint(tokens: TokenWallet[]): Mint {
+	static buildTransactionMint(tokens: TokenWallet[], encoding: BufferEncoding = 'utf8'): Mint {
 		let mint = Mint.new();
-		tokens.forEach(t => {
+		const groups = tokens.reduce((dict: {[key: string]: TokenWallet[]}, asset: TokenWallet) => {
+			(dict[asset.asset.policy_id] = dict[asset.asset.policy_id] || []).push(asset);
+			return dict;
+		}, {});
+		for (const policy_id in groups) {
+			const scriptHash = Seed.getScriptHashFromPolicy(policy_id);
 			let mintAssets = MintAssets.new();
-			let scriptHash = Seed.getScriptHashFromPolicy(t.asset.policy_id);
-			mintAssets.insert(AssetName.new(Buffer.from(t.asset.asset_name)), Int.new_i32(t.asset.quantity));
+			const assetGroups = groups[policy_id].reduce((dict: {[key: string]: number}, asset: TokenWallet) => {
+				dict[asset.asset.asset_name] = (dict[asset.asset.asset_name] || 0) + +asset.asset.quantity;
+				return dict;
+			}, {});
+			for (const asset_name in assetGroups) {
+				const quantity = assetGroups[asset_name];
+			 	const assetName = AssetName.new(Buffer.from(asset_name, encoding));
+				mintAssets.insert(assetName, Int.new_i32(quantity));
+			}
 			mint.insert(scriptHash, mintAssets);
-		});
-
+		}
 		return mint;
 	}
 
-	static getTransactionFee(tx: Transaction, config = Config.Mainnet) {
-		return min_fee(tx, LinearFee.new(BigNum.from_str(config.protocolParams.minFeeA.toString()), BigNum.from_str(config.protocolParams.minFeeB.toString())));
+	static getTransactionFee(tx: Transaction, config = Mainnet) {
+		return min_fee(tx, LinearFee.new(BigNum.from_str(config.protocols.txFeePerByte.toString()), BigNum.from_str(config.protocols.txFeeFixed.toString())));
 	}
 	
-	static sign(txBody: TransactionBody, privateKeys: PrivateKey[], transactionMetadata?: TransactionMetadata, scripts?: NativeScript[]): Transaction {
+	static sign(txBody: TransactionBody, privateKeys: PrivateKey[], transactionMetadata?: AuxiliaryData, scripts?: NativeScript[]): Transaction {
 		const txHash = hash_transaction(txBody);
 		const witnesses = TransactionWitnessSet.new();
 		const vkeyWitnesses = Vkeywitnesses.new();
@@ -240,7 +282,7 @@ export class Seed {
 			scripts.forEach(s => {
 					nativeScripts.add(s);
 			});
-			witnesses.set_scripts(nativeScripts);
+			witnesses.set_native_scripts(nativeScripts);
 		}
 
 		const transaction = Transaction.new(
@@ -258,6 +300,13 @@ export class Seed {
 
 	static verifyMessage(key: PublicKey, message: string, signed: string): boolean {
 		return key.verify(Buffer.from(message), Ed25519Signature.from_hex(signed));
+	}
+
+	static getTxId(transaction: Transaction): string {
+		const txBody = transaction.body();
+		const txHash = hash_transaction(txBody);
+		const txId = Buffer.from(txHash.to_bytes()).toString('hex');
+		return txId;
 	}
 
 	static harden(num: number): number{
@@ -358,15 +407,18 @@ export class Seed {
 		return result.length == 1 ? result[0] : result;
 	}
 
-	static buildTransactionMetadata(data: any): TransactionMetadata {
+	static buildTransactionMetadata(data: any): AuxiliaryData {
 		let metadata = Seed.constructMetadata(data);
 		let generalMetatada = GeneralTransactionMetadata.new();
 		for (const key in metadata) {
 			let value = metadata[key];
 			generalMetatada.insert(BigNum.from_str(key), Seed.getTransactionMetadatum(value));
 		}
-		return TransactionMetadata.new(generalMetatada);
+		let auxiliaryData = AuxiliaryData.new();
+        auxiliaryData.set_metadata(generalMetatada);
+        return auxiliaryData;
 	}
+
 
 	static getTransactionMetadatum(value:any): TransactionMetadatum {
 		if (value.hasOwnProperty(MetadateTypesEnum.Number)) {
@@ -477,20 +529,160 @@ export class Seed {
 		return ScriptHash.from_bytes(Buffer.from(policyId, 'hex'));
 	}
 
-	static getMinUtxoValueWithAssets(tokenAssets: AssetWallet[], config: {[key: string]: any} = Config.Mainnet, encoding: BufferEncoding = 'utf8'): number {
+	static getMinUtxoValueWithAssets(tokenAssets: AssetWallet[], config: any = Mainnet, encoding: BufferEncoding = 'utf8'): number {
 		let assets = Value.new(BigNum.from_str('1000000'));
 		let multiAsset = MultiAsset.new();
-		tokenAssets.forEach(a => {
+		const groups = tokenAssets.reduce((dict: {[key: string]: AssetWallet[]}, asset: AssetWallet) => {
+			(dict[asset.policy_id] = dict[asset.policy_id] || []).push(asset);
+			return dict;
+		}, {});
+		for (const policy_id in groups) {
+			const scriptHash = Seed.getScriptHashFromPolicy(policy_id);
 			let asset = Assets.new();
-			let assetName = a.asset_name;
-			let quantity = a.quantity.toString();
-			let scriptHash = Seed.getScriptHashFromPolicy(a.policy_id);
-			asset.insert(AssetName.new(Buffer.from(assetName, encoding)), BigNum.from_str(quantity));
+			groups[policy_id].forEach(a => {
+				asset.insert(AssetName.new(Buffer.from(a.asset_name, encoding)), BigNum.from_str(a.quantity.toString()));
+			});
 			multiAsset.insert(scriptHash, asset);
-		});
+		}
 		assets.set_multiasset(multiAsset);
-		let min = min_ada_required(assets, BigNum.from_str(config.protocolParams.minUTxOValue.toString()));
+		let min = min_ada_required(assets, BigNum.from_str(config.protocols.minUTxOValue.toString()));
 		return Number.parseInt(min.to_str());
+	}
+
+	// static buildMultisigJsonScript(type: ScriptTypeEnum, witnesses: number = 2): JsonScript {
+
+	// 	if (lock) {
+	// 		return {
+	// 			type: ScriptTypeEnum.All,
+	// 			scripts: [
+	// 				{
+	// 					type: ScriptTypeEnum.Sig
+	// 				},
+	// 				{
+	// 					type: ScriptTypeEnum.Before,
+	// 					lockTime: new Date(lockTime).getTime()
+	// 				}
+	// 			]
+	// 		}
+	// 	} else {
+	// 		return {type: ScriptTypeEnum.Sig}
+	// 	}
+	// }
+    
+    static buildScript(json: JsonScript, currentSlot?: number): Script {
+        if (json.type === ScriptTypeEnum.Sig) { // Single Issuer
+            let keyPair: Bip32KeyPair; // needed to get the signing keys when export (e.g toJSON)
+            let keyHash: Ed25519KeyHash;
+            if (!json.keyHash) {
+                keyPair = Seed.generateKeyPair();
+                keyHash = Seed.getKeyHash(keyPair.publicKey);
+            } else {
+                keyHash = Ed25519KeyHash.from_bytes(Buffer.from(json.keyHash, 'hex'));
+            }
+            return { root: Seed.buildSingleIssuerScript(keyHash), keyHash: Buffer.from(keyHash.to_bytes()).toString('hex'), keyPair: keyPair, scripts: [] };
+        }
+        if(json.type === ScriptTypeEnum.All) { // Multiple Issuer All
+            let scripts = json.scripts.map(s => Seed.buildScript(s, currentSlot));
+            return { root: Seed.buildMultiIssuerAllScript(scripts.map(s => s.root)), scripts: scripts };
+        }
+        if(json.type === ScriptTypeEnum.Any) { // Multiple Issuer Any
+            let scripts = json.scripts.map(s => Seed.buildScript(s, currentSlot));
+            return { root: Seed.buildMultiIssuerAnyScript(scripts.map(s => s.root)), scripts: scripts };
+        }
+        if(json.type === ScriptTypeEnum.AtLeast) { // Multiple Issuer At least
+            let scripts = json.scripts.map(s => Seed.buildScript(s, currentSlot));
+            let n = json.require;
+            return { root: Seed.buildMultiIssuerAtLeastScript(n, scripts.map(s => s.root)), scripts: scripts };
+        }
+        if (json.type === ScriptTypeEnum.After) { // After
+            let slot = 0;
+            if (!json.slot) {
+                slot = currentSlot; // after now
+                let lockTime = json.lockTime;
+                if (lockTime != 'now'){
+                    let now = Date.now();
+                    let datetime = new Date(lockTime).getTime();
+                    slot = currentSlot + Math.floor((datetime - now)/1000);
+                }
+            } else {
+                slot = json.slot;
+            }
+            return { root: Seed.buildAfterScript(slot), slot: slot, scripts: [] }
+        }
+        if (json.type === ScriptTypeEnum.Before) { // Before
+            let slot = 0;
+            if (!json.slot) {
+                let lockTime = json.lockTime;
+                slot = currentSlot + 180; // only 3 min to mint tokens
+                if (lockTime != 'now'){
+                    let now = Date.now();
+                    let datetime = new Date(lockTime).getTime();
+                    slot = currentSlot + Math.floor((datetime - now)/1000);
+                }
+            } else {
+                slot = json.slot;
+            }
+            return { root: Seed.buildBeforeScript(slot), slot: slot, scripts: [] }
+        }
+    }
+
+	static scriptToJson(script: Script): any {
+		let result: any = { };
+		result.type = scriptTypes[script.root.kind()];
+		if (script.keyHash) {
+			result.keyHash = script.keyHash;
+		} 
+		if(result.type === 'any') { // Multiple Issuer At least)
+			result.require = script.root.as_script_n_of_k().n();
+		}
+		if (result.type === 'after' || result.type === 'before') {
+			result.slot = script.slot;
+		}
+		if(script.scripts && script.scripts.length > 0) {
+			result.scripts = script.scripts.map(s => Seed.scriptToJson(s));
+		}
+		return result;
+	}
+
+	static getScriptKeys(script: Script): Bip32PrivateKey[] {
+		let result: Bip32PrivateKey[] = [];
+		if(script.keyPair) {
+			// let prvKey = Bip32PrivateKey.from_bech32(script.signingKey);
+			// let pubKey = prvKey.to_public();
+			// result.push({ publicKey: pubKey, privateKey: prvKey});
+			result.push(script.keyPair.privateKey);
+		}
+		script.scripts.forEach(s => {
+			result.push(...Seed.getScriptKeys(s));
+		})
+		return result;
+	}
+
+	static getScriptAddress(script: Script, network = 'mainnet'): Address {
+		let networkId = network == 'mainnet' ? NetworkInfo.mainnet().network_id() : NetworkInfo.testnet().network_id();
+		const scriptHash = this.getScriptHash(script.root);
+		const credential = StakeCredential.from_scripthash(scriptHash);
+		return BaseAddress.new(networkId, credential, credential).to_address();
+	}
+
+    static getPolicyScriptId(script: Script): string {
+        let scriptHash = Seed.getScriptHash(script.root);
+        return Buffer.from(scriptHash.to_bytes()).toString('hex');
+    }
+
+	static findSlots(script: Script): {start?: number, end?: number} {
+		let result: {start?: number, end?: number} = {};
+		let type = script.root.kind();
+		if (type === 4) { //after
+			result.start = script.slot;
+		} else if(type === 5) { //before
+			result.end = script.slot;
+		} else {
+			let slots = script.scripts.map(s => Seed.findSlots(s));
+			result.start = slots.reduce((max, act) => !act.start && !max ? max : Math.max(act.start, max), result.start);
+			result.end = slots.reduce((min, act) => !act.end ? min : !min ? act.end : Math.min(act.end, min), result.end);
+		}
+		return result;
 	}
 
 	private static isInteger(value: any) {
