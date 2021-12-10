@@ -12,7 +12,7 @@ dotenv.config();
 describe('Cardano wallet network', function() {
 	let walletServer: WalletServer;
 	let syncProgress = ['syncing', 'ready'];
-	let nodeEras = [ApiNetworkInformationNodeEraEnum.Allegra, ApiNetworkInformationNodeEraEnum.Byron, ApiNetworkInformationNodeEraEnum.Mary, ApiNetworkInformationNodeEraEnum.Shelley];
+	let nodeEras = [ApiNetworkInformationNodeEraEnum.Allegra, ApiNetworkInformationNodeEraEnum.Byron, ApiNetworkInformationNodeEraEnum.Mary, ApiNetworkInformationNodeEraEnum.Shelley, ApiNetworkInformationNodeEraEnum.Alonzo];
 	let clockStatus = [ApiNetworkClockStatusEnum.Available, ApiNetworkClockStatusEnum.Unavailable, ApiNetworkClockStatusEnum.Pending];
 
 	let serverSettings = {

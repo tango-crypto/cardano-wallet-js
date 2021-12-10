@@ -1,26 +1,26 @@
 {
-    "txFeePerByte": 44,
+    "txFeePerByte": 100,
     "minUTxOValue": 1000000,
-    "decentralization": 0,
+    "decentralization": 0.25,
     "utxoCostPerWord": 34482,
-    "stakePoolDeposit": 500000000,
-    "poolRetireMaxEpoch": 18,
+    "stakePoolDeposit": 0,
+    "poolRetireMaxEpoch": 1000000,
     "extraPraosEntropy": null,
     "collateralPercentage": 150,
-    "stakePoolTargetNum": 500,
-    "maxBlockBodySize": 73728,
-    "minPoolCost": 340000000,
+    "stakePoolTargetNum": 3,
+    "maxBlockBodySize": 239857,
+    "minPoolCost": 0,
     "maxTxSize": 16384,
-    "treasuryCut": 0.2,
+    "treasuryCut": 0,
     "maxBlockExecutionUnits": {
         "memory": 50000000,
         "steps": 40000000000
     },
     "maxCollateralInputs": 3,
     "maxValueSize": 5000,
-    "maxBlockHeaderSize": 1100,
+    "maxBlockHeaderSize": 217569,
     "maxTxExecutionUnits": {
-        "memory": 12500000,
+        "memory": 10000000,
         "steps": 10000000000
     },
     "costModels": {
@@ -197,10 +197,10 @@
         "minor": 0,
         "major": 6
     },
-    "txFeeFixed": 155381,
-    "stakeAddressDeposit": 2000000,
-    "monetaryExpansion": 3.0e-3,
-    "poolPledgeInfluence": 0.3,
+    "txFeeFixed": 100000,
+    "stakeAddressDeposit": 1000000,
+    "monetaryExpansion": 0.178650067,
+    "poolPledgeInfluence": 0.1,
     "executionUnitPrices": {
         "priceSteps": 7.21e-5,
         "priceMemory": 5.77e-2

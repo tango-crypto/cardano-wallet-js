@@ -1,11 +1,9 @@
 import { ApiCoinSelection, ApiCoinSelectionCertificates, ApiCoinSelectionChange, ApiCoinSelectionInputs, ApiCoinSelectionWithdrawals, WalletswalletIdpaymentfeesAmount, WalletswalletIdpaymentfeesPayments } from "../models";
-import { ApiCoinSelectionInputScripts } from "../models/api-coin-selection-input-scripts";
 
 export class CoinSelectionWallet implements ApiCoinSelection {
 	inputs: ApiCoinSelectionInputs[];
 	outputs: WalletswalletIdpaymentfeesPayments[];
 	change: ApiCoinSelectionChange[];
-	scripts?: ApiCoinSelectionInputScripts[];
 	withdrawals?: ApiCoinSelectionWithdrawals[];
 	certificates?: ApiCoinSelectionCertificates[];
 	deposits?: WalletswalletIdpaymentfeesAmount[];

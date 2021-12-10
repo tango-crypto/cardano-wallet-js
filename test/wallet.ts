@@ -15,7 +15,7 @@ import { KeyRoleEnum } from '../wallet/key-wallet';
 import * as dotenv from "dotenv";
 import { ShelleyWallet } from '../wallet/shelley-wallet';
 import { TransactionWallet } from '../wallet/transaction-wallet';
-import { Config } from '../config';
+import { LocalCluster } from '../config/network.config';
 dotenv.config();
 
 describe('Cardano wallet API', function () {
@@ -1003,19 +1003,19 @@ describe('Cardano wallet API', function () {
 	};
 
 	let delegationFee = {
-    "estimated_min": {
-        "quantity": 124800,
-        "unit": "lovelace"
-    },
-    "deposit": {
-        "quantity": 1000000,
-        "unit": "lovelace"
-    },
-    "minimum_coins": [] as any[],
-    "estimated_max": {
-        "quantity": 153000,
-        "unit": "lovelace"
-    }
+		"estimated_min": {
+			"quantity": 125300,
+			"unit": "lovelace"
+		},
+		"deposit": {
+			"quantity": 1000000,
+			"unit": "lovelace"
+		},
+		"minimum_coins": [] as any[],
+		"estimated_max": {
+			"quantity": 139400,
+			"unit": "lovelace"
+		}
 	};
 
 	let afterDelegation = {
@@ -1554,7 +1554,7 @@ describe('Cardano wallet API', function () {
 			});
 
 			let metadata = Seed.buildTransactionMetadata(data);
-			let txBuild = Seed.buildTransaction(coinSelection, info.node_tip.absolute_slot_number * 12000, {metadata: metadata, config: Config.LocalCluster});
+			let txBuild = Seed.buildTransaction(coinSelection, info.node_tip.absolute_slot_number * 12000, {metadata: metadata, config: LocalCluster});
 			let txBody = Seed.sign(txBuild, signingKeys, metadata);
 			let signed = Buffer.from(txBody.to_bytes()).toString('hex');
 			let txId = await walletServer.submitTx(signed);

@@ -7,6 +7,7 @@ import { NetworkInfo, RewardAddress, StakeCredential, TransactionBody, Transacti
 import { Script } from '../models/script.model';
 import { JsonScript, ScriptTypeEnum, scriptTypes } from '../models/json-script.model';
 import { Testnet } from '../config/network.config';
+import { deepStrictEqual } from 'assert';
 
 // let transaction = Transaction.from_bytes(Buffer.from('83a600818258205b895e886b1539ffa7256e5e4dc4fd1f753389718d6a01216b64e8707fa72a02010182825839004781ac588faf62aadda0a584e41bf9776e35f83af080800d8e9505e01e64ae6f8bbd15ae8657c2ed4b5e8ef1f82e2297d7ead4c66782fb131a000f42408258390060576add07f66d5198ecc8a632b0a1c6185fc46a5e8054c897765473342dac9f95ee4f92567f652a736d64bfa0afaa2da795dda8de6585801a3a70c0fc021a0002a5f1031a59527200075820776e39ea313361b6bdc495ceeb6296ab36e5a684c57883541680ca5dc4bef03f0800a10081825820c85b2675611fbaab02089a70465d99ef1c15488d34d64ecfe2f580d846b12d21584004bbefcf1879a1c16ed194fcc609afca05b5d45fd301a75be56707a1c996fbca7e94ac7410c979fd5ddf3f1244085a35261ad6b95dbf4b10898c261133d4920ea5006568656c6c6f01542512a00e9653fe49a44a5886202e24d77eeb998f04830102a16130647472756505a2636b6579646e756c6c616c83036474727565a00669756e646566696e6564', 'hex'));
 // let txBody = transaction.body();
@@ -110,12 +111,12 @@ describe('Wallet utilities', function(){
 		'xprv1yqhkn7psk47tpxgpurgzf4kg8p9elvldjh6634r98qdgnms9mdqrqjwj42c82pzytefwjtkju0895xe5kaq7d7sldpr6tqs8skyyqm8hw7gwrxdwyvgp4zmt2gd5xy42tlm4c5phc555aazel4dw4vml5yl33juw'
 	];
 
-	const k = Bip32PrivateKey.from_bech32(scriptKeys[1]);
-	console.log(k.to_bech32());
-	const hex = Buffer.from(k.to_raw_key().as_bytes()).toString('hex');
-	const cborHex = "5880" + Buffer.from(k.to_128_xprv()).toString('hex');
-	console.log(cborHex);
-	console.log(hex);
+	// const k = Bip32PrivateKey.from_bech32(scriptKeys[1]);
+	// console.log(k.to_bech32());
+	// const hex = Buffer.from(k.to_raw_key().as_bytes()).toString('hex');
+	// const cborHex = "5880" + Buffer.from(k.to_128_xprv()).toString('hex');
+	// console.log(cborHex);
+	// console.log(hex);
 
 	it("should derive base address from root", function(){
 		//const phr = "dignity barrel hand wreck cliff retreat pass unit girl design either armed finish mercy sword much dice vault best main end secret resist capable"
@@ -230,100 +231,88 @@ describe('Wallet utilities', function(){
 		expect(verify_result).equal(true);
 	});
 
-	// it("should build multisig script", function(){
-	// 	const data: JsonScript = {
-	// 		"type": ScriptTypeEnum.All, // "all"
-	// 		"scripts":
-	// 		[
-	// 			{
-	// 			"type": ScriptTypeEnum.Sig, // "sig"
-	// 			// "keyHash": "e09d36c79dec9bd1b3d9e152247701cd0bb860b5ebfd1de8abb6735a"
-	// 			},
-	// 			{
-	// 			"type":  ScriptTypeEnum.Sig, // "sig"
-	// 			// "keyHash": "a687dcc24e00dd3caafbeb5e68f97ca8ef269cb6fe971345eb951756"
-	// 			}
-	// 		]
-	// 	};
+	it("should build multisig script", function(){
+		const data: JsonScript = {
+			"type": ScriptTypeEnum.All, // "all"
+			"scripts":
+			[
+				{
+				"type": ScriptTypeEnum.Sig, // "sig"
+				// "keyHash": "e09d36c79dec9bd1b3d9e152247701cd0bb860b5ebfd1de8abb6735a"
+				},
+				{
+				"type":  ScriptTypeEnum.Sig, // "sig"
+				// "keyHash": "a687dcc24e00dd3caafbeb5e68f97ca8ef269cb6fe971345eb951756"
+				}
+			]
+		};
 
-	// 	const script = Seed.buildScript(data);
-	// 	const json = Seed.scriptToJson(script);
-	// 	const keys = Seed.getScriptKeys(script).map(k => k.to_bech32());
-	// 	console.log(keys);
-	// 	console.log(json);
-	// });
+		const script = Seed.buildScript(data);
+		const json = Seed.scriptToJson(script);
+		const keys = Seed.getScriptKeys(script).map(k => k.to_bech32());
+		const keyHashes = keys.map(k => Buffer.from(Seed.getKeyHash(Bip32PrivateKey.from_bech32(k).to_public()).to_bytes()).toString('hex'));
+		const jsonHashes = json.scripts.map((s:any) => s.keyHash);
+		// console.log(keys);
+		// console.log(json);
+		expect(keyHashes).deep.equal(jsonHashes);
+	});
 
-	// it("should get script address", function(){
-	// 	const script = Seed.buildScript(jsonScript);
-	// 	const address = Seed.getScriptAddress(script, 'testnet').to_bech32();
-	// 	console.log(address);
-	// });
+	it("should get script address", function(){
+		const script = Seed.buildScript(jsonScript);
+		const address = Seed.getScriptAddress(script, 'testnet').to_bech32();
+		expect(address.startsWith('addr_test1')).to.be.true;
+	});
 
-	// it("should sign script address tx", function() {
-	// 	const signingKeys = scriptKeys.map(key => Bip32PrivateKey.from_bech32(key).to_raw_key()); 
-	// 	const script = Seed.buildScript(jsonScript);
-	// 	const scriptHash = Buffer.from(Seed.getScriptHash(script.root).to_bytes()).toString('hex');
-	// 	const config = Testnet;
-	// 	let buildOpts = {
-    //         // changeAddress: this.configService.get<string>("BUSINESS_ADDRESS"), 
-    //         fee: config.protocols.maxTxSize * config.protocols.txFeePerByte + config.protocols.txFeeFixed, // 16384 * 44 + 155381 = 876277
-    //         startSlot: 0, 
-    //         config: config,
-    //     };
-	// 	const selection: CoinSelectionWallet = {
-	// 		"withdrawals": [] as any[],
-	// 		"inputs": [
-	// 			// {
-	// 			// 	"amount": {
-	// 			// 		"quantity": 10000000,
-	// 			// 		"unit": WalletswalletIdpaymentfeesAmountUnitEnum.Lovelace
-	// 			// 	},
-	// 			// 	"address": "addr_test1xqmmnp8sujweq6vc7jkryz9ev96s424e6qhs37mgawkjsaphhxz0peyajp5e3a9vxgytjct4p24tn5p0prak36ad9p6qncrly9",
-	// 			// 	"id": "ec3dec186fe165c986d3886444142c4ef2eee269cc8632f4d339a70c20f965af",
-	// 			// 	"assets": [],
-	// 			// 	"index": 0
-	// 			// },
-	// 		],
-	// 		"scripts": [
-	// 			{
-	// 				"amount": {
-	// 					"quantity": 10000000,
-	// 					"unit": WalletswalletIdpaymentfeesAmountUnitEnum.Lovelace
-	// 				},
-	// 				"script": scriptHash,
-	// 				"id": "ec3dec186fe165c986d3886444142c4ef2eee269cc8632f4d339a70c20f965af",
-	// 				"assets": [],
-	// 				"index": 0
-	// 			},
-	// 		],
-	// 		"deposits": [],
-	// 		"change": [
-	// 			{
-	// 				"amount": {
-	// 					"quantity": 7844619,
-	// 					"unit": WalletswalletIdpaymentfeesAmountUnitEnum.Lovelace
-	// 				},
-	// 				"address": "addr_test1xqmmnp8sujweq6vc7jkryz9ev96s424e6qhs37mgawkjsaphhxz0peyajp5e3a9vxgytjct4p24tn5p0prak36ad9p6qncrly9",
-	// 				"assets": []
-	// 			}
-	// 		],
-	// 		"outputs": [
-	// 			{
-	// 				"amount": {
-	// 					"quantity": 2000000,
-	// 					"unit": WalletswalletIdpaymentfeesAmountUnitEnum.Lovelace
-	// 				},
-	// 				"address": "addr_test1qpc6srdq6jjt6eetstw6t4elmypvepa6ykxcps3dvvv4fr5ca6s0m36w9nlk7ntwdhvhxeyz9u4lngn97fcv4ykjqc2sk4hrgy",
-	// 				"assets": []
-	// 			}
-	// 		]
-	// 	};
+	it("should build a multisig tx", function(){
+		const signingKeys = scriptKeys.map(key => Bip32PrivateKey.from_bech32(key).to_raw_key()); 
+		const script = Seed.buildScript(jsonScript);
+		let buildOpts = {
+            startSlot: 0, 
+            config: Testnet,
+        };
+		const selection: CoinSelectionWallet = {
+			"withdrawals": [] as any[],
+			"inputs": [
+				{
+					"amount": {
+						"quantity": 5574291,
+						"unit": WalletswalletIdpaymentfeesAmountUnitEnum.Lovelace
+					},
+					"address": "addr_test1xqmmnp8sujweq6vc7jkryz9ev96s424e6qhs37mgawkjsaphhxz0peyajp5e3a9vxgytjct4p24tn5p0prak36ad9p6qncrly9",
+					"id": "f61e1e9b8cdcc8a3dfbd45fd28b15d94876c26a06b8cf852248828c8b815acff",
+					"assets": [],
+					"index": 1
+				},
+			],
+			"deposits": [],
+			"change": [
+				{
+					"amount": {
+						"quantity": 4394291, // fee of 180000 initially
+						"unit": WalletswalletIdpaymentfeesAmountUnitEnum.Lovelace
+					},
+					"address": "addr_test1xqmmnp8sujweq6vc7jkryz9ev96s424e6qhs37mgawkjsaphhxz0peyajp5e3a9vxgytjct4p24tn5p0prak36ad9p6qncrly9",
+					"assets": []
+				}
+			],
+			"outputs": [
+				{
+					"amount": {
+						"quantity": 1000000,
+						"unit": WalletswalletIdpaymentfeesAmountUnitEnum.Lovelace
+					},
+					"address": "addr_test1qpc6srdq6jjt6eetstw6t4elmypvepa6ykxcps3dvvv4fr5ca6s0m36w9nlk7ntwdhvhxeyz9u4lngn97fcv4ykjqc2sk4hrgy",
+					"assets": []
+				}
+			]
+		};
 
-	// 	const ttl = 45000000000;
-	// 	let txBody = Seed.buildTransaction(selection, ttl, buildOpts);
-	// 	const tx = Seed.sign(txBody, signingKeys);
-	// 	const signed = Buffer.from(tx.to_bytes()).toString('hex');
-	// 	console.log('Tx:', signed);
-	// })
-
+		const ttl = 445331390;
+		// const scripts = Seed.getNativeScripts(script);
+		const scripts = [script.root]
+		let txBody = Seed.buildTransactionMultisig(selection, ttl, scripts, null, signingKeys, buildOpts);
+		const tx = Seed.sign(txBody, signingKeys, null, scripts);
+		const signed = Buffer.from(tx.to_bytes()).toString('hex');
+		expect(signed).not.undefined;
+	})
 });

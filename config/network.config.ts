@@ -8,6 +8,11 @@ import * as TestnetShelleyGenesis from './testnet-shelley-genesis.json';
 import * as TestnetAlonzoGenesis from './testnet-alonzo-genesis.json';
 import * as TestnetProtocols from './testnet-protocol.json';
 
+import * as LocalClusterByronGenesis from './local-cluster-byron-genesis.json';
+import * as LocalClusterShelleyGenesis from './local-cluster-shelley-genesis.json';
+import * as LocalClusterAlonzoGenesis from './local-cluster-alonzo-genesis.json';
+import * as LocalClusterProtocols from './local-cluster-protocol.json';
+
 export const Mainnet = {
     byron: ByronGenesis,
     shelley: ShelleyGenesis,
@@ -21,4 +26,11 @@ export const Testnet = {
     shelley: TestnetShelleyGenesis,
     alonzo: TestnetAlonzoGenesis,
     protocols: TestnetProtocols
+}
+
+export const LocalCluster = {
+    byron: LocalClusterByronGenesis,
+    shelley: LocalClusterShelleyGenesis,
+    alonzo: LocalClusterAlonzoGenesis,
+    protocols: LocalClusterProtocols
 }

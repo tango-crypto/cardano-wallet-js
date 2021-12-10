@@ -1,12 +1,13 @@
 import { CoinSelectionWallet } from './wallet/coin-selection-wallet';
 import { generateMnemonic, mnemonicToEntropy } from 'bip39';
-import { Address, AssetName, Assets, AuxiliaryData, BaseAddress, BigNum, Bip32PrivateKey, Bip32PublicKey, Ed25519KeyHash, Ed25519Signature, EnterpriseAddress, GeneralTransactionMetadata, hash_transaction, Int, LinearFee, make_vkey_witness, MetadataList, MetadataMap, Mint, MintAssets, min_ada_required, min_fee, MultiAsset, NativeScript, NativeScripts, NetworkInfo, PrivateKey, PublicKey, ScriptAll, ScriptAny, ScriptHash, ScriptHashNamespace, ScriptNOfK, ScriptPubkey, StakeCredential, TimelockExpiry, TimelockStart, Transaction, TransactionBody, TransactionBuilder, TransactionHash, TransactionInput, TransactionMetadatum, TransactionOutput, TransactionWitnessSet, Value, Vkeywitnesses } from '@emurgo/cardano-serialization-lib-nodejs';
+import { Address, AssetName, Assets, AuxiliaryData, AuxiliaryDataHash, BaseAddress, BigNum, Bip32PrivateKey, Bip32PublicKey, Ed25519KeyHash, Ed25519Signature, EnterpriseAddress, GeneralTransactionMetadata, hash_auxiliary_data, hash_transaction, Int, LinearFee, make_vkey_witness, MetadataList, MetadataMap, Mint, MintAssets, min_ada_required, min_fee, MultiAsset, NativeScript, NativeScripts, NetworkInfo, PrivateKey, PublicKey, ScriptAll, ScriptAny, ScriptHash, ScriptHashNamespace, ScriptNOfK, ScriptPubkey, StakeCredential, TimelockExpiry, TimelockStart, Transaction, TransactionBody, TransactionBuilder, TransactionHash, TransactionInput, TransactionInputs, TransactionMetadatum, TransactionOutput, TransactionOutputs, TransactionWitnessSet, Value, Vkeywitnesses } from '@emurgo/cardano-serialization-lib-nodejs';
 import { Mainnet, Testnet } from './config/network.config';
 import { TokenWallet } from './wallet/token-wallet';
 import { ApiCoinSelectionChange, WalletsAssetsAvailable } from './models';
 import { AssetWallet } from './wallet/asset-wallet';
 import { Script } from './models/script.model';
 import { JsonScript, ScriptTypeEnum, scriptTypes } from './models/json-script.model';
+import { ExtendedSigningKey } from './models/payment-extended-signing-key';
 
 const phrasesLengthMap: {[key: number]: number} = {
 	12: 128,
@@ -86,22 +87,6 @@ export class Seed {
 			txBuilder.add_input(address, txInput, amount);
 		});
 
-		// add script inputs
-		if (coinSelection.scripts) {
-			coinSelection.scripts.forEach((input, i) => {
-				const hash = ScriptHash.from_bytes(Buffer.from(input.script, 'hex'));
-				let txInput = TransactionInput.new(
-					TransactionHash.from_bytes(Buffer.from(input.id, 'hex')),
-					input.index
-				);
-				let amount = Value.new(
-					BigNum.from_str(input.amount.quantity.toString())
-				);
-	
-				txBuilder.add_script_input(hash, txInput, amount);
-			});
-		}
-
 		// add tx outputs
 		coinSelection.outputs.forEach(output => {
 			let address = Address.from_bech32(output.address);
@@ -169,9 +154,30 @@ export class Seed {
 		return txBody;
 	}
 
-	static buildTransactionWithToken(coinSelection: CoinSelectionWallet, ttl: number, tokens: TokenWallet[], signingKeys: PrivateKey[], opts: {[key: string]: any} = {changeAddress: "", data: null as any, startSlot: 0, config: Mainnet}): TransactionBody {
+	static buildTransactionWithToken(coinSelection: CoinSelectionWallet, ttl: number, tokens: TokenWallet[], signingKeys: PrivateKey[], opts: {[key: string]: any} = {changeAddress: "", data: null as any, startSlot: 0, config: Mainnet}, encoding: BufferEncoding = 'hex'): TransactionBody {
 		let metadata = opts.data ? Seed.buildTransactionMetadata(opts.data) : null;
 		opts.config = opts.config || Mainnet;
+		// set maximun fee first
+		const fee = parseInt(opts.config.protocols.maxTxSize * opts.config.protocols.txFeePerByte + opts.config.protocols.txFeeFixed); // 16384 * 44 + 155381 = 876277
+		if (!opts.fee) {
+			opts.fee = fee;
+			// adjust change if there is any
+			if (coinSelection.change && coinSelection.change.length > 0) {
+				const selectionfee = coinSelection.inputs.reduce((acc, c) => c.amount.quantity + acc, 0) 
+				+ (coinSelection.withdrawals?.reduce((acc, c) => c.amount.quantity + acc, 0) || 0)
+				- coinSelection.outputs.reduce((acc, c) => c.amount.quantity + acc, 0) 
+				- coinSelection.change.reduce((acc, c) => c.amount.quantity + acc, 0)
+				- (coinSelection.deposits?.reduce((acc, c) => c.quantity + acc, 0) || 0);
+	
+				const feePerChange = Math.ceil((opts.fee - selectionfee)/coinSelection.change.length);
+				coinSelection.change = coinSelection.change.map(change => {
+					change.amount.quantity -= feePerChange;
+					return change;
+				});
+			}
+		}
+
+
 		let buildOpts = Object.assign({}, { metadata: metadata, ...opts });
 
 		// create mint token data
@@ -184,28 +190,24 @@ export class Seed {
 		let txBody = Seed.buildTransaction(coinSelection, ttl, buildOpts);
 		txBody.set_mint(mint);
 
-		// tx field fee
-		let fieldFee = parseInt(txBody.fee().to_str());
-
 		// sign to calculate the real tx fee;
 		let tx = Seed.sign(txBody, signingKeys, metadata, scripts);
 
-		// NOTE: new fee should be equal to txFee after changed since we're only rearranging the tx bytes 
-		// the marginFee value between the change utxo and the fee field;
-		let txFee = parseInt(Seed.getTransactionFee(tx, opts.config).to_str());
-		let marginFee = txFee - fieldFee; // if < 0 the current fee is enough, so we won't burn the dust!
+		// NOTE: txFee should be <= original fee = maxTxSize * txFeePerByte + txFeeFixed
+        // Also after rearrange the outputs will decrease along with fee field, so new tx fee won't increase because tx's size (bytes) will be smaller;
+		const txFee = parseInt(Seed.getTransactionFee(tx, opts.config).to_str());
+		const finalFee = Math.min(txFee, (fee || Number.MAX_SAFE_INTEGER)); // we'll use the min fee on final tx
+		opts.fee = finalFee;
 
-		// get the change UTXO from where adjust the quantity
-		let index = marginFee <= 0 ? 0 : coinSelection.change.findIndex(c => {
-			let minAda = Seed.getMinUtxoValueWithAssets(c.assets, opts.config, 'hex');
-			return c.amount.quantity - marginFee >= minAda;
-		});
-
-		if (index < 0) {
-			throw new Error("Not enough money for minting :(");
+		// adjust change UTXO
+		const feeDiff = fee - finalFee;
+		if (coinSelection.change && coinSelection.change.length > 0) {
+			const feeDiffPerChange = Math.ceil(feeDiff/coinSelection.change.length);
+			coinSelection.change = coinSelection.change.map(c => {
+				c.amount.quantity += feeDiffPerChange;
+				return c;
+			});
 		}
-		let quantity = coinSelection.change[index].amount.quantity;
-		coinSelection.change[index].amount.quantity = quantity - marginFee;
 		
 		// after signing the metadata is cleaned so we need to create it again
 		metadata = opts.data ? Seed.buildTransactionMetadata(opts.data) : null;
@@ -215,6 +217,169 @@ export class Seed {
 		txBody.set_mint(mint);
 
 		return txBody;
+	}
+
+	static buildTransactionMultisig(coinSelection: CoinSelectionWallet, ttl: number, scripts: NativeScript[], tokens: TokenWallet[] = null, signingKeys: PrivateKey[] = null, opts: {[key: string]:  any} = {changeAddress: "", data: null, startSlot: 0, config: Mainnet}, encoding: BufferEncoding = 'hex'): TransactionBody {
+		const config = opts.config || Mainnet;
+		let metadata = opts.data ? Seed.buildTransactionMetadata(opts.data) : null;
+		const startSlot = opts.startSlot || 0;
+		const fee = parseInt(config.protocols.maxTxSize * config.protocols.txFeePerByte + config.protocols.txFeeFixed); // 16384 * 44 + 155381 = 876277
+		const selectionfee = coinSelection.inputs.reduce((acc, c) => c.amount.quantity + acc, 0) 
+			+ (coinSelection.withdrawals?.reduce((acc, c) => c.amount.quantity + acc, 0) || 0)
+			- coinSelection.outputs.reduce((acc, c) => c.amount.quantity + acc, 0) 
+			- coinSelection.change.reduce((acc, c) => c.amount.quantity + acc, 0)
+			- (coinSelection.deposits?.reduce((acc, c) => c.quantity + acc, 0) || 0);
+
+		// add tx inputs
+		const inputs = coinSelection.inputs.map((input, i) => {
+			return TransactionInput.new(
+				TransactionHash.from_bytes(Buffer.from(input.id, 'hex')),
+				input.index
+			);
+		});
+
+		// add tx outputs
+		let outputs = coinSelection.outputs.map(output => {
+			let address = Address.from_bech32(output.address);
+			let amount = Value.new(
+				BigNum.from_str(output.amount.quantity.toString())
+			);
+
+			// add tx assets
+			if(output.assets && output.assets.length > 0){
+				let multiAsset = Seed.buildMultiAssets(output.assets, encoding);
+				amount.set_multiasset(multiAsset);
+			}
+
+			return TransactionOutput.new(
+				address,
+				amount
+			);
+		});
+
+		// add tx change
+		if (coinSelection.change && coinSelection.change.length > 0) {
+			const feePerChange = Math.ceil((fee - selectionfee)/coinSelection.change.length);
+			coinSelection.change = coinSelection.change.map(change => {
+				change.amount.quantity -= feePerChange;
+				return change;
+			});
+			outputs.push(...coinSelection.change.map(change => {
+				let address = Address.from_bech32(change.address);
+				let amount = Value.new(
+					BigNum.from_str(change.amount.quantity.toString())
+				);
+	
+				// add tx assets
+				if(change.assets && change.assets.length > 0){
+					let multiAsset = Seed.buildMultiAssets(change.assets, encoding);
+					amount.set_multiasset(multiAsset);
+				}
+	
+				return TransactionOutput.new(
+					address,
+					amount
+				);
+			}));
+		}
+
+		const txInputs = TransactionInputs.new();
+		inputs.forEach(txin => txInputs.add(txin));
+		let txOutputs = TransactionOutputs.new();
+		outputs.forEach(txout => txOutputs.add(txout));
+		const txBody = TransactionBody.new(txInputs, txOutputs, BigNum.from_str(fee.toString()), ttl);
+
+		// add tx metadata
+		if (metadata) {
+			const dataHash = hash_auxiliary_data(metadata);
+			txBody.set_auxiliary_data_hash(dataHash)
+		}
+
+		if (tokens) {
+			// create mint token data
+			const mint = Seed.buildTransactionMint(tokens, encoding);
+			txBody.set_mint(mint);
+		}
+
+		// set tx validity start interval
+		txBody.set_validity_start_interval(startSlot);
+
+		// calculate fee
+		// sign to calculate the real tx fee;
+		let tx = Seed.sign(txBody, signingKeys, metadata, scripts);
+
+		// NOTE: txFee should be <= original fee = maxTxSize * txFeePerByte + txFeeFixed
+        // Also after rearrange the outputs will decrease along with fee field, so new tx fee won't increase because tx's size (bytes) will be smaller;
+		const txFee = parseInt(Seed.getTransactionFee(tx, config).to_str());
+		const finalFee = Math.min(txFee, (fee || Number.MAX_SAFE_INTEGER)); // we'll use the min fee on final tx
+
+		const feeDiff = fee - finalFee;
+		if (coinSelection.change && coinSelection.change.length > 0) {
+			const feeDiffPerChange = Math.ceil(feeDiff/coinSelection.change.length);
+			coinSelection.change = coinSelection.change.map(c => {
+				c.amount.quantity += feeDiffPerChange;
+				return c;
+			},);
+
+			outputs = coinSelection.outputs.map(output => {
+				let address = Address.from_bech32(output.address);
+				let amount = Value.new(
+					BigNum.from_str(output.amount.quantity.toString())
+				);
+	
+				// add tx assets
+				if(output.assets && output.assets.length > 0){
+					let multiAsset = Seed.buildMultiAssets(output.assets, encoding);
+					amount.set_multiasset(multiAsset);
+				}
+	
+				return TransactionOutput.new(
+					address,
+					amount
+				);
+			});
+
+			outputs.push(...coinSelection.change.map(change => {
+				let address = Address.from_bech32(change.address);
+				let amount = Value.new(
+					BigNum.from_str(change.amount.quantity.toString())
+				);
+	
+				// add tx assets
+				if(change.assets && change.assets.length > 0){
+					let multiAsset = Seed.buildMultiAssets(change.assets, encoding);
+					amount.set_multiasset(multiAsset);
+				}
+	
+				return TransactionOutput.new(
+					address,
+					amount
+				);
+			}));
+
+			txOutputs = TransactionOutputs.new();
+			outputs.forEach(txout => txOutputs.add(txout));
+		}
+
+		const finalBody = TransactionBody.new(txInputs, txOutputs, BigNum.from_str(finalFee.toString()), ttl);
+
+
+		// add tx metadata (after sign metadata is empty so we need to build it again)
+		if (metadata) { 
+			metadata = Seed.buildTransactionMetadata(opts.data);
+			const dataHash = hash_auxiliary_data(metadata);
+			finalBody.set_auxiliary_data_hash(dataHash)
+		}
+
+		if (tokens) {
+			// create mint token data
+			const mint = Seed.buildTransactionMint(tokens);
+			finalBody.set_mint(mint);
+		}
+
+		// set tx validity start interval
+		finalBody.set_validity_start_interval(startSlot);
+		return finalBody;
 	}
 
 	static buildMultiAssets(assets: WalletsAssetsAvailable[], encoding: BufferEncoding = 'hex'): MultiAsset {
@@ -271,16 +436,18 @@ export class Seed {
 		const txHash = hash_transaction(txBody);
 		const witnesses = TransactionWitnessSet.new();
 		const vkeyWitnesses = Vkeywitnesses.new();
-		privateKeys.forEach(prvKey => {
-			// add keyhash witnesses
-			const vkeyWitness = make_vkey_witness(txHash, prvKey);
-			vkeyWitnesses.add(vkeyWitness);
-		});
+		if (privateKeys) {
+			privateKeys.forEach(prvKey => {
+				// add keyhash witnesses
+				const vkeyWitness = make_vkey_witness(txHash, prvKey);
+				vkeyWitnesses.add(vkeyWitness);
+			});
+		}
 		witnesses.set_vkeys(vkeyWitnesses);
 		if (scripts) {
 			let nativeScripts = NativeScripts.new();
 			scripts.forEach(s => {
-					nativeScripts.add(s);
+				nativeScripts.add(s);
 			});
 			witnesses.set_native_scripts(nativeScripts);
 		}
@@ -307,6 +474,15 @@ export class Seed {
 		const txHash = hash_transaction(txBody);
 		const txId = Buffer.from(txHash.to_bytes()).toString('hex');
 		return txId;
+	}
+
+	static convertPrivateKeyToSignKey(prkKey: Bip32PrivateKey): ExtendedSigningKey {
+		// const k = Bip32PrivateKey.from_bech32(scriptKeys[1]);
+		console.log(prkKey.to_bech32());
+		// const hex = Buffer.from(prkKey.to_raw_key().as_bytes()).toString('hex');
+		const cborHex = "5880" + Buffer.from(prkKey.to_128_xprv()).toString('hex');
+		return new ExtendedSigningKey(cborHex);
+		// console.log(hex);
 	}
 
 	static harden(num: number): number{
@@ -503,6 +679,17 @@ export class Seed {
 	static buildBeforeScript(slot: number): NativeScript {
 		let scriptBefore = TimelockExpiry.new(slot);
 		return NativeScript.new_timelock_expiry(scriptBefore);
+	}
+
+	static getNativeScripts(script: Script): NativeScript[] {
+		const result: NativeScript[] = [];
+		const kind = script.root.kind();
+		if (kind == 0) { // sig
+			result.push(script.root)
+		} else if (kind == 1 || kind == 2 || kind == 3) { // all, any and atLeast respectivetly
+			result.push(...script.scripts.map(s => s.root));
+		}
+		return result;
 	}
 
 	private static buildNativeScripts(scripts: NativeScript[]): NativeScripts {

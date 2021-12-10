@@ -6,14 +6,15 @@ const expect = chai.expect;
 
 import 'mocha';
 
-import {  WalletsAssetsAvailable, WalletswalletIdpaymentfeesAmountUnitEnum } from '../models';
+import {  ApiTransactionStatusEnum, WalletsAssetsAvailable, WalletswalletIdpaymentfeesAmountUnitEnum } from '../models';
 import { Seed } from '../utils';
 import { WalletServer } from '../wallet-server';
 import * as dotenv from "dotenv";
 import { AssetWallet } from '../wallet/asset-wallet';
 import { CoinSelectionWallet } from '../wallet/coin-selection-wallet';
 import { TokenWallet } from '../wallet/token-wallet';
-import { Config } from '../config';
+import { Mainnet, Testnet, LocalCluster } from '../config/network.config';
+import { ShelleyWallet } from '../wallet/shelley-wallet';
 dotenv.config();
 
 describe('Cardano asset tokens', function () {
@@ -948,8 +949,15 @@ describe('Cardano asset tokens', function () {
 		}
 	});
 
+	// afterEach('wait before each minting', async function() {
+	// 	const time = 1;
+	// 	console.log(`waiting ${time}s ...`);
+	// 	await delay(time);
+	// });
+
 	describe('asset tokens', function(){
-		it("should create a policy Id", function(){
+		it("should create a policy Id", function() {
+			debugger
 			let keyPair= Seed.generateKeyPair();
 			let policyVKey = keyPair.publicKey;
 			let policySKey = keyPair.privateKey;
@@ -1005,7 +1013,7 @@ describe('Cardano asset tokens', function () {
 			let scripts = tokens.map(t => t.script);
 
 			// get min ada for address holding tokens
-			let minAda = Seed.getMinUtxoValueWithAssets([asset], Config.LocalCluster);
+			let minAda = Seed.getMinUtxoValueWithAssets([asset], LocalCluster);
 			let amounts = [minAda];
 
 			// get ttl info
@@ -1045,12 +1053,13 @@ describe('Cardano asset tokens', function () {
 
 			// we need to sing the tx and calculate the actual fee and the build again 
 			// since the coin selection doesnt calculate the fee with the asset tokens included
-			let txBody = Seed.buildTransactionWithToken(coinSelection, ttl, tokens, signingKeys, {data: data, config: Config.LocalCluster});
+			let txBody = Seed.buildTransactionWithToken(coinSelection, ttl, tokens, signingKeys, {data: data, config: LocalCluster});
 			let tx = Seed.sign(txBody, signingKeys, metadata, scripts);
 		
 			// submit the tx	
 			let signed = Buffer.from(tx.to_bytes()).toString('hex');
 			let txId = await walletServer.submitTx(signed);
+			await waitUntilTxFinish(txId, wallet);
 			expect(txId).not.undefined;
 		});
 
@@ -1084,7 +1093,7 @@ describe('Cardano asset tokens', function () {
 			let scripts = tokens.map(t => t.script);
 
 			// get min ada for address holding tokens
-			let minAda = Seed.getMinUtxoValueWithAssets([asset], Config.LocalCluster);
+			let minAda = Seed.getMinUtxoValueWithAssets([asset], LocalCluster);
 			let amounts = [minAda];
 
 			// get ttl info
@@ -1122,12 +1131,13 @@ describe('Cardano asset tokens', function () {
 
 			// we need to sing the tx and calculate the actual fee and the build again 
 			// since the coin selection doesnt calculate the fee with the asset tokens included
-			let txBody = Seed.buildTransactionWithToken(coinSelection, ttl, tokens, signingKeys, {config: Config.LocalCluster});
+			let txBody = Seed.buildTransactionWithToken(coinSelection, ttl, tokens, signingKeys, {config: LocalCluster});
 			let tx = Seed.sign(txBody, signingKeys, null, scripts);
 
 			// submit the tx
 			let signed = Buffer.from(tx.to_bytes()).toString('hex');
 			let txId = await walletServer.submitTx(signed);
+			await waitUntilTxFinish(txId, wallet);
 			expect(txId).not.undefined;
 		});
 
@@ -1161,7 +1171,7 @@ describe('Cardano asset tokens', function () {
 			let scripts = tokens.map(t => t.script);
 
 			// get min ada for address holding tokens
-			let minAda = Seed.getMinUtxoValueWithAssets([asset], Config.LocalCluster);
+			let minAda = Seed.getMinUtxoValueWithAssets([asset], LocalCluster);
 			let amounts = [minAda];
 
 			// get ttl info
@@ -1199,12 +1209,13 @@ describe('Cardano asset tokens', function () {
 
 			// we need to sing the tx and calculate the actual fee and the build again 
 			// since the coin selection doesnt calculate the fee with the asset tokens included
-			let txBody = Seed.buildTransactionWithToken(coinSelection, ttl, tokens, signingKeys, {config: Config.LocalCluster});
+			let txBody = Seed.buildTransactionWithToken(coinSelection, ttl, tokens, signingKeys, {config: LocalCluster});
 			let tx = Seed.sign(txBody, signingKeys, null, scripts);
 
 			// submit the tx
 			let signed = Buffer.from(tx.to_bytes()).toString('hex');
 			let txId = await walletServer.submitTx(signed);
+			await waitUntilTxFinish(txId, wallet);
 			expect(txId).not.undefined;
 		});
 
@@ -1238,7 +1249,7 @@ describe('Cardano asset tokens', function () {
 			let scripts = tokens.map(t => t.script);
 
 			// get min ada for address holding tokens
-			let minAda = Seed.getMinUtxoValueWithAssets([asset], Config.LocalCluster);
+			let minAda = Seed.getMinUtxoValueWithAssets([asset], LocalCluster);
 			let amounts = [minAda];
 
 			// get ttl info
@@ -1276,12 +1287,13 @@ describe('Cardano asset tokens', function () {
 
 			// we need to sing the tx and calculate the actual fee and the build again 
 			// since the coin selection doesnt calculate the fee with the asset tokens 
-			let txBody = Seed.buildTransactionWithToken(coinSelection, ttl, tokens, signingKeys, {config: Config.LocalCluster});
+			let txBody = Seed.buildTransactionWithToken(coinSelection, ttl, tokens, signingKeys, {config: LocalCluster});
 			let tx = Seed.sign(txBody, signingKeys, null, scripts);
 
 			// submit the tx
 			let signed = Buffer.from(tx.to_bytes()).toString('hex');
 			let txId = await walletServer.submitTx(signed);
+			await waitUntilTxFinish(txId, wallet);
 			expect(txId).not.undefined;
 		});
 
@@ -1320,7 +1332,7 @@ describe('Cardano asset tokens', function () {
 			let scripts = tokens.map(t => t.script);
 
 			// get min ada for address holding tokens
-			let minAda = Seed.getMinUtxoValueWithAssets([asset], Config.LocalCluster);
+			let minAda = Seed.getMinUtxoValueWithAssets([asset], LocalCluster);
 			let amounts = [minAda];
 
 			// get coin selection structure (without the assets)
@@ -1354,12 +1366,13 @@ describe('Cardano asset tokens', function () {
 
 			// we need to sing the tx and calculate the actual fee and the build again 
 			// since the coin selection doesnt calculate the fee with the asset tokens included
-			let txBody = Seed.buildTransactionWithToken(coinSelection, ttl, tokens, signingKeys, {startSlot: info.node_tip.absolute_slot_number, config: Config.LocalCluster});
+			let txBody = Seed.buildTransactionWithToken(coinSelection, ttl, tokens, signingKeys, {startSlot: info.node_tip.absolute_slot_number, config: LocalCluster});
 			let tx = Seed.sign(txBody, signingKeys, null, scripts);
 
 			// submit the tx
 			let signed = Buffer.from(tx.to_bytes()).toString('hex');
 			let txId = await walletServer.submitTx(signed);
+			await waitUntilTxFinish(txId, wallet);
 			expect(txId).not.undefined;
 		});
 
@@ -1397,7 +1410,7 @@ describe('Cardano asset tokens', function () {
 			let scripts = tokens.map(t => t.script);
 
 			// get min ada for address holding tokens
-			let minAda = Seed.getMinUtxoValueWithAssets([asset], Config.LocalCluster);
+			let minAda = Seed.getMinUtxoValueWithAssets([asset], LocalCluster);
 			let amounts = [minAda];
 
 			// get coin selection structure (without the assets)
@@ -1431,12 +1444,13 @@ describe('Cardano asset tokens', function () {
 
 			// we need to sing the tx and calculate the actual fee and the build again 
 			// since the coin selection doesnt calculate the fee with the asset tokens included
-			let txBody = Seed.buildTransactionWithToken(coinSelection, ttl, tokens, signingKeys, {config: Config.LocalCluster});
+			let txBody = Seed.buildTransactionWithToken(coinSelection, ttl, tokens, signingKeys, {config: LocalCluster});
 			let tx = Seed.sign(txBody, signingKeys, null, scripts);
 
 			// submit the tx
 			let signed = Buffer.from(tx.to_bytes()).toString('hex');
 			let txId = await walletServer.submitTx(signed);
+			await waitUntilTxFinish(txId, wallet);
 			expect(txId).not.undefined;
 		});
 
@@ -1453,12 +1467,13 @@ describe('Cardano asset tokens', function () {
 			let asset = new AssetWallet(tangoPolicyId, "Tango", 100);
 			let assets: {[key: string]: AssetWallet[]} = {}; 
 			assets[addresses[0].id] = [asset];
-			let minUtxo = Seed.getMinUtxoValueWithAssets([asset], Config.LocalCluster);
+			let minUtxo = Seed.getMinUtxoValueWithAssets([asset], LocalCluster);
 			let tx = await wallet.sendPayment(payeer.passphrase, addresses, [minUtxo], ['send 100 Tango tokens'], assets);
+			await waitUntilTxFinish(tx.id, wallet);
 			expect(tx).not.undefined;
 		});
 
-		it("should construct tx to send 100 Tango tokens ", async function () {
+		it("should construct tx and send 100 Tango tokens ", async function () {
 			let payeer = wallets.find(w => w.id == "2a793eb367d44a42f658eb02d1004f50c14612fd");
 			let wallet = await walletServer.getShelleyWallet(payeer.id);
 
@@ -1471,7 +1486,7 @@ describe('Cardano asset tokens', function () {
 			let asset = new AssetWallet(tangoPolicyId, "Tango", 100);
 			let assets: {[key: string]: AssetWallet[]} = {}; 
 			assets[addresses[0].id] = [asset];
-			let minUtxo = Seed.getMinUtxoValueWithAssets([asset], Config.LocalCluster);
+			let minUtxo = Seed.getMinUtxoValueWithAssets([asset], LocalCluster);
 			let data =  ['send 100 Tango tokens'];
 			let coinSelection = await wallet.getCoinSelection(addresses, [minUtxo], data, assets);
 			let info = await walletServer.getNetworkInformation();
@@ -1488,7 +1503,27 @@ describe('Cardano asset tokens', function () {
 			let txBody = Seed.sign(txBuild, signingKeys, metadata);
 			let signed = Buffer.from(txBody.to_bytes()).toString('hex');
 			let txId = await walletServer.submitTx(signed);
+			// const status = await wallet.getTransaction(txId);
+			// console.log('status', status);
+			await waitUntilTxFinish(txId, wallet);
 			expect(txId).not.undefined;
 		});
 	})
 });
+
+async function waitUntilTxFinish(txId: string, wallet: ShelleyWallet): Promise<void> {
+	return new Promise<void>(async (resolve, reject) => {
+		let tx = {status: ApiTransactionStatusEnum.Pending};
+		do {
+			await delay(1);
+			tx = await wallet.getTransaction(txId);
+		}while(tx.status == ApiTransactionStatusEnum.Pending)
+		resolve();
+	})
+};
+
+async function delay(time: number) {
+	return new Promise<void>((resolve, reject) => {
+		setTimeout(function(){ resolve();}, time*1000);
+	});
+}

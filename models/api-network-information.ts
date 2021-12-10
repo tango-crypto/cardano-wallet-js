@@ -60,6 +60,7 @@ export enum ApiNetworkInformationNodeEraEnum {
     Byron = 'byron',
     Shelley = 'shelley',
     Allegra = 'allegra',
-    Mary = 'mary'
+    Mary = 'mary',
+    Alonzo = 'alonzo'
 }
 
