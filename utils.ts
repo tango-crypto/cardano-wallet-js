@@ -181,7 +181,7 @@ export class Seed {
 		let buildOpts = Object.assign({}, { metadata: metadata, ...opts });
 
 		// create mint token data
-		let mint = Seed.buildTransactionMint(tokens);
+		let mint = Seed.buildTransactionMint(tokens, encoding);
 
 		// get token's scripts 
 		let scripts = tokens.map(t => t.script);
