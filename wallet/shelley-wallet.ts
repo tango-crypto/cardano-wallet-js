@@ -263,28 +263,35 @@ export class ShelleyWallet implements ApiWallet {
 		}
 
 		async getCoinSelection(addresses: AddressWallet[], amounts: number[], data?: any, assets: {[key: string]: AssetWallet[]} = {}): Promise<CoinSelectionWallet> {
-			let metadata = data ? Seed.constructMetadata(data) : undefined;
-			let payload: ApiPostTransactionFeeData = {
-				payments: addresses.map((addr, i) =>  {
-					let amount: WalletswalletIdpaymentfeesAmount = amounts[i] ? { unit: WalletswalletIdpaymentfeesAmountUnitEnum.Lovelace, quantity: amounts[i] } : undefined;
-					let payment: WalletswalletIdpaymentfeesPayments = { 
-						address: addr.address, 
-						amount: amount,
-						assets: assets[addr.id]?.map(a => {
-							let asset: WalletsAssetsAvailable = {
-								 policy_id: a.policy_id,
-								 asset_name: Buffer.from(a.asset_name).toString('hex'),
-								 quantity: a.quantity
-							}
-							return asset;
-						})
-					};
-					return payment;
-				}),
-				metadata: metadata
-			};
-			let res = await this.coinSelectionsApi.selectCoins(payload, this.id);
-			return CoinSelectionWallet.from(res.data);
+			try {
+
+				let metadata = data ? Seed.constructMetadata(data) : undefined;
+				let payload: ApiPostTransactionFeeData = {
+					payments: addresses.map((addr, i) =>  {
+						let amount: WalletswalletIdpaymentfeesAmount = amounts[i] ? { unit: WalletswalletIdpaymentfeesAmountUnitEnum.Lovelace, quantity: amounts[i] } : undefined;
+						let payment: WalletswalletIdpaymentfeesPayments = { 
+							address: addr.address, 
+							amount: amount,
+							assets: assets[addr.id]?.map(a => {
+								let asset: WalletsAssetsAvailable = {
+									 policy_id: a.policy_id,
+									 asset_name: Buffer.from(a.asset_name).toString('hex'),
+									 quantity: a.quantity
+								}
+								return asset;
+							})
+						};
+						return payment;
+					}),
+					metadata: metadata
+				};
+				let res = await this.coinSelectionsApi.selectCoins(payload, this.id);
+				return CoinSelectionWallet.from(res.data);
+			} catch(err) {
+				let error = err;
+				return null;
+			}
+			
 		}
 
 		private updateData(data: ApiWallet) {

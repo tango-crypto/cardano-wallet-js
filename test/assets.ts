@@ -6,7 +6,7 @@ const expect = chai.expect;
 
 import 'mocha';
 
-import {  ApiTransactionStatusEnum, WalletsAssetsAvailable, WalletswalletIdpaymentfeesAmountUnitEnum } from '../models';
+import {  ApiTransactionStatusEnum, WalletsAssetsAvailable, WalletswalletIdpaymentfeesAmountUnitEnum, WalletswalletIdpaymentfeesPayments } from '../models';
 import { Seed } from '../utils';
 import { WalletServer } from '../wallet-server';
 import * as dotenv from "dotenv";
@@ -15,6 +15,7 @@ import { CoinSelectionWallet } from '../wallet/coin-selection-wallet';
 import { TokenWallet } from '../wallet/token-wallet';
 import { Mainnet, Testnet, LocalCluster } from '../config/network.config';
 import { ShelleyWallet } from '../wallet/shelley-wallet';
+import { BaseAddress, NetworkInfo, StakeCredential } from '..';
 dotenv.config();
 
 describe('Cardano asset tokens', function () {
@@ -957,7 +958,6 @@ describe('Cardano asset tokens', function () {
 
 	describe('asset tokens', function(){
 		it("should create a policy Id", function() {
-			debugger
 			let keyPair= Seed.generateKeyPair();
 			let policyVKey = keyPair.publicKey;
 			let policySKey = keyPair.privateKey;
@@ -971,11 +971,15 @@ describe('Cardano asset tokens', function () {
 		});
 		
 		it("should mint single issuer 1000000 Tango token", async function(){
-			let payeer = wallets.find(w => w.id == "2a793eb367d44a42f658eb02d1004f50c14612fd");
-			let wallet = await walletServer.getShelleyWallet(payeer.id);
+			// let payeer = wallets.find(w => w.id == "2a793eb367d44a42f658eb02d1004f50c14612fd");
+			// let wallet = await walletServer.getShelleyWallet(payeer.id);
 
+			const phrase = "dignity barrel hand wreck cliff retreat pass unit girl design either armed finish mercy sword much dice vault best main end secret resist capable";
+			const count = 30;
 			// address to hold the minted tokens
-			let addresses = [(await wallet.getAddresses())[0]];
+
+			// const length = (await wallet.getAddresses()).length;
+			// let addresses = await Promise.all(Array.from(Array(count)).map(async (_, i) => await wallet.getAddressAt(length + i)));
 			
 			// policy public/private keypair
 			let keyPair= Seed.generateKeyPair();
@@ -991,40 +995,104 @@ describe('Cardano asset tokens', function () {
 			tangoPolicyId = Seed.getPolicyId(scriptHash);
 
 			let data: any = {};
-			let tokenData: any = {}
-			tokenData[tangoPolicyId] = {
-				Tango: {
-					arweaveId: "arweave-id",
-					ipfsId: "ipfs-id",
-					name: "Tango",
-					description: "Tango crypto coin",
-					type: "Coin"
+			let tokenData: any = {};
+			tokenData[tangoPolicyId] = {}
+			for (let i = 1; i <= count; i++) {
+				tokenData[tangoPolicyId][`Token-${i}`] = {
+					name: `Token-${i}`,
+					"description": `Description for Tangocrypto NFT ${i}`,
+					// "body": "<body>",
+					// "eyes": "green",
+					// "face": "Happy",
+					// "type": "pumpking10",
+					// "color": "Orange",
+					// "fruit": "no",
+					"image": "ipfs://QmP8uBgxmTpduCUbasQRCEpiq1g9KEjxuRfR5VcvifWoNo",
+					"artist": "Tangocrypto",
+					"twitter": "https://twitter.com/tango_crypto",
+					// "accessory": "None",
+					"copyright": "Tangocrypto 2021",
+					"mediaType": "image/png",
+					"collection": "Tangocrypto Collection"
 				}
-			};
-			data[0] = tokenData;
+			}
+			// tokenData[tangoPolicyId] = {
+			// 	Tango: {
+			// 		arweaveId: "arweave-id",
+			// 		ipfsId: "ipfs-id",
+			// 		name: "Tango",
+			// 		description: "Tango crypto coin",
+			// 		type: "Coin"
+			// 	}
+			// };
+			data['721'] = tokenData;
 			
+			let tokens: TokenWallet[] = [];
+			let amounts: number[] = [];
 			// asset
-			let asset = new AssetWallet(tangoPolicyId, "Tango", 1000000);
+			for(let i = 1; i <= count; i++) {
+				let asset = new AssetWallet(tangoPolicyId, `Token-${i}`, 1);
+				tokens.push(new TokenWallet(asset, script, [keyPair]));
+				// get min ada for address holding tokens
+				let minAda = Seed.getMinUtxoValueWithAssets([asset], Testnet);
+				amounts.push(minAda);
+			}
 
 			// token
-			let tokens = [new TokenWallet(asset, script, [keyPair])];
+			// let tokens = [new TokenWallet(asset, script, [keyPair])];
 
 			//scripts
 			let scripts = tokens.map(t => t.script);
 
-			// get min ada for address holding tokens
-			let minAda = Seed.getMinUtxoValueWithAssets([asset], LocalCluster);
-			let amounts = [minAda];
-
 			// get ttl info
-			let info = await walletServer.getNetworkInformation();
-			let ttl = info.node_tip.absolute_slot_number * 12000;
+			// let info = await walletServer.getNetworkInformation();
+			let ttl = 84970679;
 
 			// get coin selection structure (without the assets)
-			let coinSelection = await wallet.getCoinSelection(addresses, amounts, data);
+			let coinSelection: CoinSelectionWallet = {
+				inputs: [
+					{
+						id: "e93a117c1b59e288bb96ee59d6d99be44955865df802a7f402752d8555838ee7",
+						index: 0,
+						address: "addr_test1qp28uhsypnmvv40l2sr6vutg7sff4fx0xp8wgxgpzq8c0cgu4357l88l66j6vggekymqjsctzz975dpfr06ccv7udqvqla85mm",
+						derivation_path: ["1852H", "1815H", "0H", "0", "0"],//p.derivationPath,
+						amount: {
+							quantity: 100000000,
+							unit: WalletswalletIdpaymentfeesAmountUnitEnum.Lovelace
+						},
+						assets: []
+					},
+					{
+						id: "6a53fdc29c39423e3468c5f01299aea3f74316af30a5ed9cc8c36934204fbaf6",
+						index: 0,
+						address: "addr_test1qp28uhsypnmvv40l2sr6vutg7sff4fx0xp8wgxgpzq8c0cgu4357l88l66j6vggekymqjsctzz975dpfr06ccv7udqvqla85mm",
+						derivation_path: ["1852H", "1815H", "0H", "0", "0"],//p.derivationPath,
+						amount: {
+							quantity: 100000000,
+							unit: WalletswalletIdpaymentfeesAmountUnitEnum.Lovelace
+						},
+						assets: []
+					}
+				],
+				change: [],
+				outputs: []
+			};
+			// let coinSelection = await wallet.getCoinSelection(addresses, amounts, data);
 
+			const change = coinSelection.inputs.reduce((acc, c) => c.amount.quantity + acc, 0) 
+			- amounts.reduce((acc, c) => c + acc, 0) - 180000; 
+			coinSelection.change.push(
+				{
+					address: "addr_test1qp28uhsypnmvv40l2sr6vutg7sff4fx0xp8wgxgpzq8c0cgu4357l88l66j6vggekymqjsctzz975dpfr06ccv7udqvqla85mm",
+					amount: {
+						quantity: change,
+						unit: WalletswalletIdpaymentfeesAmountUnitEnum.Lovelace
+					},
+					assets: []
+				}
+			)
 			// add signing keys
-			let rootKey = Seed.deriveRootKey(payeer.mnemonic_sentence); 
+			let rootKey = Seed.deriveRootKey(phrase); 
 			let signingKeys = coinSelection.inputs.map(i => {
 				let privateKey = Seed.deriveKey(rootKey, i.derivation_path).to_raw_key();
 				return privateKey;
@@ -1035,32 +1103,67 @@ describe('Cardano asset tokens', function () {
 
 			let metadata = Seed.buildTransactionMetadata(data);
 			
+			let addresses: string[] = [];
+			for (let i = 0; i < count; i++) {
+				const accountKey = Seed.deriveAccountKey(rootKey, 1); // 1852H/1815H/1H/0/0
+				const path = ["1852H", "1815H", "1H", "0", i.toString()];
+				const paymentPuKey = accountKey
+				.derive(0) // 0
+				.derive(i)
+				.to_raw_key()
+				.to_public();
+			
+				const stakePubKey = accountKey
+				.derive(2)
+				.derive(i)
+				.to_raw_key()
+				.to_public();
+			
+				const baseAddr = BaseAddress.new(
+					NetworkInfo.testnet().network_id(),
+					StakeCredential.from_keyhash(paymentPuKey.hash()),
+					StakeCredential.from_keyhash(stakePubKey.hash()),
+				)
+				.to_address()
+				.to_bech32();
+				addresses.push(baseAddr);
+			}
 			// the wallet currently doesn't support including tokens not previuosly minted
 			// so we need to include it manually.
-			coinSelection.outputs = coinSelection.outputs.map(output => {
-				if (output.address === addresses[0].address) {
-					output.assets = tokens.map(t => {
-						let asset: WalletsAssetsAvailable = {
-								policy_id: t.asset.policy_id,
-								asset_name: Buffer.from(t.asset.asset_name).toString('hex'), // to handle all assets as hex since the one comming from previous tx are in hex
-								quantity: t.asset.quantity
-						};
-						return asset;
-					});
+			coinSelection.outputs = addresses.map((addr, index) => {
+				const t = tokens[index];
+				const asset: WalletsAssetsAvailable = {
+						policy_id: t.asset.policy_id,
+						asset_name: Buffer.from(t.asset.asset_name).toString('hex'), // to handle all assets as hex since the one comming from previous tx are in hex
+						quantity: t.asset.quantity
+				};
+				const output: WalletswalletIdpaymentfeesPayments = {
+					address: addr,
+					amount: {
+						quantity: amounts[index],
+						unit: WalletswalletIdpaymentfeesAmountUnitEnum.Lovelace
+					},
+					assets: [asset]
 				}
 				return output;
 			});
 
 			// we need to sing the tx and calculate the actual fee and the build again 
 			// since the coin selection doesnt calculate the fee with the asset tokens included
-			let txBody = Seed.buildTransactionWithToken(coinSelection, ttl, tokens, signingKeys, {data: data, config: LocalCluster});
-			let tx = Seed.sign(txBody, signingKeys, metadata, scripts);
-		
-			// submit the tx	
-			let signed = Buffer.from(tx.to_bytes()).toString('hex');
-			let txId = await walletServer.submitTx(signed);
-			await waitUntilTxFinish(txId, wallet);
-			expect(txId).not.undefined;
+			try {
+
+				let txBody = Seed.buildTransactionWithToken(coinSelection, ttl, tokens, signingKeys, {data: data, config: Testnet});
+				let tx = Seed.sign(txBody, signingKeys, metadata, scripts);
+			
+				// submit the tx	
+				let signed = Buffer.from(tx.to_bytes()).toString('hex');
+				let txId = await walletServer.submitTx(signed);
+				// await waitUntilTxFinish(txId, wallet);
+				expect(txId).not.undefined;
+			} catch (err) {
+				let error = err;
+				console.log(error);
+			} 
 		});
 
 		it("should mint multi issuer all 1000000 Tango1 token", async function(){

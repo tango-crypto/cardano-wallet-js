@@ -196,7 +196,10 @@ export class Seed {
 		// NOTE: txFee should be <= original fee = maxTxSize * txFeePerByte + txFeeFixed
         // Also after rearrange the outputs will decrease along with fee field, so new tx fee won't increase because tx's size (bytes) will be smaller;
 		const txFee = parseInt(Seed.getTransactionFee(tx, opts.config).to_str());
-		const finalFee = Math.min(txFee, (fee || Number.MAX_SAFE_INTEGER)); // we'll use the min fee on final tx
+		// if (txFee > fee) throw new Error(`expected tx size less than ${opts.config.protocols.maxTxSize} but got: ${(txFee - opts.config.protocols.txFeeFixed)/opts.config.protocols.txFeePerByte}`)
+		
+		const finalFee = txFee;
+		// const finalFee = Math.min(txFee, (fee || Number.MAX_SAFE_INTEGER)); // we'll use the min fee on final tx
 		opts.fee = finalFee;
 
 		// adjust change UTXO

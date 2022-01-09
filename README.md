@@ -481,10 +481,10 @@ offline as well. Here is an example:
 // recovery phrase, this should be the same you use to create the wallet (see Wallet section)
 let recovery_phrase = [...];
 
-// blockchain config, this is where you can find protocol params, slotsPerKESPeriod etc.
+// blockchain config, this is where you can find protocol params, slotsPerKESPeriod etc. Structure is: { byron: ..., shelley: ..., alonzo: ..., protocols: ... }
 // This lib comes with  Mainnet, Testnet and LocalCluster config, but you should pass your own to make sure they are up to date.
 // You can find the latest config files here: https://hydra.iohk.io/build/6498473/download/1/index.html
-let config = { ..., "protocolParams": {... "minFeeA": 44, ..., "minFeeB": 155381, ...} }
+let config = { ..., "shelley": { ..., "protocolParams": {... "minFeeA": 44, ..., "minFeeB": 155381, ...} } }
 
 // get first unused wallet's address
 let addresses = (await wallet.getUnusedAddresses()).slice(0, 1);
@@ -596,10 +596,10 @@ You can create native tokens just creating a transaction with a couple of differ
 // address to hold the minted tokens. You can use which you want.
 let addresses = [(await wallet.getAddresses())[0]];
 
-// blockchain config, this is where you can find protocol params, slotsPerKESPeriod etc.
-// This lib comes with  Mainnet, Testnet and LocalCluster config (Config.Mainnet, Config.Testnet and Config.LocalCluster), but you may consider provide your own to make sure they are up to date.
+// blockchain config, this is where you can find protocol params, slotsPerKESPeriod etc. Structure is: { byron: ..., shelley: ..., alonzo: ..., protocols: ... }
+// This lib comes with  Mainnet, Testnet and LocalCluster config (LocalCluster, LocalCluster and LocalCluster), but you may consider provide your own to make sure they are up to date.
 // You can find the latest config files here: https://hydra.iohk.io/build/6498473/download/1/index.html
-let config = { ..., "protocolParams": {... "minFeeA": 44, ..., "minFeeB": 155381, ...} }
+let config = { ..., "shelley": { ..., "protocolParams": {... "minFeeA": 44, ..., "minFeeB": 155381, ...} } }
 
 // policy public/private keypair
 let keyPair= Seed.generateKeyPair();
@@ -694,7 +694,7 @@ let txId = await walletServer.submitTx(signed);
 
 
 ### Send Native Tokens
-Here you have two options, either rely on cardano-wallet directly or build the tx by yourself. 
+Here you have two options, either rely on cardano-wallet directly or build the tx by yourself (using cardano-serialization-lib). 
 #### Using Cardano Wallet
 ```js
 // passphrase
@@ -705,10 +705,10 @@ let policyId = "your policyId";
 let passphrase = "your passphrase";
 let policyId = "your policyId";
 
-// blockchain config, this is where you can find protocol params, slotsPerKESPeriod etc.
-// This lib comes with  Mainnet, Testnet and LocalCluster config (Config.Mainnet, Config.Testnet and Config.LocalCluster), but you may consider provide your own to make sure they are up to date.
+// blockchain config, this is where you can find protocol params, slotsPerKESPeriod etc. Structure is: { byron: ..., shelley: ..., alonzo: ..., protocols: ... }
+// This lib comes with  Mainnet, Testnet and LocalCluster config (LocalCluster, LocalCluster and LocalCluster), but you may consider provide your own to make sure they are up to date.
 // You can find the latest config files here: https://hydra.iohk.io/build/6498473/download/1/index.html
-let config = { ..., "protocolParams": {... "minFeeA": 44, ..., "minFeeB": 155381, ...} }
+let config = { ..., "shelley": { ..., "protocolParams": {... "minFeeA": 44, ..., "minFeeB": 155381, ...} } }
 
 // address to send the minted tokens
 let addresses = [new AddressWallet("addr......")];
@@ -730,19 +730,19 @@ let tx = await wallet.sendPayment(passphrase, addresses, [minAda], ['send 100 Ta
 let passphrase = "your passphrase";
 let policyId = "your policyId";
 
-// blockchain config, this is where you can find protocol params, slotsPerKESPeriod etc.
-// This lib comes with  Mainnet, Testnet and LocalCluster config (Config.Mainnet, Config.Testnet and Config.LocalCluster), but you should pass your own to make sure they are up to date.
+// blockchain config, this is where you can find protocol params, slotsPerKESPeriod etc. Structure is: { byron: ..., shelley: ..., alonzo: ..., protocols: ... }
+// This lib comes with  Mainnet, Testnet and LocalCluster config (LocalCluster, LocalCluster and LocalCluster), but you should pass your own to make sure they are up to date.
 // You can find the latest config files here: https://hydra.iohk.io/build/6498473/download/1/index.html
-let config = { ..., "protocolParams": {... "minFeeA": 44, ..., "minFeeB": 155381, ...} }
+let config = { ..., "shelley": { ..., "protocolParams": {... "minFeeA": 44, ..., "minFeeB": 155381, ...} } }
 
 // address to send the minted tokens
 let addresses = [new AddressWallet("addr......")];
 let asset = new AssetWallet(policyId, "Tango", 100);
 
-// blockchain config, this is where you can find protocol params, slotsPerKESPeriod etc.
+// blockchain config, this is where you can find protocol params, slotsPerKESPeriod etc. Structure is: { byron: ..., shelley: ..., alonzo: ..., protocols: ... }
 // This lib comes with  Mainnet, Testnet and LocalCluster config, but you may consider provide your own to make sure they are up to date.
 // You can find the latest config files here: https://hydra.iohk.io/build/6498473/download/1/index.html
-let config = { ..., "protocolParams": {... "minFeeA": 44, ..., "minFeeB": 155381, ...} }
+let config = { ..., "shelley": { ..., "protocolParams": {... "minFeeA": 44, ..., "minFeeB": 155381, ...} } }
 
 // bind the asset to the address
 let assets = {}; 
@@ -768,6 +768,136 @@ let txBody = Seed.sign(txBuild, signingKeys, metadata);
 let signed = Buffer.from(txBody.to_bytes()).toString('hex');
 let txId = await walletServer.submitTx(signed);
 ```
+### Build Multisig tx
+In order to create a multisignature transaction (multisig tx) we must create a script that will act as a "guard" for the funds sent to the script address. Once the funds are already there, the only way to move it will be fullfilling the script logic (Multisig is just a specific script case which force a list of private keys to be present on the final tx).
+#### Create native script
+```js
+// script that force 2 private keys to be presents on the final tx.
+const data: JsonScript = {
+    "type": ScriptTypeEnum.All, // "all"
+    "scripts":
+    [
+        {
+        "type": ScriptTypeEnum.Sig, // "sig"
+        },
+        {
+        "type":  ScriptTypeEnum.Sig, // "sig"
+        }
+    ]
+};
+
+// generate the native script
+const script = Seed.buildScript(data);
+
+// get the json equivalent for this native script. 
+// It'll look similar to the JSON above but with an extra field 'keyHash' for each entry of type 'sig'. E.g
+// {
+//    "type": "all"
+//    "scripts": [
+//      {
+//          "type": "sig",
+//          "keyHash": "e09d36c79dec9bd1b3d9e152247701cd0bb860b5ebfd1de8abb6735a"
+//      },
+//      {
+//          "type":  "sig",
+//          "keyHash": "a687dcc24e00dd3caafbeb5e68f97ca8ef269cb6fe971345eb951756"
+//      }]
+//}
+const jsonScript = Seed.scriptToJson(script);
+
+// get native script private keys (all them will be needed to sign the final tx)
+const keys = Seed.getScriptKeys(script).map(k => k.to_bech32());
+```
+
+#### Get keyHash from private key
+Last step we create a native script and got the JSON representation along with the privates keys involved. To check if your resulting privates keys indeed matching your private keys you can do this:
+
+```js
+const keyHashes = keys.map(k => Buffer.from(Seed.getKeyHash(Bip32PrivateKey.from_bech32(k).to_public()).to_bytes()).toString('hex'));
+const jsonHashes = json.scripts.map((s:any) => s.keyHash);
+// now both array should have the same data inside. Using Mocha or any similar test tool you can easily test it:
+expect(keyHashes).deep.equal(jsonHashes);
+```
+
+#### Generate script address
+Next step is to get the script address, so we can send funds to it. Here is the example (testnet address):
+
+```js
+const script = Seed.buildScript(jsonScript);
+const address = Seed.getScriptAddress(script, 'testnet').to_bech32();
+console.log(address);
+Output:
+> "addr_test1..."
+```
+> :warning: **IMPORTANT**: Send some funds to this script address before continue 
+
+#### Send funds from script address
+Now that we have the script address and the private keys tied to it, we're ready for send some funds away from this address (remember we'll need all the private keys involved, **this is the multisig part**). The approach is very similar to the previous one where we build a tx by ourself. The bellow example assume we have a coin selection already, which mean we got the script address UTXOs and create the inputs, outputs and change using some method like **wallet.getCoinSelection(...)**.
+
+> :warning: **IMPORTANT**: Use any fee you want in the coinselection, but make sure: inputs - outputs - change = fee. The multisig method will setup the proper fee for you.
+
+```js
+// get private keys
+const signingKeys = scriptKeys.map(key => Bip32PrivateKey.from_bech32(key).to_raw_key()); 
+
+// get native script (this is the SAME SCRIPT, we're just "loading" it back)
+const script = Seed.buildScript(jsonScript);
+
+// set network configuration
+let buildOpts = {
+    startSlot: 0, 
+    config: Testnet,
+};
+const ttl = 445331390; // slot before the tx should be processed
+
+const selection: CoinSelectionWallet = {
+    "withdrawals": [] as any[],
+    "inputs": [
+        {
+            "amount": {
+                "quantity": 5574291,
+                "unit": WalletswalletIdpaymentfeesAmountUnitEnum.Lovelace
+            },
+            "address": "addr_test1...", // script address
+            "id": "f23e1e9c8cdcc8a3dfbd...",
+            "assets": [],
+            "index": 1
+        },
+    ],
+    "deposits": [],
+    "change": [
+        {
+            "amount": {
+                "quantity": 4394291, // fee of 180000 initially
+                "unit": WalletswalletIdpaymentfeesAmountUnitEnum.Lovelace
+            },
+            "address": "addr_test1...",
+            "assets": []
+        }
+    ],
+    "outputs": [
+        {
+            "amount": {
+                "quantity": 1000000,
+                "unit": WalletswalletIdpaymentfeesAmountUnitEnum.Lovelace
+            },
+            "address": "addr_test1...",
+            "assets": []
+        }
+    ]
+};
+
+// for the script witnesses we only need to specify the native script root
+const scripts = [script.root];
+
+// build the tx (wait for v10 of serilib so no need to passing signing keys for calculate fee on minting)
+const txBody = Seed.buildTransactionMultisig(selection, ttl, scripts, null, signingKeys, buildOpts);
+
+// sign tx
+const tx = Seed.sign(txBody, signingKeys, null, scripts);
+const signed = Buffer.from(tx.to_bytes()).toString('hex');
+```
+
 # Test
 
 ### Stack
