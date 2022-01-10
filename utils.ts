@@ -8,6 +8,7 @@ import { AssetWallet } from './wallet/asset-wallet';
 import { Script } from './models/script.model';
 import { JsonScript, ScriptTypeEnum, scriptTypes } from './models/json-script.model';
 import { ExtendedSigningKey } from './models/payment-extended-signing-key';
+import { MultisigTransaction } from './models/multisig-transaction';
 
 const phrasesLengthMap: {[key: number]: number} = {
 	12: 128,
@@ -222,11 +223,11 @@ export class Seed {
 		return txBody;
 	}
 
-	static buildTransactionMultisig(coinSelection: CoinSelectionWallet, ttl: number, scripts: NativeScript[], tokens: TokenWallet[] = null, signingKeys: PrivateKey[] = null, opts: {[key: string]:  any} = {changeAddress: "", data: null, startSlot: 0, config: Mainnet}, encoding: BufferEncoding = 'hex'): TransactionBody {
+	static buildTransactionMultisig(coinSelection: CoinSelectionWallet, ttl: number, scripts: NativeScript[], tokens: TokenWallet[] = null, signingKeys: PrivateKey[] = null, opts: {[key: string]:  any} = {changeAddress: "", data: null, startSlot: 0, config: Mainnet}, encoding: BufferEncoding = 'hex'): MultisigTransaction {
 		const config = opts.config || Mainnet;
 		let metadata = opts.data ? Seed.buildTransactionMetadata(opts.data) : null;
 		const startSlot = opts.startSlot || 0;
-		const fee = parseInt(config.protocols.maxTxSize * config.protocols.txFeePerByte + config.protocols.txFeeFixed); // 16384 * 44 + 155381 = 876277
+		// const fee = parseInt(config.protocols.maxTxSize * config.protocols.txFeePerByte + config.protocols.txFeeFixed); // 16384 * 44 + 155381 = 876277
 		const selectionfee = coinSelection.inputs.reduce((acc, c) => c.amount.quantity + acc, 0) 
 			+ (coinSelection.withdrawals?.reduce((acc, c) => c.amount.quantity + acc, 0) || 0)
 			- coinSelection.outputs.reduce((acc, c) => c.amount.quantity + acc, 0) 
@@ -260,13 +261,8 @@ export class Seed {
 			);
 		});
 
-		// add tx change
+		// adjust changes to match maximum fee
 		if (coinSelection.change && coinSelection.change.length > 0) {
-			const feePerChange = Math.ceil((fee - selectionfee)/coinSelection.change.length);
-			coinSelection.change = coinSelection.change.map(change => {
-				change.amount.quantity -= feePerChange;
-				return change;
-			});
 			outputs.push(...coinSelection.change.map(change => {
 				let address = Address.from_bech32(change.address);
 				let amount = Value.new(
@@ -290,7 +286,7 @@ export class Seed {
 		inputs.forEach(txin => txInputs.add(txin));
 		let txOutputs = TransactionOutputs.new();
 		outputs.forEach(txout => txOutputs.add(txout));
-		const txBody = TransactionBody.new(txInputs, txOutputs, BigNum.from_str(fee.toString()), ttl);
+		const txBody = TransactionBody.new(txInputs, txOutputs, BigNum.from_str(selectionfee.toString()), ttl);
 
 		// add tx metadata
 		if (metadata) {
@@ -307,82 +303,7 @@ export class Seed {
 		// set tx validity start interval
 		txBody.set_validity_start_interval(startSlot);
 
-		// calculate fee
-		// sign to calculate the real tx fee;
-		let tx = Seed.sign(txBody, signingKeys, metadata, scripts);
-
-		// NOTE: txFee should be <= original fee = maxTxSize * txFeePerByte + txFeeFixed
-        // Also after rearrange the outputs will decrease along with fee field, so new tx fee won't increase because tx's size (bytes) will be smaller;
-		const txFee = parseInt(Seed.getTransactionFee(tx, config).to_str());
-		const finalFee = Math.min(txFee, (fee || Number.MAX_SAFE_INTEGER)); // we'll use the min fee on final tx
-
-		const feeDiff = fee - finalFee;
-		if (coinSelection.change && coinSelection.change.length > 0) {
-			const feeDiffPerChange = Math.ceil(feeDiff/coinSelection.change.length);
-			coinSelection.change = coinSelection.change.map(c => {
-				c.amount.quantity += feeDiffPerChange;
-				return c;
-			},);
-
-			outputs = coinSelection.outputs.map(output => {
-				let address = Address.from_bech32(output.address);
-				let amount = Value.new(
-					BigNum.from_str(output.amount.quantity.toString())
-				);
-	
-				// add tx assets
-				if(output.assets && output.assets.length > 0){
-					let multiAsset = Seed.buildMultiAssets(output.assets, encoding);
-					amount.set_multiasset(multiAsset);
-				}
-	
-				return TransactionOutput.new(
-					address,
-					amount
-				);
-			});
-
-			outputs.push(...coinSelection.change.map(change => {
-				let address = Address.from_bech32(change.address);
-				let amount = Value.new(
-					BigNum.from_str(change.amount.quantity.toString())
-				);
-	
-				// add tx assets
-				if(change.assets && change.assets.length > 0){
-					let multiAsset = Seed.buildMultiAssets(change.assets, encoding);
-					amount.set_multiasset(multiAsset);
-				}
-	
-				return TransactionOutput.new(
-					address,
-					amount
-				);
-			}));
-
-			txOutputs = TransactionOutputs.new();
-			outputs.forEach(txout => txOutputs.add(txout));
-		}
-
-		const finalBody = TransactionBody.new(txInputs, txOutputs, BigNum.from_str(finalFee.toString()), ttl);
-
-
-		// add tx metadata (after sign metadata is empty so we need to build it again)
-		if (metadata) { 
-			metadata = Seed.buildTransactionMetadata(opts.data);
-			const dataHash = hash_auxiliary_data(metadata);
-			finalBody.set_auxiliary_data_hash(dataHash)
-		}
-
-		if (tokens) {
-			// create mint token data
-			const mint = Seed.buildTransactionMint(tokens);
-			finalBody.set_mint(mint);
-		}
-
-		// set tx validity start interval
-		finalBody.set_validity_start_interval(startSlot);
-		return finalBody;
+		return new MultisigTransaction(coinSelection, txBody, scripts, signingKeys, config, encoding, metadata, tokens);
 	}
 
 	static buildMultiAssets(assets: WalletsAssetsAvailable[], encoding: BufferEncoding = 'hex'): MultiAsset {
@@ -433,6 +354,34 @@ export class Seed {
 
 	static getTransactionFee(tx: Transaction, config = Mainnet) {
 		return min_fee(tx, LinearFee.new(BigNum.from_str(config.protocols.txFeePerByte.toString()), BigNum.from_str(config.protocols.txFeeFixed.toString())));
+	}
+
+	static addKeyWitness(transaction: Transaction, prvKey: PrivateKey): Transaction {
+		const vkeyWitnesses = Vkeywitnesses.new();
+		const txBody = transaction.body();
+		const txHash = hash_transaction(txBody);
+		const vkeyWitness = make_vkey_witness(txHash, prvKey);
+		vkeyWitnesses.add(vkeyWitness);
+		const witnesses = transaction.witness_set();
+		witnesses.set_vkeys(vkeyWitnesses);
+		return Transaction.new(
+			txBody,
+			witnesses,
+			transaction.auxiliary_data()
+		);
+	}
+
+	static addScriptWitness(transaction: Transaction, script: NativeScript): Transaction {
+		const txBody = transaction.body();
+		const nativeScripts = NativeScripts.new();
+		nativeScripts.add(script);
+		const witnesses = transaction.witness_set();
+		witnesses.set_native_scripts(nativeScripts);
+		return Transaction.new(
+			txBody,
+			witnesses,
+			transaction.auxiliary_data()
+		);
 	}
 	
 	static sign(txBody: TransactionBody, privateKeys: PrivateKey[], transactionMetadata?: AuxiliaryData, scripts?: NativeScript[]): Transaction {

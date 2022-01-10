@@ -260,7 +260,7 @@ describe('Wallet utilities', function(){
 	it("should get script address", function(){
 		const script = Seed.buildScript(jsonScript);
 		const address = Seed.getScriptAddress(script, 'testnet').to_bech32();
-		expect(address.startsWith('addr_test1')).to.be.true;
+		expect(address).to.be.equal('addr_test1xqmmnp8sujweq6vc7jkryz9ev96s424e6qhs37mgawkjsaphhxz0peyajp5e3a9vxgytjct4p24tn5p0prak36ad9p6qncrly9');
 	});
 
 	it("should build a multisig tx", function(){
@@ -275,20 +275,20 @@ describe('Wallet utilities', function(){
 			"inputs": [
 				{
 					"amount": {
-						"quantity": 5574291,
+						"quantity": 20000000,
 						"unit": WalletswalletIdpaymentfeesAmountUnitEnum.Lovelace
 					},
 					"address": "addr_test1xqmmnp8sujweq6vc7jkryz9ev96s424e6qhs37mgawkjsaphhxz0peyajp5e3a9vxgytjct4p24tn5p0prak36ad9p6qncrly9",
-					"id": "f61e1e9b8cdcc8a3dfbd45fd28b15d94876c26a06b8cf852248828c8b815acff",
+					"id": "4b6a8bf960090225c85fbfe13a182cdc4cecdc3416fa02c3e2938d4449ef96f6",
 					"assets": [],
-					"index": 1
+					"index": 0
 				},
 			],
 			"deposits": [],
 			"change": [
 				{
 					"amount": {
-						"quantity": 4394291, // fee of 180000 initially
+						"quantity": 18823000, // fee of 180000 initially
 						"unit": WalletswalletIdpaymentfeesAmountUnitEnum.Lovelace
 					},
 					"address": "addr_test1xqmmnp8sujweq6vc7jkryz9ev96s424e6qhs37mgawkjsaphhxz0peyajp5e3a9vxgytjct4p24tn5p0prak36ad9p6qncrly9",
@@ -308,11 +308,12 @@ describe('Wallet utilities', function(){
 		};
 
 		const ttl = 445331390;
-		// const scripts = Seed.getNativeScripts(script);
 		const scripts = [script.root]
-		let txBody = Seed.buildTransactionMultisig(selection, ttl, scripts, null, signingKeys, buildOpts);
-		const tx = Seed.sign(txBody, signingKeys, null, scripts);
-		const signed = Buffer.from(tx.to_bytes()).toString('hex');
+		let tx = Seed.buildTransactionMultisig(selection, ttl, [], null, [], buildOpts);
+		tx.addKeyWitnesses(signingKeys[0]);
+		tx.addScriptWitness(...scripts);
+		tx.addKeyWitnesses(signingKeys[1]);
+		const signed = tx.build();
 		expect(signed).not.undefined;
 	})
 });
