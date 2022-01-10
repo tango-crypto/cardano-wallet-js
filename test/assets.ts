@@ -15,7 +15,7 @@ import { CoinSelectionWallet } from '../wallet/coin-selection-wallet';
 import { TokenWallet } from '../wallet/token-wallet';
 import { Mainnet, Testnet, LocalCluster } from '../config/network.config';
 import { ShelleyWallet } from '../wallet/shelley-wallet';
-import { BaseAddress, NetworkInfo, StakeCredential } from '..';
+import { BaseAddress, NetworkInfo, StakeCredential } from '@emurgo/cardano-serialization-lib-nodejs';
 dotenv.config();
 
 describe('Cardano asset tokens', function () {

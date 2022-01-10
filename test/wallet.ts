@@ -6,7 +6,7 @@ const expect = chai.expect;
 
 import 'mocha';
 
-import { ApiTransactionDirectionEnum, ApiTransactionStatusEnum, WalletsDelegationActiveStatusEnum, WalletswalletIdpaymentfeesAmountUnitEnum } from '../models';
+import { ApiTransactionDirectionEnum, ApiTransactionStatusEnum, WalletsDelegationActiveStatusEnum } from '../models';
 import { Seed } from '../utils';
 
 import { WalletServer } from '../wallet-server';

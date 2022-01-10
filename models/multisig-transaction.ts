@@ -1,7 +1,7 @@
 import { Address, AuxiliaryData, BigNum, hash_auxiliary_data, hash_transaction, make_vkey_witness, NativeScript, NativeScripts, PrivateKey, Transaction, TransactionBody, TransactionHash, TransactionOutput, TransactionOutputs, TransactionWitnessSet, Value, Vkeywitnesses } from "@emurgo/cardano-serialization-lib-nodejs";
-import { TokenWallet } from "..";
 import { Seed } from "../utils";
 import { CoinSelectionWallet } from "../wallet/coin-selection-wallet";
+import { TokenWallet } from "../wallet/token-wallet";
 
 export class MultisigTransaction {
     coinSelection: CoinSelectionWallet;

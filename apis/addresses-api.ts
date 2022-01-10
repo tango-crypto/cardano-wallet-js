@@ -15,15 +15,11 @@ import globalAxios, { AxiosPromise, AxiosInstance } from 'axios';
 import { Configuration } from '../configuration';
 // Some imports not used depending on template conditions
 // @ts-ignore
-import { BASE_PATH, COLLECTION_FORMATS, RequestArgs, BaseAPI, RequiredError } from '../base';
-import { BadRequest } from '../models';
+import { BASE_PATH, RequestArgs, BaseAPI, RequiredError } from '../base';
 import { ApiAddressData } from '../models';
 import { InlineResponse20014 } from '../models';
 import { ApiAddress } from '../models';
 import { AnyAddress } from '../models';
-import { InlineResponse415 } from '../models';
-import { NoSuchWallet } from '../models';
-import { NotAcceptable } from '../models';
 /**
  * AddressesApi - axios parameter creator
  * @export

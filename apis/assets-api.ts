@@ -15,11 +15,9 @@ import globalAxios, { AxiosPromise, AxiosInstance } from 'axios';
 import { Configuration } from '../configuration';
 // Some imports not used depending on template conditions
 // @ts-ignore
-import { BASE_PATH, COLLECTION_FORMATS, RequestArgs, BaseAPI, RequiredError } from '../base';
-import { AssetNotPresent } from '../models';
+import { BASE_PATH, RequestArgs, BaseAPI, RequiredError } from '../base';
 import { InlineResponse2001 } from '../models';
 import { InlineResponse2002 } from '../models';
-import { NotAcceptable } from '../models';
 /**
  * AssetsApi - axios parameter creator
  * @export
