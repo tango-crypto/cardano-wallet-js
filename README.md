@@ -482,7 +482,7 @@ offline as well. Here is an example:
 let recovery_phrase = [...];
 
 // blockchain config, this is where you can find protocol params, slotsPerKESPeriod etc. Structure is: { byron: ..., shelley: ..., alonzo: ..., protocols: ... }
-// This lib comes with  Mainnet, Testnet and LocalCluster config, but you should pass your own to make sure they are up to date.
+// This lib comes with  Config.Mainnet, Config.Testnet and Config.LocalCluster config, but you should pass your own to make sure they are up to date.
 // You can find the latest config files here: https://hydra.iohk.io/build/6498473/download/1/index.html
 let config = { ..., "shelley": { ..., "protocolParams": {... "minFeeA": 44, ..., "minFeeB": 155381, ...} } }
 
@@ -597,7 +597,7 @@ You can create native tokens just creating a transaction with a couple of differ
 let addresses = [(await wallet.getAddresses())[0]];
 
 // blockchain config, this is where you can find protocol params, slotsPerKESPeriod etc. Structure is: { byron: ..., shelley: ..., alonzo: ..., protocols: ... }
-// This lib comes with  Mainnet, Testnet and LocalCluster config (LocalCluster, LocalCluster and LocalCluster), but you may consider provide your own to make sure they are up to date.
+// This lib comes with  Config.Mainnet, Config.Testnet and Config.LocalCluster config (LocalCluster, LocalCluster and LocalCluster), but you may consider provide your own to make sure they are up to date.
 // You can find the latest config files here: https://hydra.iohk.io/build/6498473/download/1/index.html
 let config = { ..., "shelley": { ..., "protocolParams": {... "minFeeA": 44, ..., "minFeeB": 155381, ...} } }
 
@@ -706,7 +706,7 @@ let passphrase = "your passphrase";
 let policyId = "your policyId";
 
 // blockchain config, this is where you can find protocol params, slotsPerKESPeriod etc. Structure is: { byron: ..., shelley: ..., alonzo: ..., protocols: ... }
-// This lib comes with  Mainnet, Testnet and LocalCluster config (LocalCluster, LocalCluster and LocalCluster), but you may consider provide your own to make sure they are up to date.
+// This lib comes with  Config.Mainnet, Config.Testnet and Config.LocalCluster config (LocalCluster, LocalCluster and LocalCluster), but you may consider provide your own to make sure they are up to date.
 // You can find the latest config files here: https://hydra.iohk.io/build/6498473/download/1/index.html
 let config = { ..., "shelley": { ..., "protocolParams": {... "minFeeA": 44, ..., "minFeeB": 155381, ...} } }
 
@@ -731,7 +731,7 @@ let passphrase = "your passphrase";
 let policyId = "your policyId";
 
 // blockchain config, this is where you can find protocol params, slotsPerKESPeriod etc. Structure is: { byron: ..., shelley: ..., alonzo: ..., protocols: ... }
-// This lib comes with  Mainnet, Testnet and LocalCluster config (LocalCluster, LocalCluster and LocalCluster), but you should pass your own to make sure they are up to date.
+// This lib comes with  Config.Mainnet, Config.Testnet and Config.LocalCluster config (LocalCluster, LocalCluster and LocalCluster), but you should pass your own to make sure they are up to date.
 // You can find the latest config files here: https://hydra.iohk.io/build/6498473/download/1/index.html
 let config = { ..., "shelley": { ..., "protocolParams": {... "minFeeA": 44, ..., "minFeeB": 155381, ...} } }
 
@@ -740,7 +740,7 @@ let addresses = [new AddressWallet("addr......")];
 let asset = new AssetWallet(policyId, "Tango", 100);
 
 // blockchain config, this is where you can find protocol params, slotsPerKESPeriod etc. Structure is: { byron: ..., shelley: ..., alonzo: ..., protocols: ... }
-// This lib comes with  Mainnet, Testnet and LocalCluster config, but you may consider provide your own to make sure they are up to date.
+// This lib comes with  Config.Mainnet, Config.Testnet and Config.LocalCluster config, but you may consider provide your own to make sure they are up to date.
 // You can find the latest config files here: https://hydra.iohk.io/build/6498473/download/1/index.html
 let config = { ..., "shelley": { ..., "protocolParams": {... "minFeeA": 44, ..., "minFeeB": 155381, ...} } }
 
@@ -772,6 +772,7 @@ let txId = await walletServer.submitTx(signed);
 In order to create a multisignature transaction (multisig tx) we must create a script that will act as a "guard" for the funds sent to the script address. Once the funds are already there, the only way to move it will be fullfilling the script logic (Multisig is just a specific script case which force a list of private keys to be present on the final tx).
 #### Create native script
 ```js
+const { Seed, ScriptTypeEnum, WalletswalletIdpaymentfeesAmountUnitEnum, Config } = require('cardano-wallet-js');
 // script that force 2 private keys to be presents on the final tx.
 const data: JsonScript = {
     "type": ScriptTypeEnum.All, // "all"
@@ -846,7 +847,7 @@ const script = Seed.buildScript(jsonScript);
 // set network configuration
 let buildOpts = {
     startSlot: 0, 
-    config: Testnet,
+    config: Config.Testnet,
 };
 const ttl = 445331390; // slot before the tx should be processed
 
