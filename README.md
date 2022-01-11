@@ -21,7 +21,7 @@
     + [Key handling](#key-handling)
     + [Native Tokens](#native-tokens)
 		+ [Send Native Tokens](#send-native-tokens)
-    + [Buld Multisig Tx](#build-multisig-tx)
+    + [Build Multisig Tx](#build-multisig-tx)
 
 - [Test](#test)
 - [Support our project](#support-our-project)
