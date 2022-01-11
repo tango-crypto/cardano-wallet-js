@@ -1,10 +1,9 @@
 import { expect } from 'chai';
 import 'mocha';
-import { WalletswalletIdpaymentfeesAmountUnitEnum } from '../models';
+import { WalletswalletIdpaymentfeesAmountUnitEnum, JsonScript, ScriptTypeEnum } from '../models';
 import { CARDANO_CHIMERIC, CARDANO_EXTERNAL, Seed } from '../utils';
 import { CoinSelectionWallet } from '../wallet/coin-selection-wallet';
 import { NetworkInfo, RewardAddress, StakeCredential, TransactionBody, Bip32PrivateKey, BaseAddress } from '@emurgo/cardano-serialization-lib-nodejs';
-import { JsonScript, ScriptTypeEnum } from '../models/json-script.model';
 import { Testnet } from '../config/network.config';
 
 // let transaction = Transaction.from_bytes(Buffer.from('83a600818258205b895e886b1539ffa7256e5e4dc4fd1f753389718d6a01216b64e8707fa72a02010182825839004781ac588faf62aadda0a584e41bf9776e35f83af080800d8e9505e01e64ae6f8bbd15ae8657c2ed4b5e8ef1f82e2297d7ead4c66782fb131a000f42408258390060576add07f66d5198ecc8a632b0a1c6185fc46a5e8054c897765473342dac9f95ee4f92567f652a736d64bfa0afaa2da795dda8de6585801a3a70c0fc021a0002a5f1031a59527200075820776e39ea313361b6bdc495ceeb6296ab36e5a684c57883541680ca5dc4bef03f0800a10081825820c85b2675611fbaab02089a70465d99ef1c15488d34d64ecfe2f580d846b12d21584004bbefcf1879a1c16ed194fcc609afca05b5d45fd301a75be56707a1c996fbca7e94ac7410c979fd5ddf3f1244085a35261ad6b95dbf4b10898c261133d4920ea5006568656c6c6f01542512a00e9653fe49a44a5886202e24d77eeb998f04830102a16130647472756505a2636b6579646e756c6c616c83036474727565a00669756e646566696e6564', 'hex'));
@@ -260,6 +259,13 @@ describe('Wallet utilities', function(){
 		const address = Seed.getScriptAddress(script, 'testnet').to_bech32();
 		expect(address).to.be.equal('addr_test1xqmmnp8sujweq6vc7jkryz9ev96s424e6qhs37mgawkjsaphhxz0peyajp5e3a9vxgytjct4p24tn5p0prak36ad9p6qncrly9');
 	});
+
+	it('should match script key hash and signing key hash', function() {
+		const hash = Buffer.from(Seed.getKeyHash(Bip32PrivateKey.from_bech32(scriptKeys[0]).to_public()).to_bytes()).toString('hex');
+		const jsonHash = jsonScript.scripts[0].keyHash;
+
+		expect(hash).to.be.equal(jsonHash);
+	})
 
 	it("should build a multisig tx", function(){
 		const signingKeys = scriptKeys.map(key => Bip32PrivateKey.from_bech32(key).to_raw_key()); 

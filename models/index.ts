@@ -194,3 +194,4 @@ export * from './walletswallet-idtransactions-inserted-at';
 export * from './walletswallet-idtransactions-mint';
 export * from './walletswallet-idtransactions-pending-since';
 export * from './walletswallet-idtransactions-withdrawals';
+export * from './json-script.model';
