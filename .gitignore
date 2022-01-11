@@ -4,3 +4,4 @@ typings
 dist
 .env
 .vscode
+.swagger-codegen
