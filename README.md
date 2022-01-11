@@ -834,7 +834,7 @@ Output:
 > :warning: **IMPORTANT**: Send some funds to this script address before continue 
 
 #### Send funds from script address
-Now that we have the script address and the private keys tied to it, we're ready to send some funds away from this address (remember we'll need all the private keys involved, **this is the multisig part**). The approach is very similar to the previous one where we build a tx by ourselves. The bellow example assume we have a coin selection already, which mean we got the script address UTXOs and created the inputs, outputs and change using some method like **wallet.getCoinSelection(...)**.
+Now that we have the script address and the private keys tied to it, we're ready to send some funds away from this address (remember we'll need all the private keys involved, **this is the multisig part**). The approach is very similar to the previous one where we build a tx by ourselves. The bellow example assume we have a coin selection already, which mean we got the script address UTXOs and created the inputs, outputs and change using some method like `wallet.getCoinSelection(...)`
 
 > :warning: **IMPORTANT**: Use the exact FINAL fee you want in the coinselection. The fee is implicit on: (inputs + withdrawals) - (outputs + change + deposits) = fee.
 
