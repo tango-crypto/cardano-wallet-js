@@ -774,7 +774,7 @@ let txId = await walletServer.submitTx(signed);
 In order to create a multisignature transaction (multisig tx) we must create a script that will act as a "guard" for the funds sent to the script address. Once the funds are already there, the only way to move it will be fulfilling the script logic (Multisig is just a specific script case that force a list of private keys to be present on the final tx).
 #### Create native script
 ```js
-const { Seed, ScriptTypeEnum, WalletswalletIdpaymentfeesAmountUnitEnum, Config } = require('cardano-wallet-js');
+const { Seed, ScriptTypeEnum, WalletswalletIdpaymentfeesAmountUnitEnum, Config, Bip32PrivateKey } = require('cardano-wallet-js');
 // script that force 2 private keys to be presents on the final tx.
 const data: JsonScript = {
     "type": ScriptTypeEnum.All, // "all"
