@@ -21,6 +21,8 @@
     + [Key handling](#key-handling)
     + [Native Tokens](#native-tokens)
 		+ [Send Native Tokens](#send-native-tokens)
+    + [Build Multisig Tx](#build-multisig-tx)
+
 - [Test](#test)
 - [Support our project](#support-our-project)
 
@@ -769,7 +771,7 @@ let signed = Buffer.from(txBody.to_bytes()).toString('hex');
 let txId = await walletServer.submitTx(signed);
 ```
 ### Build Multisig tx
-In order to create a multisignature transaction (multisig tx) we must create a script that will act as a "guard" for the funds sent to the script address. Once the funds are already there, the only way to move it will be fullfilling the script logic (Multisig is just a specific script case which force a list of private keys to be present on the final tx).
+In order to create a multisignature transaction (multisig tx) we must create a script that will act as a "guard" for the funds sent to the script address. Once the funds are already there, the only way to move it will be fulfilling the script logic (Multisig is just a specific script case that force a list of private keys to be present on the final tx).
 #### Create native script
 ```js
 const { Seed, ScriptTypeEnum, WalletswalletIdpaymentfeesAmountUnitEnum, Config } = require('cardano-wallet-js');
@@ -811,7 +813,7 @@ const keys = Seed.getScriptKeys(script).map(k => k.to_bech32());
 ```
 
 #### Get keyHash from private key
-Last step we create a native script and got the JSON representation along with the privates keys involved. To check if your resulting privates keys indeed matching your private keys you can do this:
+In the previous step, we created a native script and got the JSON representation along with the private keys involved. To check if your resulting private keys indeed match your private keys, you can do this:
 
 ```js
 const keyHashes = keys.map(k => Buffer.from(Seed.getKeyHash(Bip32PrivateKey.from_bech32(k).to_public()).to_bytes()).toString('hex'));
@@ -821,7 +823,7 @@ expect(keyHashes).deep.equal(jsonHashes);
 ```
 
 #### Generate script address
-Next step is to get the script address, so we can send funds to it. Here is the example (testnet address):
+The next step is to get the script address, so we can send funds to it. Here is the example (testnet address):
 
 ```js
 const script = Seed.buildScript(jsonScript);
@@ -833,7 +835,7 @@ Output:
 > :warning: **IMPORTANT**: Send some funds to this script address before continue 
 
 #### Send funds from script address
-Now that we have the script address and the private keys tied to it, we're ready for send some funds away from this address (remember we'll need all the private keys involved, **this is the multisig part**). The approach is very similar to the previous one where we build a tx by ourself. The bellow example assume we have a coin selection already, which mean we got the script address UTXOs and create the inputs, outputs and change using some method like **wallet.getCoinSelection(...)**.
+Now that we have the script address and the private keys tied to it, we're ready to send some funds away from this address (remember we'll need all the private keys involved, **this is the multisig part**). The approach is very similar to the previous one where we build a tx by ourselves. The bellow example assume we have a coin selection already, which mean we got the script address UTXOs and created the inputs, outputs and change using some method like `wallet.getCoinSelection(...)`
 
 > :warning: **IMPORTANT**: Use the exact FINAL fee you want in the coinselection. The fee is implicit on: (inputs + withdrawals) - (outputs + change + deposits) = fee.
 
@@ -910,7 +912,7 @@ Output:
 # Test
 
 ### Stack
-you'll need to install stak >= 1.9.3
+you'll need to install stack >= 1.9.3
 you can find it here: https://docs.haskellstack.org/en/stable/README/.
 You may need to install the libsodium-dev, libghc-hsopenssl-dev, gmp, sqlite and systemd development libraries for the build to succeed.
 
