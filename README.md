@@ -213,6 +213,7 @@ let name = 'tangocrypto-wallet';
 let wallet = await walletServer.createOrRestoreShelleyWallet(name, mnemonic_sentence, passphrase);
 ```    
 
+**IMPORTANT**
 `cardano-wallet-js` creates an abstraction layer for `cardano-wallet`. Therefore the address discovery is handled by 'cardano-wallet' using  <a href="https://input-output-hk.github.io/adrestia/cardano-wallet/design/Notes-about-BIP-44">BIP-44 standard</a>. Thus you have to consider that the address gap limit is 20, which means that if the wallet hits 20 unused addresses in a row, it expects no used addresses beyond this point and stops searching the address chain. That means that funds received on addresses with a gap greater than 20 **WILL NOT APPEAR ON THE WALLET BALANCE**.
 
 List wallets:
