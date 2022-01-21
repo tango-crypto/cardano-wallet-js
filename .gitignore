@@ -3,3 +3,5 @@ node_modules
 typings
 dist
 .env
+.vscode
+.swagger-codegen
