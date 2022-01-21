@@ -771,7 +771,7 @@ export class Seed {
 		if (script.keyHash) {
 			result.keyHash = script.keyHash;
 		} 
-		if(result.type === 'any') { // Multiple Issuer At least)
+		if(result.type === 'atLeast') { // Multiple Issuer At least)
 			result.require = script.root.as_script_n_of_k().n();
 		}
 		if (result.type === 'after' || result.type === 'before') {
