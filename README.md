@@ -524,7 +524,7 @@ let signed = Buffer.from(txBody.to_bytes()).toString('hex');
 let txId = await walletServer.submitTx(signed);
 ```    
 ### Key handling
-There ara a couple of methods you can use to derive and get private/public key pairs. For more info check [here](https://docs.cardano.org/projects/cardano-wallet/en/latest/About-Address-Derivation.html).
+There ara a couple of methods you can use to derive and get private/public key pairs. For more info check [here](https://input-output-hk.github.io/cardano-wallet/concepts/address-derivation).
 
 Get root key from recovery phrase
 ```js
