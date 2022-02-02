@@ -1,0 +1,63 @@
+import { AddressesApi, KeysApi, TransactionsApi, WalletsApi, StakePoolsApi, CoinSelectionsApi } from '../api';
+import { Configuration } from '../configuration';
+import { ApiWallet, WalletsAssets, WalletsBalance, WalletsDelegation, WalletsPassphrase, WalletsState, WalletsTip } from '../models';
+import { AddressWallet } from './address-wallet';
+import { CoinSelectionWallet } from './coin-selection-wallet';
+import { FeeWallet } from './fee-wallet';
+import { KeyWallet } from './key-wallet';
+import { TransactionWallet } from './transaction-wallet';
+import { UtxoStatisticsWallet } from './utxo-statistics-wallet';
+import { AssetWallet } from './asset-wallet';
+export declare class ShelleyWallet implements ApiWallet {
+    id: any;
+    address_pool_gap: any;
+    balance: WalletsBalance;
+    assets: WalletsAssets;
+    delegation: WalletsDelegation;
+    name: any;
+    passphrase: WalletsPassphrase;
+    state: WalletsState;
+    tip: WalletsTip;
+    addressesApi: AddressesApi;
+    keysApi: KeysApi;
+    transactionsApi: TransactionsApi;
+    walletsApi: WalletsApi;
+    config: Configuration;
+    stakePoolApi: StakePoolsApi;
+    coinSelectionsApi: CoinSelectionsApi;
+    constructor(id: any, address_pool_gap: any, balance: WalletsBalance, assets: WalletsAssets, delegation: WalletsDelegation, name: any, passphrase: WalletsPassphrase, state: WalletsState, tip: WalletsTip, config: Configuration);
+    static from(wallet: ApiWallet, config: Configuration): ShelleyWallet;
+    rename(name: string): Promise<this>;
+    updatePassphrase(oldPassphrase: string, newPassphrase: string): Promise<this>;
+    getUtxoStatistics(): Promise<UtxoStatisticsWallet>;
+    getTotalBalance(): number;
+    getAvailableBalance(): number;
+    getRewardBalance(): number;
+    getDelegation(): WalletsDelegation;
+    refresh(): Promise<this>;
+    delete(): Promise<import("axios").AxiosResponse<void>>;
+    getAddresses(): Promise<AddressWallet[]>;
+    getUnusedAddresses(): Promise<AddressWallet[]>;
+    getUsedAddresses(): Promise<AddressWallet[]>;
+    getAddressAt(index: number): Promise<AddressWallet>;
+    getNextAddress(): Promise<AddressWallet>;
+    getAddressExternalVerificationKey(index: number): Promise<KeyWallet>;
+    getStakeVerificationKey(index: number): Promise<KeyWallet>;
+    getTransactions(start?: Date, end?: Date): Promise<TransactionWallet[]>;
+    getTransaction(txId: string): Promise<TransactionWallet>;
+    forgetTransaction(txId: string): Promise<boolean>;
+    estimateFee(addresses: AddressWallet[], amounts: number[], data?: any, assets?: {
+        [key: string]: AssetWallet[];
+    }): Promise<FeeWallet>;
+    sendPayment(passphrase: any, addresses: AddressWallet[], amounts: number[], data?: any, assets?: {
+        [key: string]: AssetWallet[];
+    }, ttl?: number): Promise<TransactionWallet>;
+    estimateDelegationFee(): Promise<FeeWallet>;
+    delegate(poolId: string, passphrase: string): Promise<TransactionWallet>;
+    withdraw(passphrase: any, addresses: AddressWallet[], amounts: number[]): Promise<TransactionWallet>;
+    stopDelegation(passphrase: string): Promise<TransactionWallet>;
+    getCoinSelection(addresses: AddressWallet[], amounts: number[], data?: any, assets?: {
+        [key: string]: AssetWallet[];
+    }): Promise<CoinSelectionWallet>;
+    private updateData;
+}
