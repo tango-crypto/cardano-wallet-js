@@ -209,7 +209,7 @@ export class ShelleyWallet implements ApiWallet {
 						assets: assets[addr.id]?.map(a => {
 							let asset: WalletsAssetsAvailable = {
 								 policy_id: a.policy_id,
-								 asset_name: Buffer.from(a.asset_name).toString('hex'),
+								 asset_name: a.asset_name,
 								 quantity: a.quantity
 							}
 							return asset;
