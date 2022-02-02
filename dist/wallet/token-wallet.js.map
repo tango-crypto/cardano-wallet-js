@@ -1,1 +1,0 @@
-{"version":3,"file":"token-wallet.js","sourceRoot":"","sources":["../../wallet/token-wallet.ts"],"names":[],"mappings":";;;AAIA;IAKC,qBAAY,KAAkB,EAAE,MAAqB,EAAE,cAA+B;QACrF,IAAI,CAAC,KAAK,GAAG,KAAK,CAAC;QACnB,IAAI,CAAC,MAAM,GAAG,MAAM,CAAC;QACrB,IAAI,CAAC,cAAc,GAAG,cAAc,CAAC;IACtC,CAAC;IACF,kBAAC;AAAD,CAAC,AAVD,IAUC;AAVY,kCAAW"}
