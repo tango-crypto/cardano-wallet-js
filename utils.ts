@@ -1,6 +1,6 @@
 import { CoinSelectionWallet } from './wallet/coin-selection-wallet';
 import { generateMnemonic, mnemonicToEntropy } from 'bip39';
-import { Address, AssetName, Assets, AuxiliaryData, AuxiliaryDataHash, BaseAddress, BigNum, Bip32PrivateKey, Bip32PublicKey, Ed25519KeyHash, Ed25519Signature, EnterpriseAddress, GeneralTransactionMetadata, hash_auxiliary_data, hash_transaction, Int, LinearFee, make_vkey_witness, MetadataList, MetadataMap, Mint, MintAssets, min_ada_required, min_fee, MultiAsset, NativeScript, NativeScripts, NetworkInfo, PrivateKey, PublicKey, ScriptAll, ScriptAny, ScriptHash, ScriptHashNamespace, ScriptNOfK, ScriptPubkey, StakeCredential, TimelockExpiry, TimelockStart, Transaction, TransactionBody, TransactionBuilder, TransactionHash, TransactionInput, TransactionInputs, TransactionMetadatum, TransactionOutput, TransactionOutputs, TransactionWitnessSet, Value, Vkeywitnesses } from '@emurgo/cardano-serialization-lib-nodejs';
+import { Address, AssetName, Assets, AuxiliaryData, AuxiliaryDataHash, BaseAddress, BigNum, Bip32PrivateKey, Bip32PublicKey, Ed25519KeyHash, Ed25519Signature, EnterpriseAddress, GeneralTransactionMetadata, hash_auxiliary_data, hash_transaction, Int, LinearFee, make_vkey_witness, MetadataList, MetadataMap, Mint, MintAssets, min_ada_required, min_fee, MultiAsset, NativeScript, NativeScripts, NetworkInfo, PrivateKey, PublicKey, ScriptAll, ScriptAny, ScriptHash, ScriptHashNamespace, ScriptNOfK, ScriptPubkey, StakeCredential, TimelockExpiry, TimelockStart, Transaction, TransactionBody, TransactionBuilder, TransactionBuilderConfigBuilder, TransactionHash, TransactionInput, TransactionInputs, TransactionMetadatum, TransactionOutput, TransactionOutputs, TransactionWitnessSet, Value, Vkeywitnesses } from '@emurgo/cardano-serialization-lib-nodejs';
 import { Mainnet, Testnet } from './config/network.config';
 import { TokenWallet } from './wallet/token-wallet';
 import { ApiCoinSelectionChange, WalletsAssetsAvailable } from './models';
@@ -59,20 +59,23 @@ export class Seed {
 		let config = opts.config || Mainnet;
 		let metadata = opts.metadata;
 		let startSlot = opts.startSlot || 0;
-		let txBuilder = TransactionBuilder.new(
-			// all of these are taken from the mainnet genesis settings
-			// linear fee parameters (a*size + b)
-			LinearFee.new(BigNum.from_str(config.protocols.txFeePerByte.toString()), BigNum.from_str(config.protocols.txFeeFixed.toString())),
-			// minimum utxo value
-			BigNum.from_str(config.protocols.minUTxOValue.toString()),
-			// pool deposit
-			BigNum.from_str(config.protocols.stakePoolDeposit.toString()),
-			// key deposit
-			BigNum.from_str(config.protocols.stakeAddressDeposit.toString()),
-            config.protocols.maxValueSize,
-            config.protocols.maxTxSize
-		);
+		let tbConfig = TransactionBuilderConfigBuilder.new()
+		// all of these are taken from the mainnet genesis settings
+		// linear fee parameters (a*size + b)
+		.fee_algo(LinearFee.new(BigNum.from_str(config.protocols.txFeePerByte.toString()), BigNum.from_str(config.protocols.txFeeFixed.toString())))
+		//min-ada-value
+		.coins_per_utxo_word(BigNum.from_str(config.protocols.utxoCostPerWord.toString()))
+		// pool deposit
+		.pool_deposit(BigNum.from_str(config.protocols.stakePoolDeposit.toString()))
+		// key deposit
+		.key_deposit(BigNum.from_str(config.protocols.stakeAddressDeposit.toString()))
+		// max output value size
+		.max_value_size(config.protocols.maxValueSize)
+		// max tx size
+		.max_tx_size(config.protocols.maxTxSize)
+		.build();
 
+		let txBuilder = TransactionBuilder.new(tbConfig);
 
 		// add tx inputs
 		coinSelection.inputs.forEach((input, i) => {
@@ -345,7 +348,7 @@ export class Seed {
 			for (const asset_name in assetGroups) {
 				const quantity = assetGroups[asset_name];
 			 	const assetName = AssetName.new(Buffer.from(asset_name, encoding));
-				mintAssets.insert(assetName, Int.new_i32(quantity));
+				mintAssets.insert(assetName, Int.new(BigNum.from_str(quantity.toString())));
 			}
 			mint.insert(scriptHash, mintAssets);
 		}
@@ -550,7 +553,7 @@ export class Seed {
 
 	static getTransactionMetadatum(value:any): TransactionMetadatum {
 		if (value.hasOwnProperty(MetadateTypesEnum.Number)) {
-			return TransactionMetadatum.new_int(Int.new_i32(value[MetadateTypesEnum.Number]));
+			return TransactionMetadatum.new_int(Int.new(value[MetadateTypesEnum.Number]));
 		} 
 		if (value.hasOwnProperty(MetadateTypesEnum.String)) {
 			return TransactionMetadatum.new_text(value[MetadateTypesEnum.String]);
@@ -588,8 +591,12 @@ export class Seed {
 		return pair;
 	}
 
+	static generateBip32PrivateKey(): Bip32PrivateKey {
+		return Bip32PrivateKey.generate_ed25519_bip32();
+	}
+
 	// enterprise address without staking ability, for use by exchanges/etc
-	static generateEnterpriseAddress(pubKey: Bip32PublicKey, network = 'mainnet'): Address {
+	static getEnterpriseAddress(pubKey: Bip32PublicKey, network = 'mainnet'): Address {
 		let networkId = network == 'mainnet' ? NetworkInfo.mainnet().network_id() : NetworkInfo.testnet().network_id();
 		return EnterpriseAddress.new(networkId, StakeCredential.from_keyhash(pubKey.to_raw_key().hash())).to_address();
 	} 
@@ -684,7 +691,7 @@ export class Seed {
 			multiAsset.insert(scriptHash, asset);
 		}
 		assets.set_multiasset(multiAsset);
-		let min = min_ada_required(assets, BigNum.from_str(config.protocols.minUTxOValue.toString()));
+		let min = min_ada_required(assets, false, BigNum.from_str(config.protocols.utxoCostPerWord.toString()));
 		return Number.parseInt(min.to_str());
 	}
 
