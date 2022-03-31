@@ -6,16 +6,15 @@ const expect = chai.expect;
 
 import 'mocha';
 
-import { ApiTransactionStatusEnum, WalletsAssetsAvailable, WalletswalletIdpaymentfeesAmountUnitEnum, WalletswalletIdpaymentfeesPayments } from '../models';
+import { ApiTransactionStatusEnum, WalletsAssetsAvailable, WalletswalletIdpaymentfeesAmountUnitEnum } from '../models';
 import { Seed } from '../utils';
 import { WalletServer } from '../wallet-server';
 import * as dotenv from "dotenv";
 import { AssetWallet } from '../wallet/asset-wallet';
 import { CoinSelectionWallet } from '../wallet/coin-selection-wallet';
 import { TokenWallet } from '../wallet/token-wallet';
-import { Mainnet, Testnet, LocalCluster } from '../config/network.config';
+import { Testnet, LocalCluster } from '../config/network.config';
 import { ShelleyWallet } from '../wallet/shelley-wallet';
-import { BaseAddress, BigNum, NetworkInfo, StakeCredential } from '@emurgo/cardano-serialization-lib-nodejs';
 dotenv.config();
 
 describe('Cardano asset tokens', function () {
@@ -989,6 +988,7 @@ describe('Cardano asset tokens', function () {
 			//generate policy id
 			let scriptHash = Seed.getScriptHash(script);
 			let policyId = Seed.getPolicyId(scriptHash);
+			tangoPolicyId = policyId;
 
 			// asset
 			let asset = new AssetWallet(policyId, "Tango", 1000000);
@@ -1449,12 +1449,12 @@ describe('Cardano asset tokens', function () {
 			// address to send the minted tokens
 			let addresses = [(await rWallet.getAddresses())[0]];
 
-			let asset = new AssetWallet(tangoPolicyId, "Tango", 100);
+			let asset = new AssetWallet(tangoPolicyId, Buffer.from("Tango").toString('hex'), 100);
 			let assets: { [key: string]: AssetWallet[] } = {};
 			assets[addresses[0].id] = [asset];
 			try {
 
-				let minUtxo = Seed.getMinUtxoValueWithAssets([asset], LocalCluster);
+				let minUtxo = Seed.getMinUtxoValueWithAssets([asset], LocalCluster, 'hex');
 				let tx = await wallet.sendPayment(payeer.passphrase, addresses, [minUtxo], ['send 100 Tango tokens'], assets);
 				await waitUntilTxFinish(tx.id, wallet);
 				expect(tx).not.undefined;
@@ -1473,10 +1473,10 @@ describe('Cardano asset tokens', function () {
 			// address to send the minted tokens
 			let addresses = [(await rWallet.getAddresses())[10]];
 
-			let asset = new AssetWallet(tangoPolicyId, "Tango", 100);
+			let asset = new AssetWallet(tangoPolicyId, Buffer.from("Tango").toString('hex'), 100);
 			let assets: { [key: string]: AssetWallet[] } = {};
 			assets[addresses[0].id] = [asset];
-			let minUtxo = Seed.getMinUtxoValueWithAssets([asset], LocalCluster);
+			let minUtxo = Seed.getMinUtxoValueWithAssets([asset], LocalCluster, 'hex');
 			let data = ['send 100 Tango tokens'];
 			let coinSelection = await wallet.getCoinSelection(addresses, [minUtxo], data, assets);
 			let info = await walletServer.getNetworkInformation();

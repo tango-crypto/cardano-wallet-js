@@ -553,7 +553,7 @@ export class Seed {
 
 	static getTransactionMetadatum(value:any): TransactionMetadatum {
 		if (value.hasOwnProperty(MetadateTypesEnum.Number)) {
-			return TransactionMetadatum.new_int(Int.new(value[MetadateTypesEnum.Number]));
+			return TransactionMetadatum.new_int(Int.new(toBigNum(value[MetadateTypesEnum.Number])));
 		} 
 		if (value.hasOwnProperty(MetadateTypesEnum.String)) {
 			return TransactionMetadatum.new_text(value[MetadateTypesEnum.String]);
