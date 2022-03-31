@@ -31,7 +31,6 @@ let buildOpts = {
 const ttl = 445331390; // slot before the tx should be processed
 
 const CoinSelectionWallet = {
-    "withdrawals": [],
     "inputs": [
         {
             "amount": {
@@ -44,7 +43,6 @@ const CoinSelectionWallet = {
             "index": 0
         },
     ],
-    "deposits": [],
     "change": [
         {
             "amount": {
@@ -71,12 +69,11 @@ const script = Seed.buildScript(jsonScript);
 // for the script witnesses we only need to specify the native script root
 const scripts = [script.root];
 
-// build the tx (you can include scripts/signingkeys here, eg: let tx = Seed.buildTransactionMultisig(selection, ttl, scripts, null, sigingKeys, buildOpts);)
-let tx = Seed.buildTransactionMultisig(CoinSelectionWallet, ttl, [], null, [], buildOpts);
+// build the tx (you can include signingkeys here, eg: let tx = Seed.buildTransactionMultisig(selection, ttl, scripts, 2, null, sigingKeys, buildOpts);)
+let tx = Seed.buildTransactionMultisig(CoinSelectionWallet, ttl, scripts, 2, null, [], buildOpts);
 // add witness
 tx.addKeyWitnesses(signingKeys[0]);
-// add script
-tx.addScriptWitness(...scripts);
+
 // add witness
 tx.addKeyWitnesses(signingKeys[1]);
 

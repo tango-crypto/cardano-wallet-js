@@ -6,12 +6,7 @@ import { CoinSelectionWallet } from '../wallet/coin-selection-wallet';
 import { NetworkInfo, RewardAddress, StakeCredential, TransactionBody, Bip32PrivateKey, BaseAddress, TransactionWitnessSet } from '@emurgo/cardano-serialization-lib-nodejs';
 import { Testnet } from '../config/network.config';
 import * as cardanoAddresses from 'cardano-addresses';
-
-// let transaction = Transaction.from_bytes(Buffer.from('83a600818258205b895e886b1539ffa7256e5e4dc4fd1f753389718d6a01216b64e8707fa72a02010182825839004781ac588faf62aadda0a584e41bf9776e35f83af080800d8e9505e01e64ae6f8bbd15ae8657c2ed4b5e8ef1f82e2297d7ead4c66782fb131a000f42408258390060576add07f66d5198ecc8a632b0a1c6185fc46a5e8054c897765473342dac9f95ee4f92567f652a736d64bfa0afaa2da795dda8de6585801a3a70c0fc021a0002a5f1031a59527200075820776e39ea313361b6bdc495ceeb6296ab36e5a684c57883541680ca5dc4bef03f0800a10081825820c85b2675611fbaab02089a70465d99ef1c15488d34d64ecfe2f580d846b12d21584004bbefcf1879a1c16ed194fcc609afca05b5d45fd301a75be56707a1c996fbca7e94ac7410c979fd5ddf3f1244085a35261ad6b95dbf4b10898c261133d4920ea5006568656c6c6f01542512a00e9653fe49a44a5886202e24d77eeb998f04830102a16130647472756505a2636b6579646e756c6c616c83036474727565a00669756e646566696e6564', 'hex'));
-// let txBody = transaction.body();
-// let txHash = hash_transaction(txBody);
-// console.log(Buffer.from(txHash.to_bytes()).toString('hex'));
-// console.log('Hell yeah!');
+import { MultisigTransaction } from '../models/multisig-transaction';
 
 describe('Wallet utilities', function(){
 	const phrase = ["joy","private","elder","ocean","mobile","orient","arrest","assume","monkey","once","thought","like","warfare","spread","stable"];
@@ -768,29 +763,17 @@ describe('Wallet utilities', function(){
             config: Testnet,
         };
 		const selection: CoinSelectionWallet = {
-			"withdrawals": [] as any[],
 			"inputs": [
 				{
 					"amount": {
-						"quantity": 20000000,
+						"quantity": 16471582,
 						"unit": WalletswalletIdpaymentfeesAmountUnitEnum.Lovelace
 					},
 					"address": "addr_test1xqmmnp8sujweq6vc7jkryz9ev96s424e6qhs37mgawkjsaphhxz0peyajp5e3a9vxgytjct4p24tn5p0prak36ad9p6qncrly9",
-					"id": "4b6a8bf960090225c85fbfe13a182cdc4cecdc3416fa02c3e2938d4449ef96f6",
+					"id": "76721f8f89c041dfdc84e9069a3304bffb47fdafaf1d3b0ca5db66c62e6dffcc",
 					"assets": [],
-					"index": 0
+					"index": 1
 				},
-			],
-			"deposits": [],
-			"change": [
-				{
-					"amount": {
-						"quantity": 18823000, // fee of 180000 initially
-						"unit": WalletswalletIdpaymentfeesAmountUnitEnum.Lovelace
-					},
-					"address": "addr_test1xqmmnp8sujweq6vc7jkryz9ev96s424e6qhs37mgawkjsaphhxz0peyajp5e3a9vxgytjct4p24tn5p0prak36ad9p6qncrly9",
-					"assets": []
-				}
 			],
 			"outputs": [
 				{
@@ -801,16 +784,112 @@ describe('Wallet utilities', function(){
 					"address": "addr_test1qpc6srdq6jjt6eetstw6t4elmypvepa6ykxcps3dvvv4fr5ca6s0m36w9nlk7ntwdhvhxeyz9u4lngn97fcv4ykjqc2sk4hrgy",
 					"assets": []
 				}
+			],
+			"change": [
+				{
+					"amount": {
+						"quantity": 15471582, // fee of 1ADA initially
+						"unit": WalletswalletIdpaymentfeesAmountUnitEnum.Lovelace
+					},
+					"address": "addr_test1xqmmnp8sujweq6vc7jkryz9ev96s424e6qhs37mgawkjsaphhxz0peyajp5e3a9vxgytjct4p24tn5p0prak36ad9p6qncrly9",
+					"assets": []
+				}
 			]
 		};
 
 		const ttl = 445331390;
 		const scripts = [script.root]
-		let tx = Seed.buildTransactionMultisig(selection, ttl, [], null, [], buildOpts);
+		let tx = Seed.buildTransactionMultisig(selection, ttl, scripts, null, [], buildOpts);
 		tx.addKeyWitnesses(signingKeys[0]);
-		tx.addScriptWitness(...scripts);
-		tx.addKeyWitnesses(signingKeys[1]);
-		const signed = tx.build();
+		const encode = tx.toBytes();
+		const tx1 = MultisigTransaction.fromBytes(encode);
+		tx1.addKeyWitnesses(signingKeys[1]);
+		const signed = tx1.build();
+		console.log(signed);
+		expect(signed).not.undefined;
+	});
+
+	it("should build a 2/3 multisig tx", function(){
+		const keys = [
+			'xprv13pg4p80uwhcgugkkepraakpf7lc556w9j6ejcx4rrqc0re88cep96s4df96sz4xhprtuk440uf9fstv4y5jkaxhtmckhhq0fe56s3hzukf4w0t6uqax7fyq0mevhmram49fa6ndz0ld6lyawl5adhv073s99utcc',
+			'xprv1czu6a0asmlmcen65cjft0z9yrry36365vtjfatfxkxkp0jhjr9w5smhe69zgshg27te896xw3scfa6c784wq43lmnc3ra577nl05wgnhxkdgnnqlx48f0vln20tptywqupdehnm2m42ec9gdnnlc2zk8yshknqyl',
+			'xprv1wztp07qymhkx0t047ngh8uf57mk3yndh67ng5ds0pxysehe594z5fzfza4z3hm24dc50dyqfy6a7500k3dg7cnv9j4fp3k8mymw078dhxm77nk5cv0can8dry4smcyd6gmqeqd68hnhzvmrtdc5qt55005dpchqd'
+		  ];
+		
+		const signingKeys = keys.map(key => Bip32PrivateKey.from_bech32(key).to_raw_key());
+		
+		// get native script (this is the SAME SCRIPT, we're just "loading" it back)
+		const jsonScript: any = {
+			type: 'atLeast',
+			require: 2,
+			scripts: [
+			  {
+				type: 'sig',
+				keyHash: '8007621a87d888fce3e84c3b6a6846758cfe8dfdb4979899434fe905'
+			  },
+			  {
+				type: 'sig',
+				keyHash: 'dade6048bf128bb15bb9135d9f8b4fcc970945d5a3cf8cf2165e641a'
+			  },
+			  {
+				type: 'sig',
+				keyHash: '030cffb68bf2f15364259ea8484f7ab6a978abf60a95d601e8ff0d97'
+			  }
+			]
+		};
+		
+		const script = Seed.buildScript(jsonScript);
+		
+		// set network configuration
+		let buildOpts = {
+			startSlot: 0, 
+			config: Testnet,
+		};
+		
+		const selection: CoinSelectionWallet = {
+			"inputs": [
+				{
+					"amount": {
+						"quantity": 10000000,
+						"unit": WalletswalletIdpaymentfeesAmountUnitEnum.Lovelace
+					},
+					"address": "addr_test1xzfyhp0089dlvcvqg2gq3grwd6uu0yfhxpaxa0np4smwjavjfwz77w2m7escqs5spzsxum4ec7gnwvr6d6lxrtpka96ssvtdj5", // script address
+					"id": "0e688e4e6f8a1040103362fcd4a26d4034ec4429323776b2928af1cc0b70a65d",
+					"assets": [],
+					"index": 0
+				},
+			],
+			"change": [
+				{
+					"amount": {
+						"quantity": 9000000, // fee of 0 ADA initially
+						"unit": WalletswalletIdpaymentfeesAmountUnitEnum.Lovelace
+					},
+					"address": "addr_test1xzfyhp0089dlvcvqg2gq3grwd6uu0yfhxpaxa0np4smwjavjfwz77w2m7escqs5spzsxum4ec7gnwvr6d6lxrtpka96ssvtdj5",
+					"assets": []
+				}
+			],
+			"outputs": [
+				{
+					"amount": {
+						"quantity": 1000000,
+						"unit": WalletswalletIdpaymentfeesAmountUnitEnum.Lovelace
+					},
+					"address": "addr_test1qznup567ujylt54wecqtknc2tlp5htaw2ywghh0dcxtxtz6r5gtdwq4yajng57kje93tt3fkc5k8cvvem7vl8yql2mcsn3hwwk",
+					"assets": []
+				}
+			]
+		};
+
+		const ttl = 445331390;
+		const scripts = [script.root]
+		let tx = Seed.buildTransactionMultisig(selection, ttl, scripts, null, [], buildOpts);
+		tx.addKeyWitnesses(signingKeys[0]);
+		const encode = tx.toBytes();
+		const tx1 = MultisigTransaction.fromBytes(encode);
+		tx1.addKeyWitnesses(signingKeys[1]);
+		const signed = tx1.build();
+		console.log(signed);
 		expect(signed).not.undefined;
 	});
 
