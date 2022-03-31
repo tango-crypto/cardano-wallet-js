@@ -230,20 +230,31 @@ export class Seed {
 		const config = opts.config || Mainnet;
 		let metadata = opts.data ? Seed.buildTransactionMetadata(opts.data) : null;
 		const startSlot = opts.startSlot || 0;
-		// const fee = parseInt(config.protocols.maxTxSize * config.protocols.txFeePerByte + config.protocols.txFeeFixed); // 16384 * 44 + 155381 = 876277
-		const selectionfee = coinSelection.inputs.reduce((acc, c) => c.amount.quantity + acc, 0) 
+		const selectionfee = parseInt(config.protocols.maxTxSize * config.protocols.txFeePerByte + config.protocols.txFeeFixed); // 16384 * 44 + 155381 = 876277
+		const currentfee = coinSelection.inputs.reduce((acc, c) => c.amount.quantity + acc, 0) 
 			+ (coinSelection.withdrawals?.reduce((acc, c) => c.amount.quantity + acc, 0) || 0)
 			- coinSelection.outputs.reduce((acc, c) => c.amount.quantity + acc, 0) 
 			- coinSelection.change.reduce((acc, c) => c.amount.quantity + acc, 0)
 			- (coinSelection.deposits?.reduce((acc, c) => c.quantity + acc, 0) || 0);
 
+		// add witnesses Ed25519KeyHash from input addresses
+		const vkeys: {[key: string]: number} = {};
+
 		// add tx inputs
 		const inputs = coinSelection.inputs.map((input, i) => {
+			// check if input is vkeywitness
+			const addr = Address.from_bech32(input.address);
+			const baseAddr = BaseAddress.from_address(addr);
+			const inputHash = baseAddr.payment_cred().to_keyhash();
+			if (inputHash) {
+				vkeys[inputHash.to_bech32('vkey_')] = (vkeys[inputHash.to_bech32('vkey_')] || 0) + 1;
+			} 
+
 			return TransactionInput.new(
 				TransactionHash.from_bytes(Buffer.from(input.id, 'hex')),
 				input.index
 			);
-		});
+		});	
 
 		// add tx outputs
 		let outputs = coinSelection.outputs.map(output => {
@@ -266,7 +277,12 @@ export class Seed {
 
 		// adjust changes to match maximum fee
 		if (coinSelection.change && coinSelection.change.length > 0) {
-			outputs.push(...coinSelection.change.map(change => {
+			const feeDiff = selectionfee - currentfee;
+            const feeDiffPerChange = Math.abs(Math.ceil(feeDiff/coinSelection.change.length));
+			for (let i = 0; i < coinSelection.change.length; i++) {
+				const change = coinSelection.change[i];
+				change.amount.quantity = feeDiff > 0 ? change.amount.quantity - feeDiffPerChange : change.amount.quantity + feeDiffPerChange;
+
 				let address = Address.from_bech32(change.address);
 				let amount = Value.new(
 					toBigNum(change.amount.quantity)
@@ -278,11 +294,13 @@ export class Seed {
 					amount.set_multiasset(multiAsset);
 				}
 	
-				return TransactionOutput.new(
+				const out = TransactionOutput.new(
 					address,
 					amount
 				);
-			}));
+
+				outputs.push(out);
+			}
 		}
 
 		const txInputs = TransactionInputs.new();
@@ -305,8 +323,8 @@ export class Seed {
 
 		// set tx validity start interval
 		txBody.set_validity_start_interval(startSlot);
-
-		return new MultisigTransaction(coinSelection, txBody, scripts, signingKeys, config, encoding, metadata, tokens);
+		const numOfWitnesses = Object.values(vkeys).reduce((total, cur) => total + cur, 0) + scripts.reduce((t, c) => t + c.get_required_signers().len(), 0);
+		return MultisigTransaction.new(coinSelection, txBody, scripts, signingKeys, numOfWitnesses, config, encoding, metadata, tokens);
 	}
 
 	static buildMultiAssets(assets: WalletsAssetsAvailable[], encoding: BufferEncoding = 'hex'): MultiAsset {

@@ -842,7 +842,7 @@ Output:
 #### Send funds from script address
 Now that we have the script address and the private keys tied to it, we're ready to send some funds away from this address (remember we'll need all the private keys involved, **this is the multisig part**). The approach is very similar to the previous one where we build a tx by ourselves. The bellow example assume we have a coin selection already, which mean we got the script address UTXOs and created the inputs, outputs and change using some method like `wallet.getCoinSelection(...)`
 
-> :warning: **IMPORTANT**: Use the exact FINAL fee you want in the coinselection. The fee is implicit on: (inputs + withdrawals) - (outputs + change + deposits) = fee.
+> **NOTE**: You can pass any fee you want in the coin selection, `Seed.buildTransactionMultisig(...)` will adjust it accordingly.
 
 ```js
 // get private keys
@@ -898,12 +898,15 @@ const selection: CoinSelectionWallet = {
 // for the script witnesses we only need to specify the native script root
 const scripts = [script.root];
 
-// build the tx (you can include scripts/signingkeys here, eg: let tx = Seed.buildTransactionMultisig(selection, ttl, scripts, null, sigingKeys, buildOpts);)
-let tx = Seed.buildTransactionMultisig(selection, ttl, [], null, [], buildOpts);
+// build the tx (you can include signingkeys here, eg: let tx = Seed.buildTransactionMultisig(selection, ttl, scripts, null, sigingKeys, buildOpts);)
+let tx = Seed.buildTransactionMultisig(selection, ttl, scripts, null, [], buildOpts);
 // add witness
 tx.addKeyWitnesses(signingKeys[0]);
-// add script
-tx.addScriptWitness(...scripts);
+
+// encode/decode multisig tx
+const encode = tx.toBytes();
+tx = MultisigTransaction.fromBytes(encode);
+
 // add witness
 tx.addKeyWitnesses(signingKeys[1]);
 
@@ -913,7 +916,7 @@ console.log(signed)
 Output:
 > "84a500818258204b6a8bf9..."
 ```
-
+> :warning: **IMPORTANT**: Don't forget to pass in the native script on `Seed.buildTransactionMultisig(...)`
 # Test
 
 ### Stack
