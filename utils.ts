@@ -62,13 +62,13 @@ export class Seed {
 		let tbConfig = TransactionBuilderConfigBuilder.new()
 		// all of these are taken from the mainnet genesis settings
 		// linear fee parameters (a*size + b)
-		.fee_algo(LinearFee.new(BigNum.from_str(config.protocols.txFeePerByte.toString()), BigNum.from_str(config.protocols.txFeeFixed.toString())))
+		.fee_algo(LinearFee.new(toBigNum(config.protocols.txFeePerByte), toBigNum(config.protocols.txFeeFixed)))
 		//min-ada-value
-		.coins_per_utxo_word(BigNum.from_str(config.protocols.utxoCostPerWord.toString()))
+		.coins_per_utxo_word(toBigNum(config.protocols.utxoCostPerWord))
 		// pool deposit
-		.pool_deposit(BigNum.from_str(config.protocols.stakePoolDeposit.toString()))
+		.pool_deposit(toBigNum(config.protocols.stakePoolDeposit))
 		// key deposit
-		.key_deposit(BigNum.from_str(config.protocols.stakeAddressDeposit.toString()))
+		.key_deposit(toBigNum(config.protocols.stakeAddressDeposit))
 		// max output value size
 		.max_value_size(config.protocols.maxValueSize)
 		// max tx size
@@ -85,7 +85,7 @@ export class Seed {
 				input.index
 			);
 			let amount = Value.new(
-				BigNum.from_str(input.amount.quantity.toString())
+				toBigNum(input.amount.quantity)
 			);
 
 			txBuilder.add_input(address, txInput, amount);
@@ -95,7 +95,7 @@ export class Seed {
 		coinSelection.outputs.forEach(output => {
 			let address = Address.from_bech32(output.address);
 			let amount = Value.new(
-				BigNum.from_str(output.amount.quantity.toString())
+				toBigNum(output.amount.quantity)
 			);
 
 			// add tx assets
@@ -115,7 +115,7 @@ export class Seed {
 		coinSelection.change.forEach(change => {
 			let address = Address.from_bech32(change.address);
 			let amount = Value.new(
-				BigNum.from_str(change.amount.quantity.toString())
+				toBigNum(change.amount.quantity)
 			);
 
 			// add tx assets
@@ -152,7 +152,7 @@ export class Seed {
 			- coinSelection.outputs.reduce((acc, c) => c.amount.quantity + acc, 0) 
 			- coinSelection.change.reduce((acc, c) => c.amount.quantity + acc, 0)
 			- (coinSelection.deposits?.reduce((acc, c) => c.quantity + acc, 0) || 0);
-			txBuilder.set_fee(BigNum.from_str(fee.toString()));
+			txBuilder.set_fee(toBigNum(fee));
 		}
 		let txBody = txBuilder.build();
 		return txBody;
@@ -249,7 +249,7 @@ export class Seed {
 		let outputs = coinSelection.outputs.map(output => {
 			let address = Address.from_bech32(output.address);
 			let amount = Value.new(
-				BigNum.from_str(output.amount.quantity.toString())
+				toBigNum(output.amount.quantity)
 			);
 
 			// add tx assets
@@ -269,7 +269,7 @@ export class Seed {
 			outputs.push(...coinSelection.change.map(change => {
 				let address = Address.from_bech32(change.address);
 				let amount = Value.new(
-					BigNum.from_str(change.amount.quantity.toString())
+					toBigNum(change.amount.quantity)
 				);
 	
 				// add tx assets
@@ -289,7 +289,7 @@ export class Seed {
 		inputs.forEach(txin => txInputs.add(txin));
 		let txOutputs = TransactionOutputs.new();
 		outputs.forEach(txout => txOutputs.add(txout));
-		const txBody = TransactionBody.new(txInputs, txOutputs, BigNum.from_str(selectionfee.toString()), ttl);
+		const txBody = TransactionBody.new(txInputs, txOutputs, toBigNum(selectionfee), ttl);
 
 		// add tx metadata
 		if (metadata) {
@@ -325,7 +325,7 @@ export class Seed {
 			for (const asset_name in assetGroups) {
 				const quantity = assetGroups[asset_name];
 			 	const assetName = AssetName.new(Buffer.from(asset_name, encoding));
-				asset.insert(assetName, BigNum.from_str(quantity.toString()));
+				asset.insert(assetName, toBigNum(quantity));
 			}
 			multiAsset.insert(scriptHash, asset);
 		}
@@ -348,7 +348,7 @@ export class Seed {
 			for (const asset_name in assetGroups) {
 				const quantity = assetGroups[asset_name];
 			 	const assetName = AssetName.new(Buffer.from(asset_name, encoding));
-				mintAssets.insert(assetName, Int.new(BigNum.from_str(quantity.toString())));
+				mintAssets.insert(assetName, Int.new(toBigNum(quantity)));
 			}
 			mint.insert(scriptHash, mintAssets);
 		}
@@ -356,7 +356,7 @@ export class Seed {
 	}
 
 	static getTransactionFee(tx: Transaction, config = Mainnet) {
-		return min_fee(tx, LinearFee.new(BigNum.from_str(config.protocols.txFeePerByte.toString()), BigNum.from_str(config.protocols.txFeeFixed.toString())));
+		return min_fee(tx, LinearFee.new(toBigNum(config.protocols.txFeePerByte), toBigNum(config.protocols.txFeeFixed)));
 	}
 
 	static addKeyWitness(transaction: Transaction, prvKey: PrivateKey): Transaction {
@@ -676,7 +676,7 @@ export class Seed {
 	}
 
 	static getMinUtxoValueWithAssets(tokenAssets: AssetWallet[], config: any = Mainnet, encoding: BufferEncoding = 'utf8'): number {
-		let assets = Value.new(BigNum.from_str('1000000'));
+		let assets = Value.new(toBigNum(1000000));
 		let multiAsset = MultiAsset.new();
 		const groups = tokenAssets.reduce((dict: {[key: string]: AssetWallet[]}, asset: AssetWallet) => {
 			(dict[asset.policy_id] = dict[asset.policy_id] || []).push(asset);
@@ -686,12 +686,12 @@ export class Seed {
 			const scriptHash = Seed.getScriptHashFromPolicy(policy_id);
 			let asset = Assets.new();
 			groups[policy_id].forEach(a => {
-				asset.insert(AssetName.new(Buffer.from(a.asset_name, encoding)), BigNum.from_str(a.quantity.toString()));
+				asset.insert(AssetName.new(Buffer.from(a.asset_name, encoding)), toBigNum(a.quantity));
 			});
 			multiAsset.insert(scriptHash, asset);
 		}
 		assets.set_multiasset(multiAsset);
-		let min = min_ada_required(assets, false, BigNum.from_str(config.protocols.utxoCostPerWord.toString()));
+		let min = min_ada_required(assets, false, toBigNum(config.protocols.utxoCostPerWord));
 		return Number.parseInt(min.to_str());
 	}
 
@@ -836,6 +836,10 @@ export class Seed {
 	}
 
 }
+
+function toBigNum(quantity: number): BigNum {
+	return BigNum.from_str(quantity.toString());
+  }
 
 export class Bip32KeyPair{
 	privateKey: Bip32PrivateKey;
