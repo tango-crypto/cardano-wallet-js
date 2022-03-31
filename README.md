@@ -524,7 +524,7 @@ let signed = Buffer.from(txBody.to_bytes()).toString('hex');
 let txId = await walletServer.submitTx(signed);
 ```    
 ### Key handling
-There ara a couple of methods you can use to derive and get private/public key pairs. For more info check [here](https://docs.cardano.org/projects/cardano-wallet/en/latest/About-Address-Derivation.html).
+There ara a couple of methods you can use to derive and get private/public key pairs. For more info check [here](https://input-output-hk.github.io/cardano-wallet/concepts/address-derivation).
 
 Get root key from recovery phrase
 ```js
@@ -775,7 +775,8 @@ let signed = Buffer.from(txBody.to_bytes()).toString('hex');
 let txId = await walletServer.submitTx(signed);
 ```
 ### Build Multisig tx
-In order to create a multisignature transaction (multisig tx) we must create a script that will act as a "guard" for the funds sent to the script address. Once the funds are already there, the only way to move it will be fulfilling the script logic (Multisig is just a specific script case that force a list of private keys to be present on the final tx).
+In order to create a multisignature transaction (multisig tx) we must create a script that will act as a "guard" for the funds sent to the script address. Once the funds are already there, the only way to move it will be fulfilling the script logic (Multisig is just a specific script case that force a list of private keys to be present on the final tx). Check the examples folder and here you can see an explanation of what is multisig and a demo https://www.youtube.com/watch?v=H7O4b_PtQ-8&t=41s
+
 #### Create native script
 ```js
 const { Seed, ScriptTypeEnum, WalletswalletIdpaymentfeesAmountUnitEnum, Config, Bip32PrivateKey } = require('cardano-wallet-js');
