@@ -449,12 +449,12 @@ export class Seed {
 		return txId;
 	}
 
-	static convertPrivateKeyToSignKey(prkKey: Bip32PrivateKey): ExtendedSigningKey {
+	static convertPrivateKeyToSignKey(prkKey: Bip32PrivateKey, desc: string): ExtendedSigningKey {
 		// const k = Bip32PrivateKey.from_bech32(scriptKeys[1]);
 		console.log(prkKey.to_bech32());
 		// const hex = Buffer.from(prkKey.to_raw_key().as_bytes()).toString('hex');
 		const cborHex = "5880" + Buffer.from(prkKey.to_128_xprv()).toString('hex');
-		return new ExtendedSigningKey(cborHex);
+		return new ExtendedSigningKey(cborHex, desc);
 		// console.log(hex);
 	}
 
