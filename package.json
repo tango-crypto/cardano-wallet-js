@@ -30,9 +30,7 @@
     "dependencies": {
         "@emurgo/cardano-serialization-lib-nodejs": "^10.0.4",
         "axios": "^0.21.1",
-        "bip39": "^3.0.4",
-        "chai": "^4.3.4",
-        "mocha": "^8.3.2"
+        "bip39": "^3.0.4"
     },
     "devDependencies": {
         "@types/chai": "^4.2.15",
@@ -43,9 +41,11 @@
         "@typescript-eslint/parser": "^5.9.0",
         "cardano-addresses": "^3.8.0",
         "cd": "^0.3.3",
+        "chai": "^4.3.4",
         "chai-as-promised": "^7.1.1",
         "dotenv": "^8.2.0",
         "eslint": "^8.6.0",
+        "mocha": "^8.3.2",
         "ts-node": "^9.1.1",
         "typescript": "^3.6.4"
     }
