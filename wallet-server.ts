@@ -1,6 +1,6 @@
-import { WalletsApi, NetworkApi, StakePoolsApi, SettingsApi, ProxyApi } from './api';
+import { WalletsApi, NetworkApi, StakePoolsApi, SettingsApi, ProxyApi, AssetsApi } from './api';
 import { Configuration } from './configuration';
-import { ApiMaintenanceActionPostData, ApiMaintenanceActionPostDataMaintenanceActionEnum, ApiSettingsPutData, ApiWalletPostData } from './models';
+import { ApiMaintenanceActionPostData, ApiMaintenanceActionPostDataMaintenanceActionEnum, ApiSettingsPutData, ApiWalletPostData, ApiAsset } from './models';
 import { MaintenanceActionWallet } from './wallet/maintenance-action-wallet';
 import { ShelleyWallet } from './wallet/shelley-wallet';
 import { StakePoolWallet } from './wallet/stakepool-wallet';
@@ -11,6 +11,7 @@ export class WalletServer {
 	stakePoolsApi: StakePoolsApi;
 	settingsApi: SettingsApi;
 	proxyApi: ProxyApi;
+	assetsApi: AssetsApi;
 	private constructor(protected url: string){
 		this.config = {
 			basePath: url
@@ -21,6 +22,7 @@ export class WalletServer {
 		this.stakePoolsApi = new StakePoolsApi(this.config);
 		this.settingsApi = new SettingsApi(this.config);
 		this.proxyApi = new ProxyApi(this.config);
+		this.assetsApi = new AssetsApi(this.config);
 	}
 
 	static init(url: string): WalletServer {
@@ -102,4 +104,23 @@ export class WalletServer {
 		let res = await this.proxyApi.postExternalTransaction(buffer);
 		return res.data.id;
 	}
+
+	async getAsset(walletId: string, policyId: string, assetName: string, options?: any): Promise<any> {
+		const res = await this.assetsApi.getAsset(walletId, policyId, assetName, options);
+		const apiAsset: ApiAsset = res.data
+		return apiAsset
+	}
+
+	async getAssetDefault(walletId: string, policyId: string, options?: any): Promise<any> {
+		const res = await this.assetsApi.getAssetDefault(walletId, policyId, options);
+		const apiAsset: ApiAsset = res.data;
+		return apiAsset;
+	}
+
+	async listAssets(walletId: string, options?: any): Promise<any> {
+		const res = await this.assetsApi.listAssets(walletId, options);
+		const apiAssets: ApiAsset[] = res.data;
+		return apiAssets;
+	}
+
 }
